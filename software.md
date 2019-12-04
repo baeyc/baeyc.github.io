@@ -4,7 +4,7 @@ title: Softwares
 subtitle: Packages, code from published papers, ...
 ---
 
-### ![Rlogo](/img/Rlogo.jpeg) R packages
+### R packages
 
 - [varTestnlme](https://baeyc.github.io/varTestnlme/index.html) : variance components testing for mixed-effect models. Available on [Github](https://github.com/baeyc/varTestnlme).
 
