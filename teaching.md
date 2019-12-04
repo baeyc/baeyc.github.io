@@ -1,8 +1,9 @@
 ---
 layout: page
 title: Teaching
-subtitle: *en français ...*
+subtitle: en français ...
 ---
+
 
 Depuis septembre 2017, j'effectue mes enseignements à l'université de Lille. La plupart des enseignements listés ci-dessous ont une page [Moodle](https://moodle.univ-lille.fr/) associée.
 
