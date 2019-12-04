@@ -1,7 +1,7 @@
 ---
 layout: page
 title: Teaching
-subtitle: en français ...
+subtitle: Liste de mes enseignements passés et présents
 ---
 
 
