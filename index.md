@@ -26,4 +26,4 @@ From june 2015 to September 2016, I was a post-doctoral student in the [Center f
 
 From April 2014 to May 2015, I was a post-doctoral student at the Institut de Modélisation des Systèmes Vivants ([IMSV](https://www.universite-paris-saclay.fr/en/research/project/lidex-imsv), Paris-Saclay). I was working on the modelling of genetic variability in plant populations.
 
-From 2010 to 2014, I was a PhD student in Ecole Centrale Paris, in the [Digiplante](http://digiplante.mas.ecp.fr/) team of MAS laboratory. I defend my thesis on February 28th 2014. Here is a link (in frecnh) to the manuscript.
+From 2010 to 2014, I was a PhD student in Ecole Centrale Paris, in the [Digiplante](http://digiplante.mas.ecp.fr/) team of MAS laboratory. I defended my thesis on February 28th 2014. Here is a [link](https://tel.archives-ouvertes.fr/tel-00985747) to the manuscript (in french).
