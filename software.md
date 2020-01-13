@@ -6,7 +6,7 @@ subtitle: Packages, code from published papers, ...
 
 ### R packages
 
-- [varTestnlme](https://baeyc.github.io/varTestnlme/index.html) : variance components testing for mixed-effect models. Available on [Github](https://github.com/baeyc/varTestnlme).
+- [varTestnlme](https://baeyc.github.io/varTestnlme/index.html) : variance components testing for mixed-effect models. Available on [Github](https://github.com/baeyc/varTestnlme) and on the [CRAN](https://cran.r-project.org/package=varTestnlme).
 
 ### Miscellaneous
 
