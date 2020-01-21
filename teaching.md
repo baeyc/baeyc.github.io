@@ -9,17 +9,18 @@ Depuis septembre 2017, j'effectue mes enseignements à l'université de Lille. L
 
 ### 2019-2020
 - **M2 ISN** (Ingénierie Statistique et Numérique), module **Analyse de données** (24h cours et 24h TD/TP). [Page Moodle](https://moodle.univ-lille.fr/course/view.php?id=1470).
+   [Polycopié](files/Poly_AD.pdf).
 - **M1 MAS** (Mathématiques Appliquées, Statistiques), module **Traitement Informatique de l'Analyse de données** (36h de TD/TP). [Page Moodle](https://moodle.univ-lille.fr/course/view.php?id=9529).
 - **L3 Math**, module **Probabilités** (30h de TD).
 - **L3 Math**, module **Initiation à la statistique** (36h de TD).
 - **L3 MASS**, module **Tests d'hypothèses** (36h de TD).
 
 ### 2018-2019
-- **M2 ISN** (Ingénierie Statistique et Numérique), module **Analyse de données** (24h cours et 24h TD/TP). [Page Moodle](https://moodle.univ-lille.fr/course/view.php?id=1470).
+- **M2 ISN** (Ingénierie Statistique et Numérique), module **Analyse de données** (24h cours et 24h TD/TP). [Page Moodle](https://moodle.univ-lille.fr/course/view.php?id=1470). [Polycopié](files/Poly_AD.pdf).
 - **L3 Math**, module **Probabilités** (30h de TD).
 
 ### 2017-2018
-- **M2 ISN** (Ingénierie Statistique et Numérique), module **Analyse de données** (24h cours et 24h TD/TP). [Page Moodle](https://moodle.univ-lille.fr/course/view.php?id=1470).
+- **M2 ISN** (Ingénierie Statistique et Numérique), module **Analyse de données** (24h cours et 24h TD/TP). [Page Moodle](https://moodle.univ-lille.fr/course/view.php?id=1470). [Polycopié](files/Poly_AD.pdf).
 - **M1 MAS** (Mathématiques Appliquées, Statistiques), module **Traitement Informatique de la Science des données** (36h de TD/TP). [Page Moodle](https://moodle.univ-lille.fr/course/view.php?id=9529).
 - **L3 Math**, module **Probabilités** (30h de TD).
 - **L3 Math**, module **Initiation à la statistique** (36h de TD)
