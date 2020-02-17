@@ -6,7 +6,7 @@ subtitle: Publications and prepublications
 
 ### Publications
 
-- Asymptotic distribution of likelihood ratio test statistics for variance components in nonlinear mixed effects models. Baey, Cournède, Kuhn. *Computational Statistics and Data Analysis*, 135:107-122, 2019 [[journal]](https://www.sciencedirect.com/science/article/pii/S0167947319300283?via%3Dihub) (version précédente sur [arXiv](https://arxiv.org/abs/1712.08567)).
+- Asymptotic distribution of likelihood ratio test statistics for variance components in nonlinear mixed effects models. Baey, Cournède, Kuhn. *Computational Statistics and Data Analysis*, 135:107-122, 2019 [[journal]](https://www.sciencedirect.com/science/article/pii/S0167947319300283?via%3Dihub) (arXiv version: [arXiv](https://arxiv.org/abs/1712.08567)).
 - Mixed-effects estimation in dynamic models of plant growth for the assessment of inter-individual variability. Baey, Mathieu, Jullien,Trevezas, and Cournède. *Journal of Agricultural, Biological and Environmental Statistics*, 23(2):208-232, 2018. [[journal]](https://link.springer.com/article/10.1007%2Fs13253-017-0307-4)
 - A model to account for data dependency when estimating floral cover in different land use types over a season. Baey, Sahlin, Clough, Smith. *Environmental and Ecological Statistics*, 24(4):505-527, 2017. [[journal]](https://link.springer.com/article/10.1007/s10651-017-0387-x)
 - Predicting pollinator capital and pollination service responses to enhancing floral and nesting resources. Haussler, Sahlin, Baey, Smith and Clough. *Ecology and evolution*, 7(6):1898-1908, 2017. [[journal]](http://onlinelibrary.wiley.com/doi/10.1002/ece3.2765/abstract;jsessionid=8922784C90BB457738EE573002C8EB37.f02t03)
