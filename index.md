@@ -22,6 +22,8 @@ For (1st year) Master students in biostatistics, bioinformatics or ecology: [the
   
 ### Curriculum
 
+You can find my resume [here](files/cv.pdf).
+
 Between October 2016 and August 2017, I was a post-doctoral student in the [Biomathematics](http://biomathematics.mics.centralesupelec.fr/) team of [MICS laboratory](https://Since 2017, I'm an assistant professor (maître de conférence) at Laboratoire Paul Painlevé (Université of Lille).
 ).
   
