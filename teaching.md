@@ -13,7 +13,7 @@ Depuis septembre 2017, j'effectue mes enseignements à l'université de Lille. L
 - **M1 MAS** (Mathématiques Appliquées, Statistiques), module **Traitement Informatique de l'Analyse de données** (36h de TD/TP). [Page Moodle](https://moodle.univ-lille.fr/course/view.php?id=9529).
 - **L3 Math**, module **Probabilités** (30h de TD).
 - **L3 Math**, module **Initiation à la statistique** (36h de TD).
-- **L3 MASS**, module **Tests d'hypothèses** (36h de TD).
+- **L3 MASS**, module **Tests d'hypothèses** (36h de TD). Lien vers les TP (en Python) : [![Github logo](/img/GitHub-Mark-32px.png)][https://github.com/baeyc/tpTestsL3MASS]
 
 ### 2018-2019
 - **M2 ISN** (Ingénierie Statistique et Numérique), module **Analyse de données** (24h cours et 24h TD/TP). [Page Moodle](https://moodle.univ-lille.fr/course/view.php?id=1470). [Polycopié](files/Poly_AD.pdf).
