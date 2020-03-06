@@ -17,8 +17,6 @@ I am interested in applied and computational statistics. More precisely, my rese
 ### Internship offers
 
 For (2nd year) Master students in statistics: [these_lrt](files/master2_test_non_asymptotique_var_comp.pdf)
-
-For (1st year) Master students in biostatistics, bioinformatics or ecology: [these_arabidopsis](files/stage_arabido_model.pdf)
   
 ### Curriculum
 
