@@ -22,7 +22,7 @@ For (1st year) Master students in biostatistics, bioinformatics or ecology: [the
   
 ### Curriculum
 
-You can find my resume [here](files/cv.pdf).
+You can find my resume [here](files/cv.pdf) (in French).
 
 Between October 2016 and August 2017, I was a post-doctoral student in the [Biomathematics](http://biomathematics.mics.centralesupelec.fr/) team of [MICS laboratory](https://Since 2017, I'm an assistant professor (maître de conférence) at Laboratoire Paul Painlevé (Université of Lille).
 ).
@@ -30,6 +30,6 @@ Between October 2016 and August 2017, I was a post-doctoral student in the [Biom
 From june 2015 to September 2016, I was a post-doctoral student in the [Center for Environmental and Climate Research](Since 2017, I'm an assistant professor (maître de conférence) at Laboratoire Paul Painlevé (Université of Lille).
 ) at Lund University (Sweden). I was working on ecosystem services modelling at the landscape scale.
 
-From April 2014 to May 2015, I was a post-doctoral student at the Institut de Modélisation des Systèmes Vivants ([IMSV](https://www.universite-paris-saclay.fr/en/research/project/lidex-imsv), Paris-Saclay). I was working on the modelling of genetic variability in plant populations.
+From April 2014 to May 2015, I was a post-doctoral student at the Institut de Modélisation des Systèmes Vivants ([IMSV](https://www.universite-paris-saclay.fr/en/research/project/lidex-imsv), Paris-Saclay). I was working on modelling of genetotypic variability in plant populations.
 
 From 2010 to 2014, I was a PhD student in Ecole Centrale Paris, in the [Digiplante](http://digiplante.mas.ecp.fr/) team of MAS laboratory. I defended my thesis on February 28th 2014. Here is a [link](https://tel.archives-ouvertes.fr/tel-00985747) to the manuscript (in french).
