@@ -4,6 +4,10 @@ title: Research
 subtitle: Publications and prepublications
 ---
 
+### Preprint
+
+1. **varTestnlme**: an R package for variance components testing in linear and nonlinear mixed-effects models. Baey, Kuhn. [arxiv](https://arxiv.org/abs/2007.04791)
+
 ### Publications
 
 1. Asymptotic distribution of likelihood ratio test statistics for variance components in nonlinear mixed effects models. Baey, Cournède, Kuhn. *Computational Statistics and Data Analysis*, 135:107-122, 2019 [[journal]](https://www.sciencedirect.com/science/article/pii/S0167947319300283?via%3Dihub) (arXiv version: [arXiv](https://arxiv.org/abs/1712.08567)).
