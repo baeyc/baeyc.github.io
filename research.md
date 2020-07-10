@@ -6,7 +6,7 @@ subtitle: Publications and prepublications
 
 ### Preprint
 
-1. **varTestnlme**: an R package for variance components testing in linear and nonlinear mixed-effects models. Baey, Kuhn. [arxiv](https://arxiv.org/abs/2007.04791)
+1. **varTestnlme**: an R package for variance components testing in linear and nonlinear mixed-effects models. Baey, Kuhn (2020). [arxiv](https://arxiv.org/abs/2007.04791)
 
 ### Publications
 
