@@ -6,7 +6,8 @@ subtitle: Publications and prepublications
 
 ### Preprint
 
-1. **varTestnlme**: an R package for variance components testing in linear and nonlinear mixed-effects models. Baey, Kuhn (2020). [arxiv](https://arxiv.org/abs/2007.04791)
+1. Verbal statistical learning: Prior knowledge impacts word identification but not metacognition. Zmuda, Baey, Mairano, Basirat (2020). 
+2. **varTestnlme**: an R package for variance components testing in linear and nonlinear mixed-effects models. Baey, Kuhn (2020). [arxiv](https://arxiv.org/abs/2007.04791)
 
 ### Publications
 
