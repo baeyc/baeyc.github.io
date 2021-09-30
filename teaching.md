@@ -11,7 +11,7 @@ Depuis septembre 2017, j'effectue mes enseignements à l'université de Lille. L
 - **M2 ISN** (Ingénierie Statistique et Numérique), module **Méthodes d'apprentissage** (20h de cours et 20h de TP). [Page Moodle](https://moodle.univ-lille.fr/course/view.php?id=1470).
    [Polycopié](files/Poly_AD.pdf).
  Lien vers les TP : [![Github](/img/GitHub-Mark-32px.png)](https://github.com/baeyc/tp-ad-m2isn)
-- **M1 Maths et Applications**, module **Statistiques computationnelles** (30h de cours, 48h de TD/TP).
+- **M1 Maths et Applications**, module **Statistiques computationnelles** (30h de cours, 48h de TD/TP). [Polycopié](files/Poly_StatComp.pdf).
 - **L3 MASS**, module **Tests d'hypothèses** (36h de TD). Lien vers les TP (en Python) : [![Github](/img/GitHub-Mark-32px.png)](https://github.com/baeyc/tpTestsL3MASS)
 
 ### 2019-2020
