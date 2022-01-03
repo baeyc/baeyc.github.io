@@ -13,6 +13,8 @@ I am interested in applied and computational statistics. More precisely, my rese
  - bayesian analysis and MCMC algorithms
  
  I've mostly worked with applications in medicine, agronomy, ecology, and plant science.
+ 
+ I'm currently part of the ANR-funded project [Stat4Plant](https://anr.fr/Projet-ANR-20-CE45-0012), coordinated by [Estelle Kuhn](http://genome.jouy.inra.fr/~ekuhn/).
 
   
 ### Curriculum
