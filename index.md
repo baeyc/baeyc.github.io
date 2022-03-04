@@ -14,9 +14,11 @@ I am interested in applied and computational statistics. More precisely, my rese
  
  I've mostly worked with applications in medicine, agronomy, ecology, and plant science.
  
- ### Current projects
+### Current projects
  
  I'm currently part of the ANR-funded project [Stat4Plant](https://stat4plant.mathnum.inrae.fr/), coordinated by [Estelle Kuhn](http://genome.jouy.inra.fr/~ekuhn/), and I also participate in the ANR-funded project [EntrainPark](https://anr.fr/Project-ANR-21-CE28-0011), coordinated by [Anahita Basirat](https://www.basirat.fr/index.html).
+ 
+ More details [here](https://baeyc.github.io/projects/).
 
   
 ### Curriculum
