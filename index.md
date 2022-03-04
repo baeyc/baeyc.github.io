@@ -4,17 +4,19 @@ title: Charlotte Baey
 subtitle: Assistant professor in Applied Statistics
 ---
 
-Since 2017, I'm an assistant professor (maître de conférence) at [Laboratoire Paul Painlevé](https://math.univ-lille1.fr/) (Université of Lille).
+Since 2017, I'm an assistant professor (maître de conférence) at [Laboratoire Paul Painlevé](https://math.univ-lille.fr/) (Université de Lille).
 I am interested in applied and computational statistics. More precisely, my research interests lie in:
- - parametric estimation
+ - parametric estimation in complex models
  - nonlinear mixed-effects models
  - latent variables models
- - EM-type algorithms (MCMC-EM and SAEM)
+ - EM-type algorithms
  - bayesian analysis and MCMC algorithms
  
  I've mostly worked with applications in medicine, agronomy, ecology, and plant science.
  
- I'm currently part of the ANR-funded project [Stat4Plant](https://stat4plant.mathnum.inrae.fr/), coordinated by [Estelle Kuhn](http://genome.jouy.inra.fr/~ekuhn/).
+ ### Current projects
+ 
+ I'm currently part of the ANR-funded project [Stat4Plant](https://stat4plant.mathnum.inrae.fr/), coordinated by [Estelle Kuhn](http://genome.jouy.inra.fr/~ekuhn/), and I also participate in the ANR-funded project [EntrainPark](https://anr.fr/Project-ANR-21-CE28-0011), coordinated by [Anahita Basirat](https://www.basirat.fr/index.html).
 
   
 ### Curriculum
