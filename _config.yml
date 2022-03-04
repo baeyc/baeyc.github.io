@@ -20,7 +20,7 @@ description: Professional webpage
 
 # List of links in the navigation bar
 navbar-links:
-  Research: "research/"
+  Research: 
     - Publications: "publis"
     - Supervision: "supervision"
     - Research projects: "projects"
