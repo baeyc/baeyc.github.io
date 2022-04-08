@@ -8,6 +8,7 @@ subtitle: Publications and prepublications
 
 1. Verbal statistical learning: Prior knowledge impacts word identification but not metacognition. Zmuda, Baey, Mairano, Basirat (2020). [PsyArXiv](https://psyarxiv.com/uk2dr/)
 2. **varTestnlme**: an R package for variance components testing in linear and nonlinear mixed-effects models. Baey, Kuhn (2020). [arxiv](https://arxiv.org/abs/2007.04791)
+3. Calibration of a bumble bee foraging model using Approximate Bayesian Computation. Baey, Smith, Rundlöf, Olsson, Clough, Sahlin (2022). [arxiv](https://arxiv.org/abs/2204.03287)
 
 ### Publications
 
