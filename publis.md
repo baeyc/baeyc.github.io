@@ -6,11 +6,11 @@ subtitle: Publications and prepublications
 
 ### Preprints
 
-1. Calibration of a bumble bee foraging model using Approximate Bayesian Computation. Baey, Smith, Rundlöf, Olsson, Clough, Sahlin (2022). [arxiv](https://arxiv.org/abs/2204.03287)
-2. Verbal statistical learning: Prior knowledge impacts word identification but not metacognition. Zmuda, Baey, Mairano, Basirat (2020). [PsyArXiv](https://psyarxiv.com/uk2dr/)
+2. Verbal statistical learning: Prior knowledge impacts word identification but not metacognition. Zmuda, Baey, Mairano, Basirat (2020). [[PsyArXiv]](https://psyarxiv.com/uk2dr/)
 
 ### Publications
 
+1. Calibration of a bumble bee foraging model using Approximate Bayesian Computation. Baey, Smith, Rundlöf, Olsson, Clough, Sahlin (2022). *Accepted in Ecological Modelling*. [[arxiv]](https://arxiv.org/abs/2204.03287)
 1. **varTestnlme**: an R package for variance components testing in linear and nonlinear mixed-effects models. Baey, Kuhn (2022). *Accepted in Journal of Statistical Software*. [[arxiv]](https://arxiv.org/abs/2007.04791)
 1. Asymptotic distribution of likelihood ratio test statistics for variance components in nonlinear mixed effects models. Baey, Cournède, Kuhn. *Computational Statistics and Data Analysis*, 135:107-122, 2019 [[journal]](https://www.sciencedirect.com/science/article/pii/S0167947319300283?via%3Dihub) (arXiv version: [[arXiv]](https://arxiv.org/abs/1712.08567)).
 1. Mixed-effects estimation in dynamic models of plant growth for the assessment of inter-individual variability. Baey, Mathieu, Jullien,Trevezas, and Cournède. *Journal of Agricultural, Biological and Environmental Statistics*, 23(2):208-232, 2018. [[journal]](https://link.springer.com/article/10.1007%2Fs13253-017-0307-4)
