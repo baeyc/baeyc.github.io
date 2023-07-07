@@ -6,12 +6,21 @@ subtitle: Liste de mes enseignements passés et présents
 
 
 Depuis septembre 2017, j'effectue mes enseignements à l'université de Lille. La plupart des enseignements listés ci-dessous ont une page [Moodle](https://moodle.univ-lille.fr/) associée.
+Ci-dessous les cours donnés sur le 5 dernières années.
+
+### 2022-2023
+- Délégation CNRS (6 mois)
+- **M1 Maths et Applications**, module **Statistiques computationnelles** (33h de cours, 24h de TD/TP). [Polycopié](files/Poly_StatComp.pdf).
+- **L2 Informatique**, module **Probabilités et Statistiques** (18h de TD)
+
+### 2021-2022
+Décharge pour congé maternité et délégation CNRS (6 mois)
 
 ### 2020-2021
 - **M2 ISN** (Ingénierie Statistique et Numérique), module **Méthodes d'apprentissage** (20h de cours et 20h de TP). [Page Moodle](https://moodle.univ-lille.fr/course/view.php?id=1470).
    [Polycopié](files/Poly_AD.pdf).
  Lien vers les TP : [![Github](/img/GitHub-Mark-32px.png)](https://github.com/baeyc/tp-ad-m2isn)
-- **M1 Maths et Applications**, module **Statistiques computationnelles** (30h de cours, 48h de TD/TP). [Polycopié](files/Poly_StatComp.pdf).
+- **M1 Maths et Applications**, module **Statistiques computationnelles** (33h de cours, 24h de TD/TP). [Polycopié](files/Poly_StatComp.pdf).
 - **L3 MASS**, module **Tests d'hypothèses** (36h de TD). Lien vers les TP (en Python) : [![Github](/img/GitHub-Mark-32px.png)](https://github.com/baeyc/tpTestsL3MASS)
 
 ### 2019-2020
@@ -22,29 +31,8 @@ Depuis septembre 2017, j'effectue mes enseignements à l'université de Lille. L
 - **L3 Math**, module **Initiation à la statistique** (36h de TD).
 - **L3 MASS**, module **Tests d'hypothèses** (36h de TD). Lien vers les TP (en Python) : [![Github](/img/GitHub-Mark-32px.png)](https://github.com/baeyc/tpTestsL3MASS)
 
-### 2018-2019
+### 2018-2019 
 - **M2 ISN** (Ingénierie Statistique et Numérique), module **Analyse de données** (24h cours et 24h TD/TP). [Page Moodle](https://moodle.univ-lille.fr/course/view.php?id=1470). [Polycopié](files/Poly_AD.pdf).
 - **L3 Math**, module **Probabilités** (30h de TD).
 
-### 2017-2018
-- **M2 ISN** (Ingénierie Statistique et Numérique), module **Analyse de données** (24h cours et 24h TD/TP). [Page Moodle](https://moodle.univ-lille.fr/course/view.php?id=1470). [Polycopié](files/Poly_AD.pdf).
-- **M1 MAS** (Mathématiques Appliquées, Statistiques), module **Traitement Informatique de la Science des données** (36h de TD/TP). [Page Moodle](https://moodle.univ-lille.fr/course/view.php?id=9529).
-- **L3 Math**, module **Probabilités** (30h de TD).
-- **L3 Math**, module **Initiation à la statistique** (36h de TD)
 
-  
-Avant 2017, j'ai enseigné à l'université d'Evry, et à CentraleSupélec (anciennement Ecole Centrale Paris)
-  
-  
-### 2016-2017
- - **M1 Modélisation Statistique** (Université d'Evry), module **Modèles linéaires** (TP sous R)
- - **L3** (CentraleSupélec), module **Statistiques**
- - **L1 Biologie** (Université d'Evry), module de **Probabilités**
-
-### 2014-2015
- - **M1** (École Centrale Paris), module **Statistiques avancées** (TP sous R).
-
-### 2010-2011 à 2013-2014
- - **L3** (École Centrale Paris), module **Analyse**
- - **L3** (École Centrale Paris), module **Probabilités**
- - **L3** (École Centrale Paris), module **Statistiques**
