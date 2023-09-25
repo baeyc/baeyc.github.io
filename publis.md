@@ -12,7 +12,7 @@ subtitle: Publications and prepublications
 ### Publications
 
 1. Efficient preconditioned stochastic gradient descent for estimation in latent variable models. C. Baey, M. Delattre, E. Kuhn, J.B. Leger, S. Lemler. *International Conference in Machine Learning (ICML)*, 2023. [[OpenReview]](https://openreview.net/pdf?id=ikbUw7okHD)
-1. **varTestnlme**: an R package for variance components testing in linear and nonlinear mixed-effects models. C. Baey, E. Kuhn (2022). *Accepted in Journal of Statistical Software*. [[arxiv]](https://arxiv.org/abs/2007.04791)
+1. **varTestnlme**: an R package for variance components testing in linear and nonlinear mixed-effects models. C. Baey, E. Kuhn (2022). *Accepted in Journal of Statistical Software*. [[journal]](https://www.jstatsoft.org/article/view/v107i06)
 1. Calibration of a bumble bee foraging model using Approximate Bayesian Computation. C. Baey, H. G. Smith, M. Rundlöf, O. Olsson, Y. Clough, U. Sahlin. *Ecological Modelling*, 477: 110251, 2022. [[journal]](https://doi.org/10.1016/j.ecolmodel.2022.110251) 
 1. Asymptotic distribution of likelihood ratio test statistics for variance components in nonlinear mixed effects models. C. Baey, P.-H. Cournède, E. Kuhn. *Computational Statistics and Data Analysis*, 135:107-122, 2019 [[journal]](https://www.sciencedirect.com/science/article/pii/S0167947319300283?via%3Dihub) 
 1. Mixed-effects estimation in dynamic models of plant growth for the assessment of inter-individual variability. C. Baey, A. Mathieu, A. Jullien, S. Trevezas, and P.-H. Cournède. *Journal of Agricultural, Biological and Environmental Statistics*, 23(2):208-232, 2018. [[journal]](https://link.springer.com/article/10.1007%2Fs13253-017-0307-4)
