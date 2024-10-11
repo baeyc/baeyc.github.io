@@ -12,6 +12,7 @@ subtitle: Packages, code from published papers, ...
 
 ### Miscellaneous
 
+- Python code associated to the *ICML* paper (2024). [Github repository](https://github.com/baeyc/fisher-sgd-nlme)
 - R code associated to the *CSDA* paper (2019) (empirical level and power for the LRT of variance components in mixed-effect models). [Github repository](https://github.com/baeyc/lrt-nlme)
 - R code associated to the *Environmental and Ecological Statistics* paper (2017) (Bayesian analysis of correlated data modelled through Archimedean copulas). [Github repository](https://github.com/baeyc/floral-coverage)
 - R code associated to the *Ecology and Evolution* paper (2017) available in the supporting information (pollination model and spatial analyses).
