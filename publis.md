@@ -7,7 +7,8 @@ subtitle: Publications and prepublications
 ### Preprints
 
 1. Estimation of ratios of normalizing constants using stochastic approximation : the SARIS algorithm. T. Guédon, C. Baey, E. Kuhn (2024). [[arxiv]](https://arxiv.org/abs/2408.13022)
-2. Verbal statistical learning: Prior knowledge impacts word identification but not metacognition. Zmuda, Baey, Mairano, Basirat (2020). [[PsyArXiv]](https://psyarxiv.com/uk2dr/)
+2. Assessing Inter-Individual Genetic Variability in Peach Sugar Metabolism through Reliable Parameter Estimation of a Kinetic Model. H. Kanso, M.-M. Memah, V. Baldazzi, B. Quilot-Turion, C. Baey (2023). [[bioRxiv]](https://www.biorxiv.org/content/10.1101/2023.08.10.552764v1.full)
+3. Verbal statistical learning: Prior knowledge impacts word identification but not metacognition. Zmuda, Baey, Mairano, Basirat (2020). [[PsyArXiv]](https://psyarxiv.com/uk2dr/)
 
 ### Publications
 
