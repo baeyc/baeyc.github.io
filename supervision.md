@@ -6,8 +6,8 @@ title: Supervision
 
 ### PhD student
 
- - Tom Guédon (co-supervised with Estelle Kuhn), from November 2021
-
+ - [Tom Guédon](https://sites.google.com/view/tomguedon/presentation) (co-supervised with Estelle Kuhn), Nov. 2021 - Dec 2024. Title: *Tests des composantes de la variance dans les modèles à effets mixtes pour des petits échantillons. Application à l’étude de la variabilité génotypique chez Arabidopsis thaliana.*
+The PhD defense took place on December 5th 2024 (IMO, Paris-Saclay). 
 
 ### Master students
 
