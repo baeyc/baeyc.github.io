@@ -15,7 +15,7 @@ I am interested in applied and computational statistics. More precisely, my rese
  I've mostly worked with applications in medicine, agronomy, ecology, and plant science.
 
 ### News
-<img align="left" width=100px style="float:left" style="margin:20px" style="padding-right:10px" src="files/PiDayavecElles.png"> 
+<img align="left" width=100px style="float:left" style="margin:20px" style="padding-right:50px" src="files/PiDayavecElles.png"> 
 
  - March 14th 2025 : let's celebrate international ![\\pi](https://latex.codecogs.com/png.latex?%5Cpi "\pi")  day and women in maths! Evénement à destination des étudiant.e.s de licence, autour d"un exposé grand public, d'une table ronde sur les métiers des mathématiques et de l'exposition [*Mathématique, informatique, avec elles !*](https://femmes-et-maths.fr/femmes-en-maths/maths-info-avec-elles/). Inscription et programme [ici](https://www.mathconf.org/lilloises2025).
  
