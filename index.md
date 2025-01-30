@@ -15,16 +15,12 @@ I am interested in applied and computational statistics. More precisely, my rese
  I've mostly worked with applications in medicine, agronomy, ecology, and plant science.
 
 ### News
-<img align="left" width="100" src="files/PiDayavecElles.png"> 
- - March 14th 2025 : let's celebrate international $\pi$ day and women in maths! Evénement à destination des étudiant.e.s de licence, autour d"un exposé grand public, d'une table ronde sur les métiers des mathématiques et de l'exposition [*Mathématique, informatique, avec elles !*](https://femmes-et-maths.fr/femmes-en-maths/maths-info-avec-elles/). Inscription et programme [ici](https://www.mathconf.org/lilloises2025).
+<img align="left" width=100px style=float:left src="files/PiDayavecElles.png" margin-right=20px> 
 
+ - March 14th 2025 : let's celebrate international ![\\pi](https://latex.codecogs.com/png.latex?%5Cpi "\pi")  day and women in maths! Evénement à destination des étudiant.e.s de licence, autour d"un exposé grand public, d'une table ronde sur les métiers des mathématiques et de l'exposition [*Mathématique, informatique, avec elles !*](https://femmes-et-maths.fr/femmes-en-maths/maths-info-avec-elles/). Inscription et programme [ici](https://www.mathconf.org/lilloises2025).
  
-
-</br>
-</br>
-</br>
-</br>
  - December 5th 2024 : PhD defense of Tom Guédon (at Institut Mathématique d'Orsay).
+
  
 ### Current projects
  
