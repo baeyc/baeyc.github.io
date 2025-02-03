@@ -9,7 +9,7 @@ Depuis septembre 2017, j'effectue mes enseignements à l'université de Lille. L
 
 ### 2024-2025
 - **M1 Maths et Applications**, module **Statistiques computationnelles** (33h de cours, 48h de TD/TP). [Polycopié](files/Poly_StatComp.pdf).
-- **M1 Maths et Applications**, module **Statistiques mathématiques** (30h de TD). [Polycopié](files/Poly_StatComp.pdf).
+- **M1 Maths et Applications**, module **Statistiques mathématiques** (30h de TD). 
 - **M2 MIASHS**, module **Analyse de données 3** (méthodes de Monte-Carlo et modèles de mélange) (27h de CM/TD).
 - **L2 Informatique**, module **Probabilités et Statistiques** (18h de TD)
 
