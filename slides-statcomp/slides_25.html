@@ -175,7 +175,6 @@ MathJax.Hub.Config({
 ---
 # Sommaire
 
-&lt;/br&gt;
 **1. Méthodes de ré-échantillonnage**
   - [Cours 1](#c1) (13/01/2025)
   - [Cours 2](#c2) (14/01/2025)
@@ -189,6 +188,10 @@ MathJax.Hub.Config({
   - [Cours 8](#c8) (04/02/2025)
   - [Cours 9](#c9) (10/02/2025)
   - [Cours 10](#c10) (11/02/2025)
+
+**3. Méthodes MCMC**
+  - [Cours 11](#c11) (24/02/2025)
+  - [Cours 12](#c12) (25/02/2025)
 
 ---
 name: c1
@@ -1992,6 +1995,408 @@ Approximation de `\(c^*\)` : 0.0363636.
 
 &lt;span style="color:#16A085"&gt;**fin du cours 10 (11/02/2025)**&lt;/span&gt;
 
+
+
+---
+name: c11
+class: inverse, middle, center
+
+# 5. Chaînes de Markov
+
+---
+# Introduction
+
+ - Quelques éléments théoriques pour comprendre les algos MCMC
+
+ - Une chaîne de Markov est une séquence de variables aléatoires qui évolue avec le temps, et dont la probabilité de transition ne dépend que de la valeur de la chaîne à l'instant présent
+
+ - chaîne à espace d'états discret ou continu, à temps discret ou continu
+
+ &amp;rarr; on va se concentrer sur le cas espace d'états continu et temps discret
+
+
+---
+# Introduction
+
+Pourquoi s'intéresse t-on aux chaînes de Markov ?
+
+ - pour générer des variables aléatoires *dépendantes* selon une chaîne de Markov convergente dont la loi stationnaire est la loi qui nous intéresse
+
+ - le théorème ergodique nous permet alors d'utiliser cet échantillon dépendant pour approcher les mêmes quantités qu'avec le MC classique
+
+---
+# Introduction
+
+
+Différence avec les méthodes de Monte Carlo : la façon dont on explore l'espace.
+
+Exemple avec l'approximation du nombre `\(\pi\)`.
+--
+
+&lt;img src="slides_25_files/figure-html/unnamed-chunk-106-1.png" width="750px" style="display: block; margin: auto;" /&gt;
+
+
+---
+class: my-one-page-font
+# Noyau de transition
+
+ - chaîne de Markov `\(X_1, X_2, \dots, X_n\)` de noyau de transition `\(K\)` :
+ `$$X_n | X_{n-1}, X_{n-2}, \dots, X_2, X_1 \sim K(X_{n-1},X_{n})$$`
+
+--
+
+ - chaîne homogène en temps si `\(\mathbb{P}(X_n \in A | X_{n-1} = x) = \mathbb{P}(X_1 \in A | X_0 = x)\)`
+
+--
+
+ - exemple : marche aléatoire simple
+ `$$X_n = X_{n-1} + \varepsilon_n, \quad \varepsilon \sim \mathcal{N}(0,1)$$`
+
+ le noyau de transition `\(K(X_{n-1},X_n)\)` est celui de la loi `\(\mathcal{N}(X_{n-1},1)\)`.
+&lt;img src="slides_25_files/figure-html/unnamed-chunk-107-1.png" width="360" style="display: block; margin: auto;" /&gt;
+
+---
+# Noyau de transition
+
+ - Propriété : `\(\forall n &gt; 1, \forall x \in E, \forall A \in \mathcal{E}, \quad K^n(x,A) := \int_E K^{n-1}(y,A) K(x,dy)\)`
+
+ &amp;rarr; pour passer de l'état `\(x\)` à l'ensemble `\(A\)` en `\(n\)` étapes, on passe d'abord de `\(x\)` à `\(y\)` en une étape, puis de `\(y\)` à `\(A\)` en `\(n-1\)` étapes
+
+ - Plus généralement, équation de Chapman-Kolmogorov :
+
+ `\(K^{n+m}(x,A) := \int_E K^{m}(y,A) K^n(x,dy)\)`
+
+ &amp;rarr; pour passer de `\(x\)` à `\(A\)` en `\(n+m\)` étapes, il faut passer par un état intermédiaire `\(y\)` à l'étape `\(n\)`
+
+---
+# Temps d'arrêt et nombre de passages
+
+ - pour un ensemble `\(A\)`, on définit le *temps d'arrêt* en `\(A\)` par :
+
+ `\(\tau_A = \inf \{ n | X_n \in A \}\)`
+ &amp;rarr; c'est le premier temps d'atteinte de l'ensemble `\(A\)`
+ 
+&lt;img src="slides_25_files/figure-html/unnamed-chunk-108-1.png" width="360" style="display: block; margin: auto;" /&gt;
+ - de même on définit le *nombre de passages* en `\(A\)` par :
+  `$$\eta_A = \sum_{n=1}^{+\infty} \mathbb{1}_{X_n \in A}$$`
+
+---
+# Mesure invariante
+
+`\(\pi\)` est une mesure de probabilité **invariante** pour la chaîne de noyau `\(K\)` si
+ `$$\forall B \in \mathcal{E}, \pi(B) = \int_E K(x,B) \pi(dx)$$`
+
+ - exemple : `\(X_n = \rho X_{n-1} + \varepsilon_n\)`, avec `\(\varepsilon \sim \mathcal{N}(0,1)\)`
+
+--
+
+
+``` r
+rho &lt;- 0.75; X &lt;- rep(0,10000)
+for (i in 1:10000){
+  Xold &lt;- ifelse(i==1,rnorm(1,0,1/(1-0.75^2)),X[i-1])
+  X[i] &lt;- rho*Xold + rnorm(1)}
+```
+
+&lt;img src="slides_25_files/figure-html/unnamed-chunk-110-1.png" width="360" style="display: block; margin: auto;" /&gt;
+
+---
+# Irréductibilité
+
+ - mesure la sensibilité de la chaîne aux conditions initiales
+
+ - très important en pratique pour les algorithmes MCMC car apporte une garantie de convergence quel que soit le point de départ
+
+ - dans le cas espace d'états discret, la chaîne est dite irréductible si tous les états communiquent
+
+ - définition équivalente : `\(\forall x, \forall A\)` t.q. `\(\mu(A)&gt;0\)`, `\(\mathbb{E}_x(\eta_A) &gt; 0\)`
+
+ - &lt;span style="color:red"&gt;condition suffisante : `\(K(x,\cdot) &gt; 0\)`&lt;/span&gt;
+
+---
+# Apériodicité
+
+ - Irréductible : tout ensemble de mesure non nulle peut être atteint à partir de n'importe quel point de `\(E\)` en un temps fini
+
+--
+
+ - Mais la chaîne peut rester bloquée dans un cycle
+
+--
+
+ &amp;rarr; apériodicité
+
+--
+
+`\(\Rightarrow\)` irréductibilité et apériodicité assurent que la chaîne peut aller de n'importe quel point `\(x\)` à n'importe quel point `\(y\)` **en une seule itération**
+
+---
+# Récurrence
+
+ - Déplacement possible de `\(x\)` à `\(y\)` en une étape, pour tous `\(x\)` et `\(y\)`
+
+--
+
+ - Mais ces déplacements doivent être possibles **une infinité de fois**
+
+ &amp;rarr; récurrence
+
+---
+# Résumé
+
+ - Si une chaîne de Markov est récurrente et admet une loi stationnaire, cette loi est également la loi limite de la chaîne
+
+ - C'est ce qu'on appelle l'**ergodicité**
+
+ - Alors, si on peut générer une chaîne de Markov dont la loi stationnaire est la loi cible, on obtient un échantillon .red[**(non i.i.d.)**] selon cette loi
+
+ &amp;rarr; théorème ergodique
+ 
+ 
+---
+class: inverse, middle, center
+
+# 6. Algorithmes MCMC
+
+---
+# Introduction
+
+**Objectif** : évaluer `\(\int h(x) f(x) dx\)`
+
+ - Idée : construire une chaîne de Markov ergodique, admettant pour loi stationnaire la loi cible `\(f\)`
+
+ - Utiliser les réalisations de la chaîne pour approcher l'intégrale par une moyenne empirique
+
+ - Intérêts :
+  - réduction de variance
+  - plus facile à mettre en place
+  - plus adapté en grande dimension
+
+ - Inconvénients :
+  - vitesse de convergence qui peut être lente
+  - forte corrélation possible dans l'échantillon
+
+---
+# Algorithme de Metropolis-Hastings
+
+ - Article fondateur en 1953 par N Metropolis, A Rosenbluth, M Rosenbluth, A Teller, E Teller pour des distributions apparaissant en physique nucléaire
+
+&lt;img src="slides_25_files/figure-html/unnamed-chunk-111-1.png" width="800px" style="display: block; margin: auto;" /&gt;
+
+ - Généralisé en 1970 par W Hastings pour des distributions quelconques
+
+&lt;img src="slides_25_files/figure-html/unnamed-chunk-112-1.png" width="150px" style="display: block; margin: auto;" /&gt;
+---
+# Algorithme de  Metropolis-Hastings
+
+Construction d'une chaîne de Markov selon l'algorithme suivant :
+
+ 1. **initialisation** : `\(X_0\)`
+ 2. **pour** `\(n=1, \dots, N\)` :
+  - `\(Y_n \sim q(\cdot | X_{n-1})\)` où `\(q\)` est la *loi de proposition*
+  - `\(\begin{equation}X_n = \begin{cases}Y_n &amp; \text{avec probabilité } \alpha(X_{n-1},Y_n) \\ X_{n-1} &amp; \text{avec probabilité } 1-\alpha(X_{n-1},Y_n) \end{cases}\end{equation}\)`
+
+  où :
+  $$\alpha(x,y) = \min \left(1, \frac{f(y) q(x | y)}{f(x) q(y | x)} \right) $$
+
+
+RQ : fonctionne si on connaît `\(f\)` et/ou `\(q\)` à une constante près.
+
+---
+# Algorithme de Metropolis-Hastings
+
+**Exemple** : loi cible `\(f\)` loi `\(\mathrm{Beta}(2.5,8)\)` et loi de proposition `\(q\)` la loi `\(\mathcal{U}([0,1])\)`
+
+
+``` r
+a=2.5; b=8
+N &lt;- 5000
+X &lt;- rep(0,N); X[1]=runif(1) # initialisation
+for (i in 2:N){
+  Y &lt;- runif(1) # candidat généré selon la loi q
+  alpha &lt;- dbeta(Y,a,b)/dbeta(X[i-1],a,b)
+  U &lt;- runif(1)
+  X[i] &lt;- ifelse(U&lt;alpha,Y,X[i-1])}
+```
+
+&lt;img src="slides_25_files/figure-html/unnamed-chunk-114-1.png" width="576" style="display: block; margin: auto;" /&gt;
+
+&lt;span style="color:#16A085"&gt;**fin du cours 11 (24/02/2025)**&lt;/span&gt;
+
+---
+name: c12
+# Algorithme de Metropolis-Hastings
+
+Construction d'une chaîne de Markov (**dans** `\(\mathbb{R}^p\)`) selon l'algorithme suivant :
+
+ 1. **initialisation** : `\(X_0\)`
+ 2. **pour** `\(n=1, \dots, N\)` :
+  - `\(Y_n \sim q(\cdot | X_{n-1})\)` où `\(q\)` est la *loi de proposition*
+
+  - `\(\begin{equation}X_n = \begin{cases}Y_n &amp; \text{avec probabilité } \alpha(X_{n-1},Y_n) \\ X_{n-1} &amp; \text{avec probabilité } 1-\alpha(X_{n-1},Y_n) \end{cases}\end{equation}\)`
+
+  où : `\(\alpha(X_{n-1},Y_n) = \min \left(1, \frac{f(Y_n)}{f(X_{n-1})}\frac{ q(X_{n-1} | Y_n)}{q(Y_n | X_{n-1})} \right)\)`
+
+
+Toutes choses égales par ailleurs, `\(\alpha(X_{n-1},Y_n)\)` augmente :
+- avec le ratio `\(\frac{f(Y_n)}{f(X_{n-1})}\)`,
+- avec le ratio `\(\frac{q(X_{n-1} | Y_n)}{q(Y_n | X_{n-1})}\)`
+- &lt;span style="color:red"&gt;**un candidat t.q. `\(\frac{f(Y_n)}{q(Y_n | X_{n-1})} &gt; \frac{f(X_{n-1})}{q(X_{n-1} | Y_n)}\)` est toujours accepté**&lt;/span&gt;
+
+---
+# Algorithme de Metropolis-Hastings
+
+**Exemple** : loi cible `\(f\)` loi `\(\mathrm{Beta}(2.5,8)\)` et loi de proposition `\(q\)` la loi `\(\mathcal{U}([0.8X_{n-1},1.2X_{n-1}])\)`
+
+--
+
+
+``` r
+set.seed(19022024)
+a=2.5; b=8
+N &lt;- 5000
+X &lt;- rep(0,N); X[1] &lt;- runif(1)
+for (i in 2:10){
+    Y &lt;- runif(1,0.8*X[i-1],1.2*X[i-1]) # candidat généré selon la loi q
+    alpha &lt;- (dbeta(Y,a,b)/dbeta(X[i-1],a,b)) *
+      (dunif(X[i-1],0.8*Y,1.2*Y)/dunif(Y,0.8*X[i-1],1.2*X[i-1]))
+    U &lt;- runif(1)
+    X[i] &lt;- ifelse(U&lt;alpha,Y,X[i-1])}
+print(X[1:10])
+```
+
+```
+##  [1] 0.7837793 0.7837793 0.8002693 0.7793696 0.7378524 0.6250122 0.6250122
+##  [8] 0.6016766 0.5871069 0.5538738
+```
+
+---
+# Algorithme de Metropolis-Hastings
+
+Etat courant : `\(X_{n-1} =\)` 0.5539, loi instrumentale : `\(\mathcal{U}\)`([0.44312,0.66468]).
+--
+&lt;img src="slides_25_files/figure-html/unnamed-chunk-116-1.png" width="432" style="display: block; margin: auto;" /&gt;
+
+--
+Candidat à l'itération `\(n\)` : `\(Y_n\)` = 0.6417618
+
+
+---
+# Algorithme de Metropolis-Hastings
+
+Etat courant : `\(X_{n-1} =\)` 0.5539, loi instrumentale : `\(\mathcal{U}\)`([0.44312,0.66468]).
+&lt;img src="slides_25_files/figure-html/unnamed-chunk-117-1.png" width="432" style="display: block; margin: auto;" /&gt;
+Candidat à l'itération `\(n\)` : `\(Y_n\)` = 0.6417618
+
+`\(\frac{f(Y_n)}{q(Y_n | X_{n-1})}\)` = 0.014588, `\(\frac{f(X_{n-1})}{q(X_{n-1} | Y_{n})}\)` = 0.062954, `\(\frac{f(Y_n)}{f(X_{n-1})}\)` = 0.268499 et `\(\frac{q(X_{n-1} | Y_n)}{q(Y_n | X_{n-1})}\)` = 0.863052
+
+`\(\alpha(X_{n-1},Y_n)\)` = 0.2317289
+
+on génère `\(U \sim \mathcal{U}([0,1])\)` : 0.2655087
+
+
+---
+# Algorithme de Metropolis-Hastings
+
+Preuve de convergence :
+--
+
+ 1. noyau de transition de la chaîne
+--
+
+ 2. condition suffisante d'existence d'une loi stationnaire : *detailed-balanced condition*
+--
+ 
+ 3. condition suffisante pour l'apériodicité
+--
+ 
+ 4. condition suffisante pour l'irréductibilité
+
+--
+
+Choix de la loi `\(q\)` : deux cas particuliers
+ - loi instrumentale indépendante de `\(X_{n-1}\)`
+ - loi instrumentale symétrique 
+
+---
+# MH à loi instrumentale indépendante
+
+Cas où `\(q\)` est indépendant de `\(X_{n-1}\)` &amp;rarr; `\(q(x | y) = q(x)\)`
+
+ - la loi instrumentale ne dépend pas de l'état courant de la chaîne.
+ - voir l'exemple de la slide 141 (loi cible `\(\text{Beta}(2.5,8)\)` et loi de proposition `\(q\)` la loi `\(\mathcal{U}([0,1])\)`)
+ - la probabilité d'acceptation s'écrit : `\(\alpha(X_{n-1},Y_n) = \min \left(1, \frac{f(Y_n)}{f(X_{n-1})}\frac{ q(X_{n-1})}{q(Y_n)} \right)\)`
+
+ - s'il existe `\(M\)` telle que `\(f\leq Mq\)` alors la chaîne est *uniformément ergodique* (propriété très forte)
+ - comparaison avec l'algorithme d'acceptation-rejet &amp;rarr; voir TD
+
+---
+# MH à loi instrumentale symétrique
+
+Cas où `\(q\)` est symétrique en `\(x\)` et `\(y\)` &amp;rarr; `\(q(y | x) = q(x | y)\)`
+
+ - souvent on a `\(q(y | x) = q(|y - x|)\)`
+ &amp;rarr; exemple de la marche aléatoire symétrique
+ 
+ - voir l'exemple de la slide 143 (loi cible `\(\text{Beta}(2.5,8)\)` et loi de proposition `\(q\)` la loi `\(\mathcal{U}([0.8X_{n-1},1.2X_{n-1}])\)`)
+ - la probabilité d'acceptation se simplifie : `\(\alpha(X_{n-1},Y_n) = \min \left(1, \frac{f(Y_n)}{f(X_{n-1})}\right)\)`
+
+ - si `\(\text{supp}(f) \subset \text{supp}(q)\)` alors la chaîne est ergodique de mesure invariante `\(f\)`
+
+ - RQ : si `\(f\)` est à support dans `\(\mathbb{R}\)`, la chaîne ne pourra jamais être uniformément ergodique
+
+ - .red[**attention au choix de la variance de la marche aléatoire**]
+
+---
+# MH à marche aléatoire (MH-MA)
+
+**Exemple** : loi cible `\(f\)` la loi normale centrée réduite, et loi instrumentale `\(q\)` la loi normale centrée en `\(X_{n-1}\)` et de variance `\(\sigma^2\)`, pour différentes valeurs de `\(\sigma\)`.
+
+
+``` r
+X1 &lt;- X2 &lt;- X3 &lt;- rep(0,2000);
+for (i in 2:2000){
+  # chaine 1
+  Y &lt;- rnorm(1,X1[i-1],0.1)
+  alpha &lt;- dnorm(Y)/dnorm(X1[i-1])
+  X1[i] &lt;- ifelse(runif(1)&lt;alpha,Y,X1[i-1])
+  # chaine 2
+  Y &lt;- rnorm(1,X2[i-1],2)
+  alpha &lt;- dnorm(Y)/dnorm(X2[i-1])
+  X2[i] &lt;- ifelse(runif(1)&lt;alpha,Y,X2[i-1])
+  # chaine 3
+  Y &lt;- rnorm(1,X3[i-1],15)
+  alpha &lt;- dnorm(Y)/dnorm(X3[i-1])
+  X3[i] &lt;- ifelse(runif(1)&lt;alpha,Y,X3[i-1])
+}
+```
+
+
+---
+# MH à marche aléatoire (MH-MA)
+
+
+&lt;img src="slides_25_files/figure-html/unnamed-chunk-119-1.png" width="1080" style="display: block; margin: auto;" /&gt;
+
+--
+
+&lt;img src="slides_25_files/figure-html/unnamed-chunk-120-1.png" width="1080" style="display: block; margin: auto;" /&gt;
+
+---
+# MH à marche aléatoire (MH-MA)
+
+Pour diagnostiquer une mauvaise exploration :
+- calculer le **taux d'acceptation** (la proportion de candidats ayant été acceptés)
+   - ne doit être ni trop haut, ni trop bas
+   - sur l'exemple précédent : 0.969, 0.505 et 0.0875 pour les chaînes 1, 2 et 3
+   - recommandation pratique : &lt;span style="color:#16A085"&gt; `\(\approx\)` 0.45 en dim 1 et 2, `\(\approx\)` 0.25 si `\(p&gt;2\)`&lt;/span&gt;
+--
+
+- étudier l'**autocorrélation** des réalisations de la chaîne (fonction `acf()` sous R, `plot_acf()` du module `statsmodels.graphics.tsaplots` sous Python)
+
+&lt;img src="slides_25_files/figure-html/unnamed-chunk-121-1.png" width="972" style="display: block; margin: auto;" /&gt;
+
+&lt;span style="color:#16A085"&gt;**fin du cours 12 (25/02/2025)**&lt;/span&gt;
     </textarea>
 <style data-target="print-only">@media screen {.remark-slide-container{display:block;}.remark-slide-scaler{box-shadow:none;}}</style>
 <script src="https://remarkjs.com/downloads/remark-latest.min.js"></script>
