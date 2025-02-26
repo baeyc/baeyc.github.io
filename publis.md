@@ -12,7 +12,7 @@ subtitle: Publications and prepublications
 
 ### Publications
 
-1. Bootstrap test procedure for variance components in nonlinear mixed effects models in the presence of nuisance parameters and singular Fisher Information Matrix. T. Guédon, C. Baey, E. Kuhn (2023). *Biometrika*, (to appear) 2024 [[journal]](https://academic.oup.com/biomet/advance-article-abstract/doi/10.1093/biomet/asae025/7693699), [[arxiv]](https://arxiv.org/abs/2306.10779)
+1. Bootstrap test procedure for variance components in nonlinear mixed effects models in the presence of nuisance parameters and singular Fisher Information Matrix. T. Guédon, C. Baey, E. Kuhn (2023). *Biometrika*, 111 (4):1331–1348, 2024 [[journal]](https://academic.oup.com/biomet/advance-article-abstract/doi/10.1093/biomet/asae025/7693699), [[arxiv]](https://arxiv.org/abs/2306.10779)
 1. Efficient preconditioned stochastic gradient descent for estimation in latent variable models. C. Baey, M. Delattre, E. Kuhn, J.B. Leger, S. Lemler. *International Conference in Machine Learning (ICML)*, 2023. [[OpenReview]](https://openreview.net/pdf?id=ikbUw7okHD)
 1. **varTestnlme**: an R package for variance components testing in linear and nonlinear mixed-effects models. C. Baey, E. Kuhn (2022). *Journal of Statistical Software*. [[journal]](https://www.jstatsoft.org/article/view/v107i06)
 1. Calibration of a bumble bee foraging model using Approximate Bayesian Computation. C. Baey, H. G. Smith, M. Rundlöf, O. Olsson, Y. Clough, U. Sahlin. *Ecological Modelling*, 477: 110251, 2022. [[journal]](https://doi.org/10.1016/j.ecolmodel.2022.110251) 
