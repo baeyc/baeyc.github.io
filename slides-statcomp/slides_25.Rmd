@@ -184,6 +184,7 @@ Sys.setenv('RETICULATE_PYTHON'='/usr/bin/python3')
 ---
 # Sommaire
 
+.pull-left[
 **1. Méthodes de ré-échantillonnage**
   - [Cours 1](#c1) (13/01/2025)
   - [Cours 2](#c2) (14/01/2025)
@@ -201,6 +202,11 @@ Sys.setenv('RETICULATE_PYTHON'='/usr/bin/python3')
 **3. Méthodes MCMC**
   - [Cours 11](#c11) (24/02/2025)
   - [Cours 12](#c12) (25/02/2025)
+]
+.pull-right[
+**3. Méthodes MCMC (suite)**
+  - [Cours 13](#c13) (04/03/2025)
+]
 
 ---
 name: c1
@@ -2814,3 +2820,673 @@ acf(X3)
 ```
 
 <span style="color:#16A085">**fin du cours 12 (25/02/2025)**</span>
+
+
+---
+name: c13
+
+# De MH à l'échantillonneur de Gibbs
+
+ - Algorithme générique qui fonctionne pour une grande classe de lois $f$
+ - Le choix de $q$ ne requiert pas une grande connaissance de $f$
+ - On peut améliorer l'efficacité des algorithmes (e.g. la convergence) en exploitant les caractéristiques de $f$
+
+ &rarr; algorithmes utilisant la forme de $f$ et sa géométrie
+
+---
+# Slice sampler
+
+> **Théorème** : simuler $X$ selon la loi $f$ est équivalent à simuler le couple $(X,U)$ selon la loi uniforme sur l'ensemble $\mathcal{D} = \{(x,u) : 0 \leq u \leq f(x)\}$
+
+*Preuve*
+
+--
+
+- Pour simuler $X$ selon la loi $f$, on peut alors simuler un point $(X,U)$ uniformément **sous le graphe** de la densité $f$ et garder uniquement l'abscisse des points (la loi marginale de $X$)
+
+- C'est déjà ce que l'on fait dans la méthode d'acceptation-rejet en simulant dans une région **plus grande** et en ne gardant que les points **sous la courbe**
+
+- L'algorithme du slice sampler permet d'atteindre le même objectif mais de façon plus efficace en proposant un déplacement de type marche aléatoire sur l'ensemble $\mathcal{D}$.
+
+---
+# Slice sampler
+
+Exemple de la loi $\text{Beta}(a,b)$. Avec l'acceptation-rejet (voir TD) :
+ - on simule $Y \sim \mathcal{U}([0,1])$
+ - puis $U \sim \mathcal{U}([0,M_{a,b}])$
+ - et on garde les couples $(Y,U)$ tels que $U < f(Y)$
+ 
+```{r, echo=FALSE, fig.height=5,fig.width=7,fig.retina=2,fig.align='center'}
+set.seed(0)
+a <- 5; b <- 2
+mode <- (a-1)/(a+b-2)
+Mab <- dbeta(mode,a,b)
+n <- 1000
+Y <- runif(n,0,1)
+U <- runif(n,0,Mab)
+accept <- U<dbeta(Y,a,b)
+X <- Y[accept]
+Ux <- U[accept]
+plot(Y,U,pch=19) 
+lines(seq(0,1,0.01),dbeta(seq(0,1,0.01),a,b),col="red",lwd=4) # on veut les points sous la courbe rouge
+points(X,Ux,pch=19,col="red") 
+``` 
+
+&rarr; on perd $1-1/M$ soit environ `r 100*(1 - round(1/Mab,3))`% des points ...
+
+---
+# Slice sampler
+
+En pratique :
+  1. **initialisation** : $X_0=x_0$
+  2. **pour** $n=1,\dots,N$
+    - $U_n \sim \mathcal{U}([0,f(x_{n-1})])$
+    - $X_n \sim \mathcal{U}(\mathcal{D}_n)$ où
+    $\mathcal{D}_n = \{x : f(x) \geq u_n\}$
+
+```{r, out.width='500px', echo=FALSE, fig.align='center'}
+magick::image_read("/home/charlotte/Documents/Enseignement/Lille/M1 ISN /Statistiques computationnelles/Poly/slice_sampler.png")
+```
+*(source : Andrieu et al. 2003)*
+
+
+<span style="color:red">**RQ. : on peut utiliser l'algorithme si $f$ est connue à une constante multiplicative près**</span>
+
+
+---
+# Slice sampler
+
+**Exemple** : on veut simuler selon la loi $\mathcal{N}(0,1)$, de densité $f(x) \propto e^{-x^2/2}$
+
+ &rarr; à l'itération $n$, on a $X_{n-1}=x_{n-1}$ :
+  - on génère $U_n \sim \mathcal{U}([0,\exp(-x_{n-1}^2/2)])$
+  - on détermine l'ensemble $\mathcal{D}_n = \{x : e^{-x^2/2} > u_n\}$
+--
+
+  - on simule $X_n \sim \mathcal{U}([-\sqrt{-2 \log(u_n)} ; \sqrt{-2 \log(u_n)}])$
+
+--
+```{r, echo=FALSE, fig.height=5,fig.width=7,fig.retina=2,fig.align='center'}
+set.seed(0)
+x <- seq(-3,3,0.01)
+plot(x,exp(-x^2/2),type="l",xlab="",ylab="",axes=FALSE,ylim=c(0,sqrt(2*pi)*0.45))
+axis(1, pos=0)
+axis(2, pos=0, labels=FALSE,at=c(0,sqrt(2*pi)*0.5))
+X1<-rnorm(1)
+points(X1,0,pch=19)
+text(X1,par("usr")[3]-0.01,labels="X(n-1)",xpd=NA,cex=0.75)
+```
+
+---
+# Slice sampler
+
+**Exemple** : on veut simuler selon la loi $\mathcal{N}(0,1)$, de densité $f(x) \propto e^{-x^2/2}$
+
+ &rarr; à l'itération $n$, on a $X_{n-1}=x_{n-1}$ :
+  - on génère $U_n \sim \mathcal{U}([0,\exp(-x_{n-1}^2/2)])$
+  - on détermine l'ensemble $\mathcal{D}_n = \{x : e^{-x^2/2} > u_n\}$
+  - on simule $X_n \sim \mathcal{U}([-\sqrt{-2 \log(u_n)} ; \sqrt{-2 \log(u_n)}])$
+
+
+```{r, echo=FALSE, fig.height=5,fig.width=7,fig.retina=2,fig.align='center'}
+set.seed(0)
+x <- seq(-3,3,0.01)
+plot(x,exp(-x^2/2),type="l",xlab="",ylab="",axes=FALSE,ylim=c(0,sqrt(2*pi)*0.45))
+axis(1, pos=0)
+axis(2, pos=0, labels=FALSE,at=c(0,sqrt(2*pi)*0.5))
+X1<-rnorm(1)
+points(X1,0,pch=19)
+text(X1,par("usr")[3]-0.01,labels="X(n-1)",xpd=NA,cex=0.75)
+segments(X1,0,X1,sqrt(2*pi)*dnorm(X1),lty=2)
+U1 <- runif(1,0,exp(-X1^2/2))
+points(X1,U1,pch=4,lwd=3)
+text(X1+0.17,U1,labels="Un",xpd=NA,cex=0.75)
+```
+
+
+---
+# Slice sampler
+
+**Exemple** : on veut simuler selon la loi $\mathcal{N}(0,1)$, de densité $f(x) \propto e^{-x^2/2}$
+
+ &rarr; à l'itération $n$, on a $X_{n-1}=x_{n-1}$ :
+  - on génère $U_n \sim \mathcal{U}([0,\exp(-x_{n-1}^2/2)])$
+  - on détermine l'ensemble $\mathcal{D}_n = \{x : e^{-x^2/2} > u_n\}$
+  - on simule $X_n \sim \mathcal{U}([-\sqrt{-2 \log(u_n)} ; \sqrt{-2 \log(u_n)}])$
+
+
+```{r, echo=FALSE, fig.height=5,fig.width=7,fig.retina=2,fig.align='center'}
+set.seed(0)
+x <- seq(-3,3,0.01)
+plot(x,exp(-x^2/2),type="l",xlab="",ylab="",axes=FALSE,ylim=c(0,sqrt(2*pi)*0.45))
+axis(1, pos=0)
+axis(2, pos=0, labels=FALSE,at=c(0,sqrt(2*pi)*0.5))
+X1<-rnorm(1)
+points(X1,0,pch=19)
+text(X1,par("usr")[3]-0.01,labels="X(n-1)",xpd=NA,cex=0.75)
+segments(X1,0,X1,sqrt(2*pi)*dnorm(X1),lty=2)
+U1 <- runif(1,0,exp(-X1^2/2))
+points(X1,U1,pch=4,lwd=3)
+text(X1+0.17,U1,labels="Un",xpd=NA,cex=0.75)
+segments(-sqrt(-2*log(U1)),U1,sqrt(-2*log(U1)),U1,lty=3)
+#segments(-sqrt(-2*log(U1)),0,-sqrt(-2*log(U1)),U1,lty=3)
+#segments(sqrt(-2*log(U1)),0,sqrt(-2*log(U1)),U1,lty=3)
+segments(-sqrt(-2*log(U1)),0,sqrt(-2*log(U1)),0,col="red",lwd=2)
+```
+
+---
+# Slice sampler
+
+**Exemple** : on veut simuler selon la loi $\mathcal{N}(0,1)$, de densité $f(x) \propto e^{-x^2/2}$
+
+ &rarr; à l'itération $n$, on a $X_{n-1}=x_{n-1}$ :
+  - on génère $U_n \sim \mathcal{U}([0,\exp(-x_{n-1}^2/2)])$
+  - on détermine l'ensemble $\mathcal{D}_n = \{x : e^{-x^2/2} > u_n\}$
+  - on simule $X_n \sim \mathcal{U}([-\sqrt{-2 \log(u_n)} ; \sqrt{-2 \log(u_n)}])$
+
+```{r, echo=FALSE, fig.height=5,fig.width=7,fig.retina=2,fig.align='center'}
+set.seed(0)
+x <- seq(-3,3,0.01)
+plot(x,exp(-x^2/2),type="l",xlab="",ylab="",axes=FALSE,ylim=c(0,sqrt(2*pi)*0.45))
+axis(1, pos=0)
+axis(2, pos=0, labels=FALSE,at=c(0,sqrt(2*pi)*0.5))
+X1<-rnorm(1)
+points(X1,0,pch=19)
+text(X1,par("usr")[3]-0.01,labels="X(n-1)",xpd=NA,cex=0.75)
+segments(X1,0,X1,sqrt(2*pi)*dnorm(X1),lty=2)
+U1 <- runif(1,0,exp(-X1^2/2))
+points(X1,U1,pch=4,lwd=3)
+text(X1+0.17,U1,labels="Un",xpd=NA,cex=0.75)
+segments(-sqrt(-2*log(U1)),U1,sqrt(-2*log(U1)),U1,lty=3)
+segments(-sqrt(-2*log(U1)),0,sqrt(-2*log(U1)),0,col="red",lwd=2)
+X2<-runif(1,-sqrt(-2*log(U1)),sqrt(-2*log(U1)))
+points(X2,0,pch=19,lwd=3,col="red")
+text(X2,par("usr")[3]-0.01,labels="X(n)",xpd=NA,cex=0.75)
+```
+
+
+---
+# Slice sampler
+
+```{r, out.width='500px', echo=FALSE, fig.align='center'}
+magick::image_read("/home/charlotte/Documents/Enseignement/Lille/M1 ISN /Statistiques computationnelles/Poly/slice_sampler_in_action.png")
+```
+.center[*(source : Bayesian Statistics Group)*]
+
+.pull-left[
+.green[**Avantages**]
+- tirages selon des lois uniformes
+- pas d'hypothèses spécifiques sur $f$
+- $f$ peut être connue à une constante près
+]
+.pull-right[
+.red[**Inconvénients**]
+- calcul de $\mathcal{D}_n$ peut être délicat
+- extensions possibles dans ce cas qui peuvent être plus lourdes à implémenter
+]
+
+---
+# Slice sampler
+
+Exemple avec la loi $\text{Beta}(2,5)$, on a $\mathcal{D_n} = \{(x,u) : C x (1-x)^4 > u_n \}$.
+
+
+```{r}
+set.seed(0)
+X <- runif(1)
+U <- runif(1,0,dbeta(X,5,2))
+Dn <- rootSolve::uniroot.all(function(x){dbeta(x,5,2)-U},lower=0,upper=1) #<<
+Dn
+```
+```{r, echo=FALSE, fig.height=5,fig.width=7,fig.retina=2,fig.align='center'}
+curve(dbeta(x,5,2),lwd=2)
+segments(Dn[1],U,Dn[2],U,col="lightgray",lwd=8)
+points(X,U,pch=19,cex=2)
+```
+
+---
+# Slice sampler
+
+```{r, warning=FALSE, eval=F}
+n <- 1000
+X <- runif(1)
+for (i in 2:n){
+ U <- runif(1,0,dbeta(X[i-1],5,2))
+ Dn <- uniroot.all(function(x){dbeta(x,5,2)-U[i]},lower=0,upper=1) 
+ X <- c(X,runif(1,Dn[1],Dn[2]))
+}
+```
+
+
+```{r, echo=FALSE, fig.height=5,fig.width=7,fig.retina=2,fig.align='center'}
+n <- 1000
+X <- runif(1)
+U <- 0
+for (i in 2:n){
+ U <- c(U,runif(1,0,dbeta(X[i-1],5,2)))
+ Dn <- rootSolve::uniroot.all(function(x){dbeta(x,5,2)-U[i]},lower=0,upper=1) #<<
+ X <- c(X,runif(1,Dn[1],Dn[2]))
+}
+plot(X,U,pch=19,col="red") 
+lines(seq(0,1,0.01),dbeta(seq(0,1,0.01),a,b),col="red",lwd=4) 
+```
+
+---
+# Echantillonneur de Gibbs
+
+Idée générale : en dimension $p$ > 1, simuler chaque coordonnée l'une après l'autre
+
+--
+
+**Cas $p=2$**
+
+$(X,Y) \in \mathbb{R}^2$
+  1. **initialisation** : $(X_0,Y_0) = (x_0,y_0)$
+  2. **pour** $n=1, \dots, N$ :
+   - $X_n \sim f_{X|Y}(\cdot | y_{n-1})$
+   - $Y_n \sim f_{Y|X}(\cdot | x_{n})$
+
+--
+
+**Exemple** : $Z=(X,Y) \sim \mathcal{N}\left(\begin{pmatrix}0 \\0 \end{pmatrix}, \begin{pmatrix}1 & \rho \\ \rho & 1 \end{pmatrix}\right)$
+
+---
+# Echantillonneur de Gibbs
+
+```{r}
+n <- 10000; rho <- 0.8; X <- Y <- rep(0,n);
+for (i in 2:n){
+  # mise à jour de la 1ère coordonnée
+  X[i] <- rnorm(1,rho*Y[i-1],sqrt(1-rho^2))
+  # mise à jour de la 2ème coordonnée
+  Y[i] <- rnorm(1,rho*X[i],sqrt(1-rho^2)) }
+```
+
+.pull-left[
+```{r, echo=FALSE, fig.height=5, fig.width=5, fig.retina=2}
+dXY2=data.frame(X=X,Y=Y)
+ggplot(dXY2,aes(x=X,y=Y)) + geom_point()
+```
+]
+.pull-right[
+```{r, echo=FALSE, fig.height=5.2, fig.width=6, fig.retina=2}
+ggplot(dXY2,aes(x=X,y=Y)) + geom_density_2d_filled(alpha = 0.5) +
+  geom_density_2d(linewidth = 0.25, colour = "black")
+```
+]
+
+---
+# Echantillonneur de Gibbs
+
+```{r, eval=FALSE}
+n <- 10000; rho <- 0.8; X <- Y <- rep(0,n);
+for (i in 2:n){
+  # mise à jour de la 1ère coordonnée
+  X[i] <- rnorm(1,rho*Y[i-1],sqrt(1-rho^2))
+  # mise à jour de la 2ème coordonnée
+  Y[i] <- rnorm(1,rho*X[i],sqrt(1-rho^2)) }
+```
+
+.pull-left[
+```{r, echo=FALSE, fig.height=4, fig.width=5, fig.retina=2, message=FALSE}
+ggplot(dXY2,aes(x=X)) + geom_histogram(aes(y=after_stat(density)),fill="grey",col="darkgrey") +  stat_function(fun = dnorm) + ggtitle("Histogramme de la coordonnée X")
+```
+]
+.pull-right[
+```{r, echo=FALSE, fig.height=4, fig.width=5, fig.retina=2, message=FALSE}
+ggplot(dXY2,aes(x=Y)) + geom_histogram(aes(y=after_stat(density)),fill="grey",col="darkgrey") +  stat_function(fun = dnorm) + ggtitle("Histogramme de la coordonnée Y")
+```
+]
+
+---
+# Echantillonneur de Gibbs
+
+En pratique, comment se passe l'itération $n$ ?
+
+<ol>
+<li> on part du point $(X_{n-1},Y_{n-1})$
+</ol>
+
+```{r, echo=FALSE, fig.height=6,fig.width=8,fig.retina=2,fig.align='center'}
+set.seed(220224)
+n <- 1000
+rho <- 0.2
+XY <- matrix(0,nc=2,nr=2*n); XY[1,] <- runif(2)
+for (i in seq(2,2*n-1,by=2)){
+  # mise à jour de la 1ère coordonnée
+  XY[i,1] <- rnorm(1,rho*XY[i-1,2],1-rho^2)
+  XY[i,2] <- XY[i-1,2]
+  # mise à jour de la 2ème coordonnée
+  XY[i+1,2] <- rnorm(1,rho*XY[i,1],1-rho^2)
+  XY[i+1,1] <- XY[i,1]
+}
+
+dXY=data.frame(XY);names(dXY)=c("X","Y")
+dXY[1,] %>% ggplot(aes(x=X,y=Y)) + geom_point() + xlim(c(-2,2)) + ylim(c(-2,2)) + annotate(geom="text",x=dXY[1,1]-0.2,y=dXY[1,2]+0.175,label="X[n-1],Y[n-1]")
+```
+
+---
+# Echantillonneur de Gibbs
+
+En pratique, comment se passe l'itération $n$ ?
+
+<ol start="2">
+<li> on génère la 1ère coordonnée conditionnellement à $Y_{n-1}=y_{n-1}$
+</ol>
+
+```{r, echo=FALSE, fig.height=6,fig.width=8,fig.retina=2,fig.align='center'}
+dXY[1:2,] %>% ggplot(aes(x=X,y=Y)) + geom_point() + xlim(c(-2,2)) + ylim(c(-2,2)) + geom_line(col="darkgrey") +  annotate(geom="text",x=dXY[1,1]-0.2,y=dXY[1,2]+0.175,label="X[n-1],Y[n-1]") +
+  annotate(geom="text",x=dXY[2,1],y=dXY[2,2]+0.175,label="X[n]",col="red") +
+  annotate(geom="text",x=dXY[2,1]+0.25,y=dXY[2,2]+0.175,label=",Y[n-1]")
+```
+
+---
+# Echantillonneur de Gibbs
+
+En pratique, comment se passe l'itération $n$ ?
+
+<ol start="3">
+<li> on génère la 2ème coordonnée conditionnellement à $X_n=x_n$
+</ol>
+
+```{r, echo=FALSE, fig.height=6,fig.width=8,fig.retina=2,fig.align='center'}
+dXY[1:3,] %>% ggplot(aes(x=X,y=Y)) + geom_point() + xlim(c(-2,2)) + ylim(c(-2,2)) + geom_line(col="darkgrey") +  annotate(geom="text",x=dXY[1,1]-0.2,y=dXY[1,2]+0.175,label="X[n-1],Y[n-1]") +
+  annotate(geom="text",x=dXY[2,1],y=dXY[2,2]+0.175,label="X[n]",col="red") +
+  annotate(geom="text",x=dXY[2,1]+0.25,y=dXY[2,2]+0.175,label=",Y[n-1]") +
+  annotate(geom="text",x=dXY[3,1]+0.25,y=dXY[3,2],label="X[n],Y[n]",col="red") +
+  geom_line(data=dXY[c(1,3),],col="black")
+```
+
+---
+# Echantillonneur de Gibbs
+
+&rarr; on ne fait que des mouvements *parallèles aux axes*
+
+```{r, echo=FALSE, fig.height=6,fig.width=8,fig.retina=2,fig.align='center'}
+dXY %>% ggplot(aes(x=X,y=Y)) + geom_point() + geom_path()
+```
+
+---
+# Echantillonneur de Gibbs
+
+ - A un intérêt lorsque la loi jointe $f_{X,Y}$ ou les lois marginales $f_X$ ou $f_Y$ ne peuvent pas être calculées explicitement
+
+--
+
+ - La chaîne $(X_t,Y_t)_t$ est stationnaire de loi $f_{X,Y}$, de même que $(X_t)_t$ et $(Y_t)_t$ sont stationnaires de loi $f_X$ et $f_Y$ resp.
+
+--
+
+ - Simuler selon les lois conditionnelles **suffit** pour obtenir un échantillon selon la loi jointe (théorème de Hammersley-Clifford)
+ - .blue[**Question :** Est-ce le cas si on remplace 'loi conditionnelle' par 'loi marginale' ?]
+
+--
+
+ - C'est un cas particulier de l'algorithme de Metropolis-Hastings
+
+---
+# Echantillonneur de Gibbs
+
+**Cas général $p>2$**
+
+$(X_1,\dots,X_p) \in \mathbb{R}^p$ de loi jointe $f$
+  1. **initialisation** : $(X_{0,1},\dots,X_{0,p}) = (x_{0,1},\dots,x_{0,p})$
+  2. **pour** $n=1, \dots, N$ :
+   - $X_{n,1} \sim f_1(\cdot | x_{n-1,2},\dots,x_{n-1,p})$
+   - $X_{n,2} \sim f_2(\cdot | x_{n,1},x_{n-1,3},\dots,x_{n-1,p})$
+   - $\dots$
+   - $X_{n,p} \sim f_p(\cdot | x_{n,1},\dots,x_{n,p-1})$
+
+- Les densités $f_1,\dots,f_p$ sont appelées *lois conditionnelles complètes*.
+- On ne fait que des simulations en dimension 1
+
+---
+# Echantillonneur de Gibbs
+
+Pourquoi ça marche ?
+
+> *Théorème de Hammersley-Clifford.* Si le support de la loi jointe est le produit cartésien des supports des lois marginales, alors :
+$$f(x_1,\dots,x_p) \propto \prod_{j=1}^p \frac{f_j(x_j | x_1,\dots,x_{j-1},z_{j+1},\dots,z_p)}{f_j(z_j | x_1,\dots,x_{j-1},z_{j+1},\dots,z_p)}$$
+pour tout vecteur $(z_1,\dots,z_p)$ dans le support de $f$.
+
+</br>
+Propriétés de convergence :
+ - Mesure invariante
+ - Irréductibilité et récurrence
+ - Apériodicité
+
+---
+# Condition de positivité
+
+**Exemple :** loi cible $f(x,y) = \frac{1}{2} \left(\mathbb{1}_{[-1,0]\times[-1,0]}(x,y) + \mathbb{1}_{[0,1]\times[0,1]}(x,y)\right)$
+
+--
+
+```{r, echo=FALSE, fig.align='center',fig.height=6,fig.width=8,fig.retina=2}
+d <- data.frame(x=seq(-1.5,1.5,100),y=seq(-1.5,1.5,100))
+p <- ggplot(d,aes(x,y)) + geom_rect(aes(xmin=-1,ymin=-1,xmax=0,ymax=0),fill="grey") + geom_hline(yintercept = 0) +
+  geom_rect(aes(xmin=0,ymin=0,xmax=1,ymax=1),fill="grey") + xlim(c(-1.2,1.2)) + ylim(c(-1.2,1.2)) + geom_vline(xintercept = 0)
+p
+```
+
+---
+# Condition de positivité
+
+**Exemple :** loi cible $f(x,y) = \frac{1}{2} \left(\mathbb{1}_{[-1,0]\times[-1,0]}(x,y) + \mathbb{1}_{[0,1]\times[0,1]}(x,y)\right)$
+
+```{r, echo=FALSE, fig.align='center',fig.height=6,fig.width=8,fig.retina=2}
+fjointe <- function(x,y){return(0.5*(-1 < x & x < 0 & -1 < y & y < 0) + 0.5*(0 < x & x < 1 & 0 < y & y < 1))}
+fxcondy <- function(x,y){fjointe(x,y)/dunif(y,-1,1)}
+fycondx <- function(x,y){fjointe(x,y)/dunif(x,-1,1)}
+
+init <- runif(2,-1,1)
+chaine <- c(init)
+last <- init
+for (n in 1:100){
+  x <- ifelse(0 < last[2] & last[2] < 1, runif(1,0,1), runif(1,-1,0))
+  y <- ifelse(0 < x & x < 1, runif(1,0,1), runif(1,-1,0))
+  chaine <- rbind(chaine,c(x,last[2]))
+  chaine <- rbind(chaine,c(x,y))
+  last <- c(x,y)
+}
+
+dchaine <- as.data.frame(chaine)
+names(dchaine) <- c("x","y")
+
+p + geom_path(data=dchaine,aes(x,y),col=grey(0.4)) + geom_point(data=dchaine[2*(1:100),],aes(x,y)) +
+  geom_point(data=dchaine[1,],col="red",size=2)
+```
+
+---
+# Variantes
+
+ - Gibbs avec mise à jour aléatoire : à chaque itération $n$, on choisit aléatoirement la coordonnée à mettre à jour
+ - Metropolis-within-Gibbs : si on ne sait pas simuler selon $f_k$, on peut remplacer par une étape de Metropolis-Hastings
+
+
+</br>
+</br>
+</br>
+</br>
+</br>
+</br>
+</br>
+</br>
+</br>
+<span style="color:#16A085">**fin du cours 13 (04/03/2025)**</span>
+
+
+---
+class: my-one-page-font
+# Diagnostics de convergence des algos MCMC
+
+.red[**Conditions "nécessaires" mais pas suffisantes**]
+&rarr; permet de détecter un problème, mais ne garantit pas que tout s'est bien passé !
+ - choix d'une période de *burn-in*
+ - convergence vers la loi stationnaire (pls initialisations)
+```{r, echo=FALSE}
+fcible <- function(x){0.7*dnorm(x,1,1)+0.3*dnorm(x,6,1)}
+n <- 10000
+current <- -2
+for (i in 2:n){
+  candidate <- rnorm(1)
+  alpha <- min(1,(fcible(candidate)*dnorm(current[i-1],0,1))/
+                 (fcible(current[i-1])*dnorm(candidate,0,1)))
+  new <- ifelse(runif(1) < alpha, candidate, current[i-1])
+  current <- c(current,new)
+}
+current2 <- 2.5
+for (i in 2:n){
+  candidate <- rnorm(1) # + current2[i-1]
+  alpha <- min(1,(fcible(candidate)*dnorm(current2[i-1],0,1))/(fcible(current2[i-1])*dnorm(candidate,0,1)))
+  new <- ifelse(runif(1) < alpha, candidate, current2[i-1])
+  current2 <- c(current2,new)
+}
+current3 <- 7
+for (i in 2:n){
+  candidate <- rnorm(1) # + current2[i-1]
+  alpha <- min(1,(fcible(candidate)*dnorm(current3[i-1],0,1))/(fcible(current3[i-1])*dnorm(candidate,0,1)))
+  new <- ifelse(runif(1) < alpha, candidate, current3[i-1])
+  current3 <- c(current3,new)
+}
+```
+
+.pull-left[
+```{r, echo=FALSE, fig.align='center',fig.height=3.25,fig.width=4.55,fig.retina=2}
+data <- data.frame(mcmc=c(current,current2,current3),chaine=rep(1:3,each=n),iteration=rep(1:n,3))
+ggplot(data=data,aes(x=iteration,y=mcmc,col=as.factor(chaine))) + geom_line() + theme(legend.position = "n") + xlab("Itération") + ylab("Valeur de la chaîne")
+```
+]
+.pull-right[
+```{r, echo=FALSE, fig.align='center',fig.height=3.25,fig.width=4.5,fig.retina=2, message=FALSE, warning=FALSE}
+ggplot(data=data,aes(x=mcmc,fill=as.factor(chaine))) + geom_histogram(aes(y=..density..),position="identity",alpha=0.5) +
+  stat_function(fun=fcible,col="red") + theme(legend.position = "n") + xlab("Valeur de la chaîne") + ylab("") + xlim(c(-2.5,10))
+```
+]
+ - convergence de la moyenne empirique
+ - considérer des sous-échantillons pour réduire la dépendance
+ - package `coda` dans `R` (tests de stationnarité)
+
+
+---
+# Rappel
+
+.bold[Objectif :] estimer $\mu = \int h(x)f(x)dx$ avec $f$ densité de probabilité
+
+--
+
+**Méthode :** <span style="color:red"> **obtenir des réalisations $X_1,\dots,X_n$ selon la loi $f$**</span> et poser $\hat{\mu} = \frac{1}{n}\sum_{i=1}^n h(X_i)$
+
+--
+
+1. Obtenir des réalisations selon la loi $f$
+
+- *méthode 1* : simuler directement selon $f$
+ - méthode de la fonction inverse
+ - lien avec d'autres lois (e.g. loi conditionnelle, ...)
+ - slice sampler
+ - échantillonneur de Gibbs
+
+- *méthode 2* : utiliser une loi instrumentale $g$
+ - acceptation-rejet
+ - échantillonnage préférentiel avec ré-échantillonnage
+ - algorithme de Metropolis-Hastings
+
+---
+name: simu_f
+# Rappel
+
+.bold[Objectif :] estimer $\mu = \int h(x)f(x)dx$ avec $f$ densité de probabilité
+
+**Méthode :** <span style="color:red"> **obtenir des réalisations $X_1,\dots,X_n$ selon la loi $f$**</span> et poser $\hat{\mu} = \frac{1}{n}\sum_{i=1}^n h(X_i)$
+
+1. Obtenir des réalisations selon la loi $f$
+
+- *méthode 1* : simuler directement selon $f$ <span style="color:red">&rarr; $f$ **connue exactement**</span>
+ - méthode de la fonction inverse <span style="color:#16A085">&rarr; **éch. i.i.d.** </span>
+ - lien avec d'autres lois (e.g. loi conditionnelle, ...) <span style="color:#16A085">&rarr; **éch. i.i.d.** </span>
+ - slice sampler <span style="color:#16A085">&rarr; **éch. MC** </span>
+
+- *méthode 2* : utiliser une loi instrumentale $g$ <span style="color:red">&rarr; $f$ **connue à une constante près** </span>
+ - acceptation-rejet <span style="color:#16A085">&rarr; **éch. i.i.d.** </span>
+ - échantillonnage préférentiel avec ré-échantillonnage <span style="color:#16A085">&rarr; **éch. i.i.d.** </span>
+ - algorithme de Metropolis-Hastings <span style="color:#16A085">&rarr; **éch. MC** </span>
+ - échantillonneur de Gibbs <span style="color:#16A085">&rarr; **éch. MC** </span>
+
+[retour](#simu_post)
+---
+# Rappel
+
+.bold[Objectif :] estimer $\mu = \int h(x)f(x)dx$ avec $f$ densité de probabilité
+
+**Méthode :** <span style="color:red"> **obtenir des réalisations $X_1,\dots,X_n$ selon la loi $f$**</span> et poser $\hat{\mu} = \frac{1}{n}\sum_{i=1}^n h(X_i)$
+
+--
+
+<ol start="2">
+<li> Poser $\hat{\mu} = \frac{1}{n}\sum_{i=1}^n h(X_i)$
+</ol>
+
+- quelle est la qualité de cette approximation ?
+ - convergence
+ - biais
+ - **variance**
+ - coût computationnel
+
+- pour les échantillons de type chaîne de Markov :
+ - convergence de la chaîne ?
+ - exploration de l'espace ?
+ - sensibilité aux conditions initiales ?
+
+---
+# Algorithmes MCMC - monitoring
+
+1. Tracer l'évolution de la chaîne &rarr; ''hairy caterpillar''
+
+<img src="hairycaterpillar.png">
+
+
+---
+# Algorithmes MCMC - monitoring
+
+1. Tracer l'évolution de la chaîne &rarr; ''hairy caterpillar''
+
+2. Tracer l'autocorrélation de la chaîne
+
+<img src="acf.png">
+
+
+---
+# Algorithmes MCMC - monitoring
+
+1. Tracer l'évolution de la chaîne &rarr; ''hairy caterpillar''
+
+2. Tracer l'autocorrélation de la chaîne
+
+3. Calculer le taux d'acceptation (MH)
+ - le maximiser dans algo MH à loi instrumentale indépendante
+ - proche de 0.44 en dimn. 1 et de 0.25 en dim > 1 dans MH à MA
+ - proche de 0.57 dans algo MALA
+
+
+---
+# Diagnostics de convergence
+
+**1. Convergence vers la loi stationnaire**
+
+- le trace plot (évolution de la chaîne au cours des itérations) pour détecter les fortes non-stationnarités
+- tests de stationnarité (e.g. Kolmogorov-Smirnov ou test de Heidelberg et Welch)
+ - fonction `ks.test()`
+ - package `coda` et fonction `heidel.diag()`
+- exploration du support de $f$ &rarr; si $f$ connue exactement et si $d$ petit
+ - approximation par sommes de Riemann
+ - estimation de la densité
+
+**2. Convergence en moyenne**
+
+- tracer l'évolution de la moyenne cumulée et chercher la stabilisation
+- idem pour les quantiles
+- variance inter- et intra (plusieurs chaînes) &rarr; fonction `gelman.diag()` du package `coda`
+- effective sampling size &rarr; fonction `effectiveSamplingSize()` du package `coda`
+
+

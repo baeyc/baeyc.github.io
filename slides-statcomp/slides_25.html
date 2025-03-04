@@ -175,6 +175,7 @@ MathJax.Hub.Config({
 ---
 # Sommaire
 
+.pull-left[
 **1. Méthodes de ré-échantillonnage**
   - [Cours 1](#c1) (13/01/2025)
   - [Cours 2](#c2) (14/01/2025)
@@ -192,6 +193,11 @@ MathJax.Hub.Config({
 **3. Méthodes MCMC**
   - [Cours 11](#c11) (24/02/2025)
   - [Cours 12](#c12) (25/02/2025)
+]
+.pull-right[
+**3. Méthodes MCMC (suite)**
+  - [Cours 13](#c13) (04/03/2025)
+]
 
 ---
 name: c1
@@ -2397,6 +2403,354 @@ Pour diagnostiquer une mauvaise exploration :
 &lt;img src="slides_25_files/figure-html/unnamed-chunk-121-1.png" width="972" style="display: block; margin: auto;" /&gt;
 
 &lt;span style="color:#16A085"&gt;**fin du cours 12 (25/02/2025)**&lt;/span&gt;
+
+
+---
+name: c13
+
+# De MH à l'échantillonneur de Gibbs
+
+ - Algorithme générique qui fonctionne pour une grande classe de lois `\(f\)`
+ - Le choix de `\(q\)` ne requiert pas une grande connaissance de `\(f\)`
+ - On peut améliorer l'efficacité des algorithmes (e.g. la convergence) en exploitant les caractéristiques de `\(f\)`
+
+ &amp;rarr; algorithmes utilisant la forme de `\(f\)` et sa géométrie
+
+---
+# Slice sampler
+
+&gt; **Théorème** : simuler `\(X\)` selon la loi `\(f\)` est équivalent à simuler le couple `\((X,U)\)` selon la loi uniforme sur l'ensemble `\(\mathcal{D} = \{(x,u) : 0 \leq u \leq f(x)\}\)`
+
+*Preuve*
+
+--
+
+- Pour simuler `\(X\)` selon la loi `\(f\)`, on peut alors simuler un point `\((X,U)\)` uniformément **sous le graphe** de la densité `\(f\)` et garder uniquement l'abscisse des points (la loi marginale de `\(X\)`)
+
+- C'est déjà ce que l'on fait dans la méthode d'acceptation-rejet en simulant dans une région **plus grande** et en ne gardant que les points **sous la courbe**
+
+- L'algorithme du slice sampler permet d'atteindre le même objectif mais de façon plus efficace en proposant un déplacement de type marche aléatoire sur l'ensemble `\(\mathcal{D}\)`.
+
+---
+# Slice sampler
+
+Exemple de la loi `\(\text{Beta}(a,b)\)`. Avec l'acceptation-rejet (voir TD) :
+ - on simule `\(Y \sim \mathcal{U}([0,1])\)`
+ - puis `\(U \sim \mathcal{U}([0,M_{a,b}])\)`
+ - et on garde les couples `\((Y,U)\)` tels que `\(U &lt; f(Y)\)`
+ 
+&lt;img src="slides_25_files/figure-html/unnamed-chunk-122-1.png" width="504" style="display: block; margin: auto;" /&gt;
+
+&amp;rarr; on perd `\(1-1/M\)` soit environ 59.3% des points ...
+
+---
+# Slice sampler
+
+En pratique :
+  1. **initialisation** : `\(X_0=x_0\)`
+  2. **pour** `\(n=1,\dots,N\)`
+    - `\(U_n \sim \mathcal{U}([0,f(x_{n-1})])\)`
+    - `\(X_n \sim \mathcal{U}(\mathcal{D}_n)\)` où
+    `\(\mathcal{D}_n = \{x : f(x) \geq u_n\}\)`
+
+&lt;img src="slides_25_files/figure-html/unnamed-chunk-123-1.png" width="500px" style="display: block; margin: auto;" /&gt;
+*(source : Andrieu et al. 2003)*
+
+
+&lt;span style="color:red"&gt;**RQ. : on peut utiliser l'algorithme si `\(f\)` est connue à une constante multiplicative près**&lt;/span&gt;
+
+
+---
+# Slice sampler
+
+**Exemple** : on veut simuler selon la loi `\(\mathcal{N}(0,1)\)`, de densité `\(f(x) \propto e^{-x^2/2}\)`
+
+ &amp;rarr; à l'itération `\(n\)`, on a `\(X_{n-1}=x_{n-1}\)` :
+  - on génère `\(U_n \sim \mathcal{U}([0,\exp(-x_{n-1}^2/2)])\)`
+  - on détermine l'ensemble `\(\mathcal{D}_n = \{x : e^{-x^2/2} &gt; u_n\}\)`
+--
+
+  - on simule `\(X_n \sim \mathcal{U}([-\sqrt{-2 \log(u_n)} ; \sqrt{-2 \log(u_n)}])\)`
+
+--
+&lt;img src="slides_25_files/figure-html/unnamed-chunk-124-1.png" width="504" style="display: block; margin: auto;" /&gt;
+
+---
+# Slice sampler
+
+**Exemple** : on veut simuler selon la loi `\(\mathcal{N}(0,1)\)`, de densité `\(f(x) \propto e^{-x^2/2}\)`
+
+ &amp;rarr; à l'itération `\(n\)`, on a `\(X_{n-1}=x_{n-1}\)` :
+  - on génère `\(U_n \sim \mathcal{U}([0,\exp(-x_{n-1}^2/2)])\)`
+  - on détermine l'ensemble `\(\mathcal{D}_n = \{x : e^{-x^2/2} &gt; u_n\}\)`
+  - on simule `\(X_n \sim \mathcal{U}([-\sqrt{-2 \log(u_n)} ; \sqrt{-2 \log(u_n)}])\)`
+
+
+&lt;img src="slides_25_files/figure-html/unnamed-chunk-125-1.png" width="504" style="display: block; margin: auto;" /&gt;
+
+
+---
+# Slice sampler
+
+**Exemple** : on veut simuler selon la loi `\(\mathcal{N}(0,1)\)`, de densité `\(f(x) \propto e^{-x^2/2}\)`
+
+ &amp;rarr; à l'itération `\(n\)`, on a `\(X_{n-1}=x_{n-1}\)` :
+  - on génère `\(U_n \sim \mathcal{U}([0,\exp(-x_{n-1}^2/2)])\)`
+  - on détermine l'ensemble `\(\mathcal{D}_n = \{x : e^{-x^2/2} &gt; u_n\}\)`
+  - on simule `\(X_n \sim \mathcal{U}([-\sqrt{-2 \log(u_n)} ; \sqrt{-2 \log(u_n)}])\)`
+
+
+&lt;img src="slides_25_files/figure-html/unnamed-chunk-126-1.png" width="504" style="display: block; margin: auto;" /&gt;
+
+---
+# Slice sampler
+
+**Exemple** : on veut simuler selon la loi `\(\mathcal{N}(0,1)\)`, de densité `\(f(x) \propto e^{-x^2/2}\)`
+
+ &amp;rarr; à l'itération `\(n\)`, on a `\(X_{n-1}=x_{n-1}\)` :
+  - on génère `\(U_n \sim \mathcal{U}([0,\exp(-x_{n-1}^2/2)])\)`
+  - on détermine l'ensemble `\(\mathcal{D}_n = \{x : e^{-x^2/2} &gt; u_n\}\)`
+  - on simule `\(X_n \sim \mathcal{U}([-\sqrt{-2 \log(u_n)} ; \sqrt{-2 \log(u_n)}])\)`
+
+&lt;img src="slides_25_files/figure-html/unnamed-chunk-127-1.png" width="504" style="display: block; margin: auto;" /&gt;
+
+
+---
+# Slice sampler
+
+&lt;img src="slides_25_files/figure-html/unnamed-chunk-128-1.png" width="500px" style="display: block; margin: auto;" /&gt;
+.center[*(source : Bayesian Statistics Group)*]
+
+.pull-left[
+.green[**Avantages**]
+- tirages selon des lois uniformes
+- pas d'hypothèses spécifiques sur `\(f\)`
+- `\(f\)` peut être connue à une constante près
+]
+.pull-right[
+.red[**Inconvénients**]
+- calcul de `\(\mathcal{D}_n\)` peut être délicat
+- extensions possibles dans ce cas qui peuvent être plus lourdes à implémenter
+]
+
+---
+# Slice sampler
+
+Exemple avec la loi `\(\text{Beta}(2,5)\)`, on a `\(\mathcal{D_n} = \{(x,u) : C x (1-x)^4 &gt; u_n \}\)`.
+
+
+
+``` r
+set.seed(0)
+X &lt;- runif(1)
+U &lt;- runif(1,0,dbeta(X,5,2))
+*Dn &lt;- rootSolve::uniroot.all(function(x){dbeta(x,5,2)-U},lower=0,upper=1)
+Dn
+```
+
+```
+## [1] 0.4177093 0.9808084
+```
+&lt;img src="slides_25_files/figure-html/unnamed-chunk-130-1.png" width="504" style="display: block; margin: auto;" /&gt;
+
+---
+# Slice sampler
+
+
+``` r
+n &lt;- 1000
+X &lt;- runif(1)
+for (i in 2:n){
+ U &lt;- runif(1,0,dbeta(X[i-1],5,2))
+ Dn &lt;- uniroot.all(function(x){dbeta(x,5,2)-U[i]},lower=0,upper=1) 
+ X &lt;- c(X,runif(1,Dn[1],Dn[2]))
+}
+```
+
+
+&lt;img src="slides_25_files/figure-html/unnamed-chunk-132-1.png" width="504" style="display: block; margin: auto;" /&gt;
+
+---
+# Echantillonneur de Gibbs
+
+Idée générale : en dimension `\(p\)` &gt; 1, simuler chaque coordonnée l'une après l'autre
+
+--
+
+**Cas `\(p=2\)`**
+
+`\((X,Y) \in \mathbb{R}^2\)`
+  1. **initialisation** : `\((X_0,Y_0) = (x_0,y_0)\)`
+  2. **pour** `\(n=1, \dots, N\)` :
+   - `\(X_n \sim f_{X|Y}(\cdot | y_{n-1})\)`
+   - `\(Y_n \sim f_{Y|X}(\cdot | x_{n})\)`
+
+--
+
+**Exemple** : `\(Z=(X,Y) \sim \mathcal{N}\left(\begin{pmatrix}0 \\0 \end{pmatrix}, \begin{pmatrix}1 &amp; \rho \\ \rho &amp; 1 \end{pmatrix}\right)\)`
+
+---
+# Echantillonneur de Gibbs
+
+
+``` r
+n &lt;- 10000; rho &lt;- 0.8; X &lt;- Y &lt;- rep(0,n);
+for (i in 2:n){
+  # mise à jour de la 1ère coordonnée
+  X[i] &lt;- rnorm(1,rho*Y[i-1],sqrt(1-rho^2))
+  # mise à jour de la 2ème coordonnée
+  Y[i] &lt;- rnorm(1,rho*X[i],sqrt(1-rho^2)) }
+```
+
+.pull-left[
+&lt;img src="slides_25_files/figure-html/unnamed-chunk-134-1.png" width="360" /&gt;
+]
+.pull-right[
+&lt;img src="slides_25_files/figure-html/unnamed-chunk-135-1.png" width="432" /&gt;
+]
+
+---
+# Echantillonneur de Gibbs
+
+
+``` r
+n &lt;- 10000; rho &lt;- 0.8; X &lt;- Y &lt;- rep(0,n);
+for (i in 2:n){
+  # mise à jour de la 1ère coordonnée
+  X[i] &lt;- rnorm(1,rho*Y[i-1],sqrt(1-rho^2))
+  # mise à jour de la 2ème coordonnée
+  Y[i] &lt;- rnorm(1,rho*X[i],sqrt(1-rho^2)) }
+```
+
+.pull-left[
+&lt;img src="slides_25_files/figure-html/unnamed-chunk-137-1.png" width="360" /&gt;
+]
+.pull-right[
+&lt;img src="slides_25_files/figure-html/unnamed-chunk-138-1.png" width="360" /&gt;
+]
+
+---
+# Echantillonneur de Gibbs
+
+En pratique, comment se passe l'itération `\(n\)` ?
+
+&lt;ol&gt;
+&lt;li&gt; on part du point `\((X_{n-1},Y_{n-1})\)`
+&lt;/ol&gt;
+
+&lt;img src="slides_25_files/figure-html/unnamed-chunk-139-1.png" width="576" style="display: block; margin: auto;" /&gt;
+
+---
+# Echantillonneur de Gibbs
+
+En pratique, comment se passe l'itération `\(n\)` ?
+
+&lt;ol start="2"&gt;
+&lt;li&gt; on génère la 1ère coordonnée conditionnellement à `\(Y_{n-1}=y_{n-1}\)`
+&lt;/ol&gt;
+
+&lt;img src="slides_25_files/figure-html/unnamed-chunk-140-1.png" width="576" style="display: block; margin: auto;" /&gt;
+
+---
+# Echantillonneur de Gibbs
+
+En pratique, comment se passe l'itération `\(n\)` ?
+
+&lt;ol start="3"&gt;
+&lt;li&gt; on génère la 2ème coordonnée conditionnellement à `\(X_n=x_n\)`
+&lt;/ol&gt;
+
+&lt;img src="slides_25_files/figure-html/unnamed-chunk-141-1.png" width="576" style="display: block; margin: auto;" /&gt;
+
+---
+# Echantillonneur de Gibbs
+
+&amp;rarr; on ne fait que des mouvements *parallèles aux axes*
+
+&lt;img src="slides_25_files/figure-html/unnamed-chunk-142-1.png" width="576" style="display: block; margin: auto;" /&gt;
+
+---
+# Echantillonneur de Gibbs
+
+ - A un intérêt lorsque la loi jointe `\(f_{X,Y}\)` ou les lois marginales `\(f_X\)` ou `\(f_Y\)` ne peuvent pas être calculées explicitement
+
+--
+
+ - La chaîne `\((X_t,Y_t)_t\)` est stationnaire de loi `\(f_{X,Y}\)`, de même que `\((X_t)_t\)` et `\((Y_t)_t\)` sont stationnaires de loi `\(f_X\)` et `\(f_Y\)` resp.
+
+--
+
+ - Simuler selon les lois conditionnelles **suffit** pour obtenir un échantillon selon la loi jointe (théorème de Hammersley-Clifford)
+ - .blue[**Question :** Est-ce le cas si on remplace 'loi conditionnelle' par 'loi marginale' ?]
+
+--
+
+ - C'est un cas particulier de l'algorithme de Metropolis-Hastings
+
+---
+# Echantillonneur de Gibbs
+
+**Cas général `\(p&gt;2\)`**
+
+`\((X_1,\dots,X_p) \in \mathbb{R}^p\)` de loi jointe `\(f\)`
+  1. **initialisation** : `\((X_{0,1},\dots,X_{0,p}) = (x_{0,1},\dots,x_{0,p})\)`
+  2. **pour** `\(n=1, \dots, N\)` :
+   - `\(X_{n,1} \sim f_1(\cdot | x_{n-1,2},\dots,x_{n-1,p})\)`
+   - `\(X_{n,2} \sim f_2(\cdot | x_{n,1},x_{n-1,3},\dots,x_{n-1,p})\)`
+   - `\(\dots\)`
+   - `\(X_{n,p} \sim f_p(\cdot | x_{n,1},\dots,x_{n,p-1})\)`
+
+- Les densités `\(f_1,\dots,f_p\)` sont appelées *lois conditionnelles complètes*.
+- On ne fait que des simulations en dimension 1
+
+---
+# Echantillonneur de Gibbs
+
+Pourquoi ça marche ?
+
+&gt; *Théorème de Hammersley-Clifford.* Si le support de la loi jointe est le produit cartésien des supports des lois marginales, alors :
+`$$f(x_1,\dots,x_p) \propto \prod_{j=1}^p \frac{f_j(x_j | x_1,\dots,x_{j-1},z_{j+1},\dots,z_p)}{f_j(z_j | x_1,\dots,x_{j-1},z_{j+1},\dots,z_p)}$$`
+pour tout vecteur `\((z_1,\dots,z_p)\)` dans le support de `\(f\)`.
+
+&lt;/br&gt;
+Propriétés de convergence :
+ - Mesure invariante
+ - Irréductibilité et récurrence
+ - Apériodicité
+
+---
+# Condition de positivité
+
+**Exemple :** loi cible `\(f(x,y) = \frac{1}{2} \left(\mathbb{1}_{[-1,0]\times[-1,0]}(x,y) + \mathbb{1}_{[0,1]\times[0,1]}(x,y)\right)\)`
+
+--
+
+&lt;img src="slides_25_files/figure-html/unnamed-chunk-143-1.png" width="576" style="display: block; margin: auto;" /&gt;
+
+---
+# Condition de positivité
+
+**Exemple :** loi cible `\(f(x,y) = \frac{1}{2} \left(\mathbb{1}_{[-1,0]\times[-1,0]}(x,y) + \mathbb{1}_{[0,1]\times[0,1]}(x,y)\right)\)`
+
+&lt;img src="slides_25_files/figure-html/unnamed-chunk-144-1.png" width="576" style="display: block; margin: auto;" /&gt;
+
+---
+# Variantes
+
+ - Gibbs avec mise à jour aléatoire : à chaque itération `\(n\)`, on choisit aléatoirement la coordonnée à mettre à jour
+ - Metropolis-within-Gibbs : si on ne sait pas simuler selon `\(f_k\)`, on peut remplacer par une étape de Metropolis-Hastings
+
+
+&lt;/br&gt;
+&lt;/br&gt;
+&lt;/br&gt;
+&lt;/br&gt;
+&lt;/br&gt;
+&lt;/br&gt;
+&lt;/br&gt;
+&lt;/br&gt;
+&lt;/br&gt;
+&lt;span style="color:#16A085"&gt;**fin du cours 13 (04/03/2025)**&lt;/span&gt;
     </textarea>
 <style data-target="print-only">@media screen {.remark-slide-container{display:block;}.remark-slide-scaler{box-shadow:none;}}</style>
 <script src="https://remarkjs.com/downloads/remark-latest.min.js"></script>
