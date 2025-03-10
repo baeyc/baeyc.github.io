@@ -206,6 +206,7 @@ Sys.setenv('RETICULATE_PYTHON'='/usr/bin/python3')
 .pull-right[
 **3. Méthodes MCMC (suite)**
   - [Cours 13](#c13) (04/03/2025)
+  - [Cours 14](#c14) (10/03/2025)
 ]
 
 ---
@@ -3298,32 +3299,194 @@ p + geom_path(data=dchaine,aes(x,y),col=grey(0.4)) + geom_point(data=dchaine[2*(
 ```
 
 ---
+class: my-one-page-font
 # Variantes
 
  - Gibbs avec mise à jour aléatoire : à chaque itération $n$, on choisit aléatoirement la coordonnée à mettre à jour
- - Metropolis-within-Gibbs : si on ne sait pas simuler selon $f_k$, on peut remplacer par une étape de Metropolis-Hastings
+ - Metropolis-within-Gibbs : si on ne sait pas simuler selon $f_k$, on peut remplacer par une étape de Metropolis-Hastings :
+ 
+  **pour** $n=1, \dots, N$ et la coordonnée $k$ :
+   - $Y_{n,k} \sim q_k(\cdot | x_{n,1},\dots,x_{n,k-1},x_{n-1,k},x_{n-1,k+1},\dots,x_{n-1,p})$ 
+   
+   - on pose $X_{n,k} = Y_{n,k}$ avec probabilité $\alpha_k(X_{n-1,k},Y_{n,k})$ et $X_{n,k}=X_{n-1,k}$ avec probabilité $1- \alpha_k(X_{n-1,k},Y_{n,k})$, avec :
+   
+    $$\alpha_k(X_{n-1,k},Y_{n,k}) = \min\left[1,\frac{\frac{f_k(Y_{n,k} | X_{n,1},\dots,X_{n,k-1},X_{n-1,k+1},\dots,X_{n-1,p})}{q_k(Y_{nk,} | X_{n,1},\dots,X_{n,k-1},X_{n-1,k},X_{n-1,k+1},\dots,X_{n-1,p})}}{\frac{q_k(X_{n-1,k} | X_{n,1},\dots,X_{n,k-1},Y_{n,k},X_{n-1,k+1},\dots,X_{n-1,p})}{f_k(X_{n-1,k} | X_{n,1},\dots,X_{n,k-1},X_{n-1,k+1},\dots,X_{n-1,p})} } \right]$$
+    
 
-
-</br>
-</br>
-</br>
-</br>
-</br>
-</br>
-</br>
-</br>
-</br>
 <span style="color:#16A085">**fin du cours 13 (04/03/2025)**</span>
+
+---
+name: c14
+# Résumé des épisodes précédents
+
+.bold[Objectif :] estimer $\mu = \int h(x)f(x)dx$ avec $f$ densité de probabilité
+
+--
+
+**Méthode :** <span style="color:orange"> **obtenir des réalisations $X_1,\dots,X_n$ selon la loi $f$**</span> et <span style="color:blue">**poser $\hat{\mu} = \frac{1}{n}\sum_{i=1}^n h(X_i)$**</span>
+
+--
+
+<span style="color:orange">**1. Obtenir des réalisations selon la loi $f$**</span>
+
+- *méthode 1* : simuler directement selon $f$
+
+</br>
+</br>
+</br>
+</br>
+
+- *méthode 2* : utiliser une loi instrumentale $g$
 
 
 ---
-class: my-one-page-font
+# Résumé des épisodes précédents
+
+.bold[Objectif :] estimer $\mu = \int h(x)f(x)dx$ avec $f$ densité de probabilité
+
+**Méthode :** <span style="color:orange"> **obtenir des réalisations $X_1,\dots,X_n$ selon la loi $f$**</span> et <span style="color:blue">**poser $\hat{\mu} = \frac{1}{n}\sum_{i=1}^n h(X_i)$**</span>
+
+<span style="color:orange">**1. Obtenir des réalisations selon la loi $f$**</span>
+
+- *méthode 1* : simuler directement selon $f$
+ - méthode de la fonction inverse
+ - lien avec d'autres lois (e.g. loi conditionnelle, ...)
+ - slice sampler
+ - échantillonneur de Gibbs (en passant par les lois conditionnelles)
+
+- *méthode 2* : utiliser une loi instrumentale $g$
+ - acceptation-rejet
+ - échantillonnage préférentiel avec ré-échantillonnage
+ - algorithme de Metropolis-Hastings
+ - Metropolis-within-Gibbs 
+
+---
+name: simu_f
+# Résumé des épisodes précédents
+
+.bold[Objectif :] estimer $\mu = \int h(x)f(x)dx$ avec $f$ densité de probabilité
+
+**Méthode :** <span style="color:orange"> **obtenir des réalisations $X_1,\dots,X_n$ selon la loi $f$**</span> et <span style="color:blue">**poser $\hat{\mu} = \frac{1}{n}\sum_{i=1}^n h(X_i)$**</span>
+
+<span style="color:orange">**1. Obtenir des réalisations selon la loi $f$**</span>
+
+- *méthode 1* : simuler directement selon $f$ <span style="color:red">&rarr; $f$ **connue exactement**</span>
+ - méthode de la fonction inverse <span style="color:#16A085">&rarr; **éch. i.i.d.** </span>
+ - lien avec d'autres lois (e.g. loi conditionnelle, ...) <span style="color:#16A085">&rarr; **éch. i.i.d.** </span>
+ - slice sampler <span style="color:#16A085">&rarr; **éch. MC** </span>
+ - échantillonneur de Gibbs <span style="color:#16A085">&rarr; **éch. MC** </span>
+
+- *méthode 2* : utiliser une loi instrumentale $g$ <span style="color:red">&rarr; $f$ **connue à une constante près** </span>
+ - acceptation-rejet <span style="color:#16A085">&rarr; **éch. i.i.d.** </span>
+ - échantillonnage préférentiel avec ré-échantillonnage <span style="color:#16A085">&rarr; **éch. i.i.d.** </span>
+ - algorithme de Metropolis-Hastings <span style="color:#16A085">&rarr; **éch. MC** </span>
+ - Metropolis-within-Gibbs <span style="color:#16A085">&rarr; **éch. MC** </span>
+
+
+---
+# Résumé des épisodes précédents
+
+.bold[Objectif :] estimer $\mu = \int h(x)f(x)dx$ avec $f$ densité de probabilité
+
+**Méthode :** <span style="color:orange"> **obtenir des réalisations $X_1,\dots,X_n$ selon la loi $f$**</span> et <span style="color:blue">**poser $\hat{\mu} = \frac{1}{n}\sum_{i=1}^n h(X_i)$**</span>
+
+<span style="color:blue">**2. Poser $\hat{\mu} = \frac{1}{n}\sum_{i=1}^n h(X_i)$ </span> **
+
+- quelle est la qualité de cette approximation ?
+ - convergence
+ - biais
+ - **variance**
+ - coût computationnel
+
+- pour les échantillons de type chaîne de Markov :
+ - convergence de la chaîne ?
+ - exploration de l'espace ?
+ - sensibilité aux conditions initiales ?
+
+---
 # Diagnostics de convergence des algos MCMC
 
-.red[**Conditions "nécessaires" mais pas suffisantes**]
+- Les algorithmes MCMC produisent des chaînes de Markov **ergodiques** dont la loi stationnaire est la loi cible $f$
+
+- Comment être sûr(e)/vérifier que la chaîne est bien dans son régime stationnaire ? 
+ - **quand peut-on arrêter la chaîne ?**
+ - **quelle est la précision obtenue?**
+
+- Trois types d'outils diagnostics pour étudier :
+ - la convergence de la chaîne vers le régime stationnaire
+ - la convergence des moyennes
+ - la convergence vers un échantillonnage i.i.d.
+
+- Ce sont en général des .red[**conditions "nécessaires" mais pas suffisantes**]
 &rarr; permet de détecter un problème, mais ne garantit pas que tout s'est bien passé !
- - choix d'une période de *burn-in*
- - convergence vers la loi stationnaire (pls initialisations)
+
+
+
+---
+# Convergence vers la loi stationnaire (1)
+
+- En pratique (et même en théorie !) il est difficile de tester si la chaîne produit des réalisations selon $f$
+--
+
+- Pour "tester" la convergence vers le régime stationnaire on peut utiliser des .red[**outils graphiques**] :
+ - analyser le **trace plot** (évolution de la chaîne au cours des itérations) pour détecter les fortes non-stationnarités
+```{r, echo=FALSE, fig.height=5, fig.width=10, fig.retina=2, fig.align='center'}
+X1 <- X2 <- X3 <- rep(0,5000);
+for (i in 2:5000){
+  # chaine 1
+  Y <- rnorm(1,X1[i-1],0.1)
+  alpha <- dnorm(Y)/dnorm(X1[i-1])
+  X1[i] <- ifelse(runif(1)<alpha,Y,X1[i-1])
+  # chaine 2
+  Y <- rnorm(1,X2[i-1],2)
+  alpha <- dnorm(Y)/dnorm(X2[i-1])
+  X2[i] <- ifelse(runif(1)<alpha,Y,X2[i-1])
+}
+par(mfrow=c(1,2))
+plot(X1,type="l",xlab="Itération")
+plot(X2,type="l",xlab="Itération")
+``` 
+
+
+---
+# Convergence vers la loi stationnaire (1)
+
+- En pratique (et même en théorie !) il est difficile de tester si la chaîne produit des réalisations selon $f$
+- Pour "tester" la convergence vers le régime stationnaire on peut utiliser des .red[**outils graphiques**] :
+ - analyser le **trace plot** (évolution de la chaîne au cours des itérations) pour détecter les fortes non-stationnarités
+ - lancer **plusieurs chaînes** (en parallèle) et comparer les résultats
+```{r, echo=FALSE, fig.height=5, fig.width=10, fig.retina=2, fig.align='center'}
+set.seed(202503110)
+X1 <- X2 <- X11 <- X22 <- rep(0,5000);
+X1[1] <- rnorm(1); X11[1] <- rnorm(1); X2[1] <- rnorm(1); X22[1] <- rnorm(1)
+for (i in 2:5000){
+  # chaine 1
+  Y <- rnorm(1,X1[i-1],0.1)
+  Y1 <- rnorm(1,X11[i-1],0.1)
+  alpha1 <- dnorm(Y)/dnorm(X1[i-1])
+  alpha11 <- dnorm(Y1)/dnorm(X11[i-1])
+  X1[i] <- ifelse(runif(1)<alpha1,Y,X1[i-1])
+  X11[i] <- ifelse(runif(1)<alpha11,Y1,X11[i-1])
+  # chaine 2
+  Y <- rnorm(1,X2[i-1],2)
+  Y2 <- rnorm(1,X22[i-1],2)
+  alpha <- dnorm(Y)/dnorm(X2[i-1])
+  alpha2 <- dnorm(Y2)/dnorm(X22[i-1])
+  X2[i] <- ifelse(runif(1)<alpha,Y,X2[i-1])
+  X22[i] <- ifelse(runif(1)<alpha2,Y2,X22[i-1])
+}
+par(mfrow=c(1,2))
+plot(X1,type="l",xlab="Itération")
+points(X11,type="l",col="red")
+plot(X2,type="l",xlab="Itération") 
+points(X22,type="l",col="red")
+```
+
+---
+# Convergence vers la loi stationnaire (1)
+
+.red[**Attention à l'effet "we only see where we've been"**]
+&rarr; exemple avec loi cible $0.7\mathcal{N}(1,1) + 0.2\mathcal{N}(6,1)$ et MH à loi instrumentale $\mathcal{N}(0,1)$.
 ```{r, echo=FALSE}
 fcible <- function(x){0.7*dnorm(x,1,1)+0.3*dnorm(x,6,1)}
 n <- 10000
@@ -3350,143 +3513,117 @@ for (i in 2:n){
   current3 <- c(current3,new)
 }
 ```
-
 .pull-left[
-```{r, echo=FALSE, fig.align='center',fig.height=3.25,fig.width=4.55,fig.retina=2}
+```{r, echo=FALSE, fig.align='center',fig.height=3,fig.width=4.55,fig.retina=2}
+data <- data.frame(mcmc=c(current,current2),chaine=rep(1:2,each=n),iteration=rep(1:n,2))
+ggplot(data=data,aes(x=iteration,y=mcmc,col=as.factor(chaine))) + geom_line() + theme(legend.position = "n") + xlab("Itération") + ylab("Valeur de la chaîne")
+```
+]
+.pull-right[
+```{r, echo=FALSE, fig.align='center',fig.height=3,fig.width=4.5,fig.retina=2, message=FALSE, warning=FALSE}
+ggplot(data=data,aes(x=mcmc,fill=as.factor(chaine))) + geom_histogram(aes(y=..density..),position="identity",alpha=0.5) +
+  stat_function(fun=fcible,col="red") + theme(legend.position = "n") + xlab("Valeur de la chaîne") + ylab("") + xlim(c(-2.5,10))
+```
+]
+.pull-left[
+```{r, echo=FALSE, fig.align='center',fig.height=3,fig.width=4.55,fig.retina=2}
 data <- data.frame(mcmc=c(current,current2,current3),chaine=rep(1:3,each=n),iteration=rep(1:n,3))
 ggplot(data=data,aes(x=iteration,y=mcmc,col=as.factor(chaine))) + geom_line() + theme(legend.position = "n") + xlab("Itération") + ylab("Valeur de la chaîne")
 ```
 ]
 .pull-right[
-```{r, echo=FALSE, fig.align='center',fig.height=3.25,fig.width=4.5,fig.retina=2, message=FALSE, warning=FALSE}
+```{r, echo=FALSE, fig.align='center',fig.height=3,fig.width=4.5,fig.retina=2, message=FALSE, warning=FALSE}
 ggplot(data=data,aes(x=mcmc,fill=as.factor(chaine))) + geom_histogram(aes(y=..density..),position="identity",alpha=0.5) +
   stat_function(fun=fcible,col="red") + theme(legend.position = "n") + xlab("Valeur de la chaîne") + ylab("") + xlim(c(-2.5,10))
 ```
 ]
- - convergence de la moyenne empirique
- - considérer des sous-échantillons pour réduire la dépendance
- - package `coda` dans `R` (tests de stationnarité)
-
 
 ---
-# Rappel
+# Convergence vers la loi stationnaire (2)
 
-.bold[Objectif :] estimer $\mu = \int h(x)f(x)dx$ avec $f$ densité de probabilité
+On peut aussi utiliser des .red[**tests de stationnarité**] :
+- test de Kolmogorov-Smirnov (fonction `ks.test()` sous R et `scipy.stats.kstest()` sous Python)
+ - attention aux hypothèses du test : .red[**échantillons i.i.d.**]
+ 
+- test de Heidelberg et Welch (fonction `heidel.diag()` du package `coda` sous R)
 
---
+- test de Geweke (fonction `geweke.diag()` dans `coda`)
 
-**Méthode :** <span style="color:red"> **obtenir des réalisations $X_1,\dots,X_n$ selon la loi $f$**</span> et poser $\hat{\mu} = \frac{1}{n}\sum_{i=1}^n h(X_i)$
-
---
-
-1. Obtenir des réalisations selon la loi $f$
-
-- *méthode 1* : simuler directement selon $f$
- - méthode de la fonction inverse
- - lien avec d'autres lois (e.g. loi conditionnelle, ...)
- - slice sampler
- - échantillonneur de Gibbs
-
-- *méthode 2* : utiliser une loi instrumentale $g$
- - acceptation-rejet
- - échantillonnage préférentiel avec ré-échantillonnage
- - algorithme de Metropolis-Hastings
-
----
-name: simu_f
-# Rappel
-
-.bold[Objectif :] estimer $\mu = \int h(x)f(x)dx$ avec $f$ densité de probabilité
-
-**Méthode :** <span style="color:red"> **obtenir des réalisations $X_1,\dots,X_n$ selon la loi $f$**</span> et poser $\hat{\mu} = \frac{1}{n}\sum_{i=1}^n h(X_i)$
-
-1. Obtenir des réalisations selon la loi $f$
-
-- *méthode 1* : simuler directement selon $f$ <span style="color:red">&rarr; $f$ **connue exactement**</span>
- - méthode de la fonction inverse <span style="color:#16A085">&rarr; **éch. i.i.d.** </span>
- - lien avec d'autres lois (e.g. loi conditionnelle, ...) <span style="color:#16A085">&rarr; **éch. i.i.d.** </span>
- - slice sampler <span style="color:#16A085">&rarr; **éch. MC** </span>
-
-- *méthode 2* : utiliser une loi instrumentale $g$ <span style="color:red">&rarr; $f$ **connue à une constante près** </span>
- - acceptation-rejet <span style="color:#16A085">&rarr; **éch. i.i.d.** </span>
- - échantillonnage préférentiel avec ré-échantillonnage <span style="color:#16A085">&rarr; **éch. i.i.d.** </span>
- - algorithme de Metropolis-Hastings <span style="color:#16A085">&rarr; **éch. MC** </span>
- - échantillonneur de Gibbs <span style="color:#16A085">&rarr; **éch. MC** </span>
-
-[retour](#simu_post)
----
-# Rappel
-
-.bold[Objectif :] estimer $\mu = \int h(x)f(x)dx$ avec $f$ densité de probabilité
-
-**Méthode :** <span style="color:red"> **obtenir des réalisations $X_1,\dots,X_n$ selon la loi $f$**</span> et poser $\hat{\mu} = \frac{1}{n}\sum_{i=1}^n h(X_i)$
-
---
-
-<ol start="2">
-<li> Poser $\hat{\mu} = \frac{1}{n}\sum_{i=1}^n h(X_i)$
-</ol>
-
-- quelle est la qualité de cette approximation ?
- - convergence
- - biais
- - **variance**
- - coût computationnel
-
-- pour les échantillons de type chaîne de Markov :
- - convergence de la chaîne ?
- - exploration de l'espace ?
- - sensibilité aux conditions initiales ?
-
----
-# Algorithmes MCMC - monitoring
-
-1. Tracer l'évolution de la chaîne &rarr; ''hairy caterpillar''
-
-<img src="hairycaterpillar.png">
-
-
----
-# Algorithmes MCMC - monitoring
-
-1. Tracer l'évolution de la chaîne &rarr; ''hairy caterpillar''
-
-2. Tracer l'autocorrélation de la chaîne
-
-<img src="acf.png">
-
-
----
-# Algorithmes MCMC - monitoring
-
-1. Tracer l'évolution de la chaîne &rarr; ''hairy caterpillar''
-
-2. Tracer l'autocorrélation de la chaîne
-
-3. Calculer le taux d'acceptation (MH)
- - le maximiser dans algo MH à loi instrumentale indépendante
- - proche de 0.44 en dimn. 1 et de 0.25 en dim > 1 dans MH à MA
- - proche de 0.57 dans algo MALA
-
-
----
-# Diagnostics de convergence
-
-**1. Convergence vers la loi stationnaire**
-
-- le trace plot (évolution de la chaîne au cours des itérations) pour détecter les fortes non-stationnarités
-- tests de stationnarité (e.g. Kolmogorov-Smirnov ou test de Heidelberg et Welch)
- - fonction `ks.test()`
- - package `coda` et fonction `heidel.diag()`
 - exploration du support de $f$ &rarr; si $f$ connue exactement et si $d$ petit
  - approximation par sommes de Riemann
  - estimation de la densité
 
-**2. Convergence en moyenne**
+---
+class: my-one-page-font
+# Convergence vers la loi stationnaire (3)
 
-- tracer l'évolution de la moyenne cumulée et chercher la stabilisation
-- idem pour les quantiles
-- variance inter- et intra (plusieurs chaînes) &rarr; fonction `gelman.diag()` du package `coda`
-- effective sampling size &rarr; fonction `effectiveSamplingSize()` du package `coda`
+- En pratique, on définit aussi une période de chauffe (ou *burn-in*) correspondant aux premières itérations de l'algorithme
+- Ces itérations sont **supprimées** et on ne garde que les itérations suivantes
+```{r, echo=FALSE, fig.height=4, fig.width=7, fig.retina=2, fig.align='center'}
+set.seed(202503110)
+X1 <- rep(0,3000);
+X1[1] <- 10
+for (i in 2:3000){
+  # chaine 2
+  if (i < 500){
+    Y <- rnorm(1,X1[i-1],0.2)
+  }else{
+    Y <- rnorm(1,X1[i-1],1)
+  }
+  #Y2 <- rnorm(1,X22[i-1],2)
+  alpha <- dnorm(Y)/dnorm(X1[i-1])
+  #alpha2 <- dnorm(Y2)/dnorm(X22[i-1])
+  X1[i] <- ifelse(runif(1)<alpha,Y,X1[i-1])
+  #X[i] <- ifelse(runif(1)<alpha2,Y2,X22[i-1])
+}
+d <- data.frame(X=X1,type=(seq(1,3000)<500),it=1:3000)
+ggplot(data=d,aes(x=it,y=X,col=as.factor(type))) + geom_line() + theme(legend.position = "none") + scale_color_manual(values=c("black","darkgrey")) + xlab("Itérations")
+```
+```{r}
+library(coda)
+heidel.diag(X)
+```
+
+---
+# Convergence des moyennes empiriques (1)
+
+- Si la chaîne a atteint son régime stationnaire, elle doit vérifier le *théorème ergodique*
+
+- Autrement dit, toutes les expressions de la forme $\frac{1}{n}\sum_{i=1}^n h(X_n)$ doivent converger vers $\mathbb{E}(h(X))$ avec $X \sim f$.
+- En pratique, on vérifie la stabilisation de ces quantités :
+  - en traçant l'évolution de la moyenne cumulée 
+  - idem pour les quantiles (fonction `cumuplot()` du package `coda`)
+  - variance inter- et intra (plusieurs chaînes) &rarr; fonction `gelman.diag()` du package `coda`
 
 
+```{r, fig.height=8, fig.width=10, fig.retina=2, fig.align='center'}
+cumuplot(X)
+```
+
+---
+# Convergence vers un échantillonnage i.i.d.
+
+On peut "mesurer" la proximité avec un échantillon i.i.d. :
+
+- en calculant l'effective sampling size &rarr; fonction `effectiveSamplingSize()` du package `coda`
+
+- en traçant l'autocorrélation de la chaîne et en élagant
+
+```{r, fig.height=4, fig.width=8, fig.retina=2, fig.align='center'}
+par(mfrow=c(1,2))
+acf(X)
+acf(X[500:2000])
+```
+
+
+---
+# Estimation de la variance
+
+Sous certaines hypothèses d'ergodicité de la chaîne de Markov, elle vérifie un TCL :
+
+$$\sqrt{n} (\hat{\mu}_n - \mu) \longrightarrow \mathcal{N}(0,\sigma^2_{c})$$
+
+- expression de $\sigma^2_c$
+- estimation de $\sigma_c^2$
+ - par batch means
+ - par méthodes spectrales
