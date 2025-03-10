@@ -207,6 +207,9 @@ Sys.setenv('RETICULATE_PYTHON'='/usr/bin/python3')
 **3. Méthodes MCMC (suite)**
   - [Cours 13](#c13) (04/03/2025)
   - [Cours 14](#c14) (10/03/2025)
+  
+** 4. Statistiques bayésiennes**
+  - [Cours 15](#c15) (11/03/2025)
 ]
 
 ---
@@ -3578,6 +3581,7 @@ for (i in 2:3000){
 }
 d <- data.frame(X=X1,type=(seq(1,3000)<500),it=1:3000)
 ggplot(data=d,aes(x=it,y=X,col=as.factor(type))) + geom_line() + theme(legend.position = "none") + scale_color_manual(values=c("black","darkgrey")) + xlab("Itérations")
+X <- X1
 ```
 ```{r}
 library(coda)
@@ -3595,10 +3599,16 @@ heidel.diag(X)
   - idem pour les quantiles (fonction `cumuplot()` du package `coda`)
   - variance inter- et intra (plusieurs chaînes) &rarr; fonction `gelman.diag()` du package `coda`
 
-
-```{r, fig.height=8, fig.width=10, fig.retina=2, fig.align='center'}
-cumuplot(X)
+.pull-left[
+```{r, echo=FALSE, fig.height=5, fig.width=8, fig.retina=2, fig.align='center'}
+cumuplot(X,main="Pas de stabilisation",auto.layout = F)
 ```
+]
+.pull-right[
+```{r, echo=FALSE, fig.height=5, fig.width=8, fig.retina=2, fig.align='center'}
+cumuplot(X[500:3000],main="Stabilisation (sans le burn-in)",auto.layout = FALSE)
+```
+]
 
 ---
 # Convergence vers un échantillonnage i.i.d.
@@ -3627,3 +3637,4 @@ $$\sqrt{n} (\hat{\mu}_n - \mu) \longrightarrow \mathcal{N}(0,\sigma^2_{c})$$
 - estimation de $\sigma_c^2$
  - par batch means
  - par méthodes spectrales
+

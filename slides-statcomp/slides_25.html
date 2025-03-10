@@ -198,6 +198,9 @@ MathJax.Hub.Config({
 **3. Méthodes MCMC (suite)**
   - [Cours 13](#c13) (04/03/2025)
   - [Cours 14](#c14) (10/03/2025)
+  
+** 4. Statistiques bayésiennes**
+  - [Cours 15](#c15) (11/03/2025)
 ]
 
 ---
@@ -2930,11 +2933,11 @@ heidel.diag(X)
 ##                                    
 ##      Stationarity start     p-value
 ##      test         iteration        
-## [,1] passed       1         0.124  
-##                                 
-##      Halfwidth Mean    Halfwidth
-##      test                       
-## [,1] failed    -0.0156 0.0415
+## [,1] passed       301       0.0704 
+##                                
+##      Halfwidth Mean   Halfwidth
+##      test                      
+## [,1] failed    -0.107 0.107
 ```
 
 ---
@@ -2948,13 +2951,12 @@ heidel.diag(X)
   - idem pour les quantiles (fonction `cumuplot()` du package `coda`)
   - variance inter- et intra (plusieurs chaînes) &amp;rarr; fonction `gelman.diag()` du package `coda`
 
-
-
-``` r
-cumuplot(X)
-```
-
-&lt;img src="slides_25_files/figure-html/unnamed-chunk-154-1.png" width="720" style="display: block; margin: auto;" /&gt;
+.pull-left[
+&lt;img src="slides_25_files/figure-html/unnamed-chunk-154-1.png" width="576" style="display: block; margin: auto;" /&gt;
+]
+.pull-right[
+&lt;img src="slides_25_files/figure-html/unnamed-chunk-155-1.png" width="576" style="display: block; margin: auto;" /&gt;
+]
 
 ---
 # Convergence vers un échantillonnage i.i.d.
@@ -2972,7 +2974,7 @@ acf(X)
 acf(X[500:2000])
 ```
 
-&lt;img src="slides_25_files/figure-html/unnamed-chunk-155-1.png" width="576" style="display: block; margin: auto;" /&gt;
+&lt;img src="slides_25_files/figure-html/unnamed-chunk-156-1.png" width="576" style="display: block; margin: auto;" /&gt;
 
 
 ---
@@ -2986,6 +2988,7 @@ Sous certaines hypothèses d'ergodicité de la chaîne de Markov, elle vérifie 
 - estimation de `\(\sigma_c^2\)`
  - par batch means
  - par méthodes spectrales
+
     </textarea>
 <style data-target="print-only">@media screen {.remark-slide-container{display:block;}.remark-slide-scaler{box-shadow:none;}}</style>
 <script src="https://remarkjs.com/downloads/remark-latest.min.js"></script>
