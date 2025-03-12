@@ -2989,6 +2989,266 @@ Sous certaines hypothèses d'ergodicité de la chaîne de Markov, elle vérifie 
  - par batch means
  - par méthodes spectrales
 
+
+---
+name: c15
+class: inverse, middle, center
+
+# III. Introduction aux statistiques bayésiennes
+
+---
+# Le point de vue Bayésien
+
+Combiner notre information &lt;span style="color:#ffe933"&gt;**a priori**&lt;/span&gt; avec les &lt;span style="color:#2a6099"&gt;**observations**&lt;/span&gt; pour mettre à jour notre connaissance &lt;span style="color:#77bc65"&gt;**a posteriori**&lt;/span&gt;
+
+&lt;img src="slides_25_files/figure-html/unnamed-chunk-157-1.png" width="800px" style="display: block; margin: auto;" /&gt;
+
+---
+# Le point de vue Bayésien
+
+Mise à jour **séquentielle** de la connaissance
+
+&lt;/br&gt;
+
+&lt;img src="slides_25_files/figure-html/unnamed-chunk-158-1.png" width="800px" style="display: block; margin: auto;" /&gt;
+
+
+---
+# Le point de vue Bayésien
+
+- Mixer l'information a priori avec les observations
+
+- Donner plus ou moins de poids à l'a priori en fonction du contexte
+
+- Interprétation différente des résultats de l'inférence
+ - en bayésien, les probabilités reflètent la *plausabilité* d'un évènement
+ - en fréquentiste, les probabilités s'interprètent comme la *fréquence limite* d'un évènement répété
+
+- Interprétation des tests d'hypothèses beaucoup plus ''naturelle''
+
+---
+# Le théorème de Bayes
+
+Thomas Bayes (1702-1761) et indépendamment Pierre-Simon de Laplace (1749-1827)
+&lt;/br&gt;
+
+&lt;img src="slides_25_files/figure-html/unnamed-chunk-159-1.gif" width="400px" style="display: block; margin: auto;" /&gt;
+
+&lt;/br&gt;
+
+&gt; **Théorème de Bayes**
+&gt;
+&gt; Pour deux évènements `\(A\)` et `\(B\)` :
+$$\mathbb{P}(A|B) = \frac{\mathbb{P}(B|A) \ \mathbb{P}(A)}{\mathbb{P}(B)} $$
+
+---
+# Le théorème de Bayes
+
+- Version continue du théorème pour `\(X\)` et `\(Y\)` deux v.a. :
+
+$$g(y|x) = \frac{f(x|y)h(y)}{\int f(x|y)h(y) dy} $$
+
+--
+
+- Bayes et Laplace appliquent ce résultat à la modélisation statistique :
+ - en représentant l'*incertitude* entourant `\(\theta\)` par une *distribution* `\(\pi\)`
+
+$$p(\theta | x) = \frac{f(x|\theta) \pi(\theta)}{\int f(x|\theta) \pi(\theta) d\theta} $$
+ - le paramètre du modèle statistique est donc considéré comme **aléatoire**
+
+---
+# Modélisation Bayésienne
+
+`\(\mathcal{X} = (X_1,\dots,X_n)\)` i.i.d de loi `\(f\)` qui dépend d'une quantité `\(\theta\)`
+
+- .orange[**Modèle statistique fréquentiste**]
+  - `\(\theta\)` est un paramètre déterministe
+  - `\(X_i \sim f(\cdot ; \theta)\)` &amp;rarr; `\(f(\cdot;\theta)\)` est la loi **marginale** des observations `\(X_i\)`
+  - L'inférence se fait à l'aide de la **vraisemblance**
+
+--
+
+- .green[**Modèle statistique bayésien**]
+  - `\(\theta\)` est une variable aléatoire
+  - `\(X_i \mid \theta \sim f(\cdot | \theta)\)` &amp;rarr; `\(f(\cdot |\theta)\)` est la loi **conditionnelle** des observations `\(X_i\)` sachant `\(\theta\)`
+  - On ajoute une loi sur `\(\theta\)`, appelée **loi a priori** : `\(\theta  \sim \pi\)`
+  - L'inférence se fait à l'aide de la **vraisemblance** .red[**et de la loi a priori**], combinées dans la .green[**distribution a posteriori**]
+  - Loi a posteriori : loi conditionnelle de `\(\theta\)` sachant `\(\{\mathcal{X}=x\}\)`, notée `\(p(\theta \mid x)\)`.
+
+
+---
+# Exemple historique (Laplace, 1786)
+
+**Question** : est-ce que la probabilité `\(\theta\)` d'avoir un garçon est plus grande que celle d'avoir une fille ?
+
+--
+
+- &lt;span style="color:#2a6099"&gt;**données**&lt;/span&gt; : naissances à Paris entre 1745 et 1770 : 251 527 garçons et 241 945 filles
+
+ &amp;rarr; loi des observations ? `\(\dots\)`
+
+---
+# Exemple historique (Laplace, 1786)
+
+**Question** : est-ce que la probabilité `\(\theta\)` d'avoir un garçon est plus grande que celle d'avoir une fille ?
+
+- &lt;span style="color:#2a6099"&gt;**données**&lt;/span&gt; : naissances à Paris entre 1745 et 1770 : 251 527 garçons et 241 945 filles
+
+ &amp;rarr; loi des observations ? `\(X_i \mid \theta \sim \mathcal{B}(\theta) \Leftrightarrow X \mid \mathcal{B}(n,\theta)\)` où `\(X_i =1\)` si garçon et `\(0\)` sinon et `\(X = \sum_{i=1}^n X_i\)`.
+
+
+--
+
+- &lt;span style="color:#ffe933"&gt;**loi a priori**&lt;/span&gt; : `\(\dots\)` 
+
+
+---
+# Exemple historique (Laplace, 1786)
+
+**Question** : est-ce que la probabilité `\(\theta\)` d'avoir un garçon est plus grande que celle d'avoir une fille ?
+
+- &lt;span style="color:#2a6099"&gt;**données**&lt;/span&gt; : naissances à Paris entre 1745 et 1770 : 251 527 garçons et 241 945 filles
+
+ &amp;rarr; loi des observations ? `\(X_i \mid \theta \sim \mathcal{B}(\theta) \Leftrightarrow X \mid \mathcal{B}(n,\theta)\)` où `\(X_i =1\)` si garçon et `\(0\)` sinon et `\(X = \sum_{i=1}^n X_i\)`.
+
+- &lt;span style="color:#ffe933"&gt;**loi a priori**&lt;/span&gt; : la probabilité d'avoir un garçon peut valoir n'importe quoi entre 0 et 1 &amp;rarr; `\(\theta \sim \mathcal{U}([0,1])\)`
+
+--
+
+- &lt;span style="color:#77bc65"&gt;**loi a posteriori**&lt;/span&gt; : `\(\dots\)` 
+
+
+---
+# Exemple historique (Laplace, 1786)
+
+**Question** : est-ce que la probabilité `\(\theta\)` d'avoir un garçon est plus grande que celle d'avoir une fille ?
+
+- &lt;span style="color:#2a6099"&gt;**données**&lt;/span&gt; : naissances à Paris entre 1745 et 1770 : 251 527 garçons et 241 945 filles
+
+ &amp;rarr; loi des observations ? `\(X_i \mid \theta \sim \mathcal{B}(\theta) \Leftrightarrow X \mid \mathcal{B}(n,\theta)\)` où `\(X_i =1\)` si garçon et `\(0\)` sinon et `\(X = \sum_{i=1}^n X_i\)`.
+
+- &lt;span style="color:#ffe933"&gt;**loi a priori**&lt;/span&gt; : la probabilité d'avoir un garçon peut valoir n'importe quoi entre 0 et 1 &amp;rarr; `\(\theta \sim \mathcal{U}([0,1])\)`
+
+- &lt;span style="color:#77bc65"&gt;**loi a posteriori**&lt;/span&gt; : `\(\theta \mid x \sim \text{Beta}(x+1,n-x+1)\)` 
+
+--
+
+- On obtient par le calcul `\(\mathbb{P}(\theta \leq 1/2 | (251 527, 241 945)) = 1.15 \cdot 10^{-42}\)`
+
+--
+
+``` r
+xg &lt;- 251527
+xf &lt;- 241945
+pbeta(0.5,251527+1,241945+1)
+```
+
+```
+## [1] 1.146058e-42
+```
+
+
+---
+# Le modèle Beta-binomial
+
+- Exemple : sondage électoral .small[(inspiré de *Bayes Rule! An Introduction to Applied Bayesian Modeling*)]
+
+- **Contexte** : on souhaite évaluer les chances d'une candidate A face à une autre à l'aide d'un sondage.
+
+--
+
+- On note `\(X_1,\dots,X_n\)` l'intention de vote de chaque électeur et `\(\theta\)` la probabilité pour qu'un électeur choisisse A.
+
+--
+
+- Modèle fréquentiste : `\(X_i \sim \mathcal{B}(\theta) \ \Leftrightarrow \ \sum_{i=1}^n X_i =: X \sim \mathcal{B}(n,\theta)\)`
+
+--
+
+- Modèle bayésien :
+`\begin{align}
+X | \theta &amp; \sim \mathcal{B}(n,\theta) \\
+\theta &amp; \sim \pi
+\end{align}`
+
+
+---
+# Le modèle Beta-binomial
+
+- Modèle bayésien : `\(X | \theta \sim \mathcal{B}(n,\theta), \quad \theta \sim \pi\)`
+ &amp;rarr; comment choisir `\(\pi\)` ?
+
+--
+
+- On a déjà réalisé plusieurs sondages :
+
+&lt;/br&gt;
+&lt;/br&gt;
+&lt;img src="slides_25_files/figure-html/unnamed-chunk-161-1.png" width="360" style="display: block; margin: auto;" /&gt;
+--
+
+- On aimerait choisir une densité de probabilité sur `\([0,1]\)` qui reflète ces informations &amp;rarr; on peut prendre la loi `\(\text{Beta}(a,b)\)`
+
+---
+class: my-one-page-font
+# Le modèle Beta-binomial
+
+- La loi Beta a pour densité : `\(f(x;a,b) = \frac{\Gamma(a+b)}{\Gamma(a)\Gamma(b)} x^{a-1} (1-x)^{b-1} \mathbb{1}_{[0,1]}(x)\)`
+
+- `\(X \sim \text{Beta}(a,b)\)` : `\(\mathbb{E}(X) = \frac{a}{a+b}\)`, `\(\text{Var}(X) = \frac{ab}{(a+b)^2(a+b+1)}\)`
+
+- Si `\(a&gt;1,b&gt;1\)` on peut aussi paramétrer la loi Beta par son mode `\(m = \frac{a-1}{a+b-2}\)` et sa concentration `\(s=a+b\)`
+
+--
+
+&lt;img src="slides_25_files/figure-html/unnamed-chunk-162-1.png" width="576" style="display: block; margin: auto;" /&gt;
+
+---
+# Le modèle Beta-binomial
+
+- Que choisir ici ?
+- Mode observé dans les sondages : 0.375 &amp;rarr; `\(m=0.375\)`
+
+--
+
+&lt;img src="slides_25_files/figure-html/unnamed-chunk-163-1.png" width="864" style="display: block; margin: auto;" /&gt;
+
+---
+# Le modèle Beta-binomial
+
+- Loi a priori : `\(\pi(\theta)\)` &amp;rarr; loi `\(\text{Beta}(a,b)\)` avec `\(a=\)` 7.75 et `\(b=\)` 12.25 (hyperparamètres)
+
+- Vraisemblance : on fait un nouveau sondage sur `\(n=50\)` personnes &amp;rarr; `\(X | \theta \sim \mathcal{B}(50,\theta)\)` et on observe `\(X(\omega) = 20\)`.
+
+&lt;/br&gt;
+
+&lt;img src="slides_25_files/figure-html/unnamed-chunk-164-1.png" width="360" style="display: block; margin: auto;" /&gt;
+
+---
+# Le modèle Beta-binomial
+
+Loi a posteriori `\(\text{Beta}(20+7.75,30+12.25)\)`
+
+&lt;img src="slides_25_files/figure-html/unnamed-chunk-165-1.png" width="504" style="display: block; margin: auto;" /&gt;
+&lt;span style="color:red"&gt;**La vraisemblance est renormalisée de telle sorte à ce que son intégrale soit égale à 1, pour pouvoir la comparer plus facilement aux densités a priori et a posteriori qui sont des densités de probabilités pour `\(\theta\)`, contrairement à la vraisemblance.**&lt;/span&gt;
+
+---
+# Le modèle Beta-binomial
+
+- Que se passe t-il si on change de loi a priori ?
+
+--
+
+&lt;img src="slides_25_files/figure-html/unnamed-chunk-166-1.png" width="864" style="display: block; margin: auto;" /&gt;
+
+---
+# Le modèle Beta-binomial
+
+- Que se passe t-il si la taille de l'échantillon augmente ? ou diminue ?
+
+&lt;img src="slides_25_files/figure-html/unnamed-chunk-167-1.png" width="792" style="display: block; margin: auto;" /&gt;
+
+&lt;span style="color:#16A085"&gt;**fin du cours 15 (11/03/2025)**&lt;/span&gt;
     </textarea>
 <style data-target="print-only">@media screen {.remark-slide-container{display:block;}.remark-slide-scaler{box-shadow:none;}}</style>
 <script src="https://remarkjs.com/downloads/remark-latest.min.js"></script>

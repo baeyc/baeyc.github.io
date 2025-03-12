@@ -153,6 +153,9 @@ library(flair)
 yellow <- "#FFCC29"
 orange <- "#F58634"
 green <- "#007965"
+cprior <- "#ffe933"
+cobs <- "#2a6099"
+cpost <- "#77bc65"
 ```
 
 ```{r, echo=FALSE}
@@ -3638,3 +3641,341 @@ $$\sqrt{n} (\hat{\mu}_n - \mu) \longrightarrow \mathcal{N}(0,\sigma^2_{c})$$
  - par batch means
  - par méthodes spectrales
 
+
+---
+name: c15
+class: inverse, middle, center
+
+# III. Introduction aux statistiques bayésiennes
+
+---
+# Le point de vue Bayésien
+
+Combiner notre information <span style="color:#ffe933">**a priori**</span> avec les <span style="color:#2a6099">**observations**</span> pour mettre à jour notre connaissance <span style="color:#77bc65">**a posteriori**</span>
+
+```{r, out.width='800px', echo=FALSE, fig.align='center'}
+magick::image_read_pdf("/home/charlotte/Documents/Enseignement/Lille/M1 ISN /Statistiques computationnelles/Poly/bayesian.pdf")
+```
+
+---
+# Le point de vue Bayésien
+
+Mise à jour **séquentielle** de la connaissance
+
+</br>
+
+```{r, out.width='800px', echo=FALSE, fig.align='center'}
+magick::image_read_pdf("/home/charlotte/Documents/Enseignement/Lille/M1 ISN /Statistiques computationnelles/Poly/bayesian_seq.pdf")
+```
+
+
+---
+# Le point de vue Bayésien
+
+- Mixer l'information a priori avec les observations
+
+- Donner plus ou moins de poids à l'a priori en fonction du contexte
+
+- Interprétation différente des résultats de l'inférence
+ - en bayésien, les probabilités reflètent la *plausabilité* d'un évènement
+ - en fréquentiste, les probabilités s'interprètent comme la *fréquence limite* d'un évènement répété
+
+- Interprétation des tests d'hypothèses beaucoup plus ''naturelle''
+
+---
+# Le théorème de Bayes
+
+Thomas Bayes (1702-1761) et indépendamment Pierre-Simon de Laplace (1749-1827)
+</br>
+
+```{r, out.width='400px', echo=FALSE, fig.align='center'}
+par(mfrow=c(1,2))
+bayes <- magick::image_read("/home/charlotte/Documents/Enseignement/Lille/M1 ISN /Statistiques computationnelles/Poly/Thomas_Bayes.gif")
+laplace <- magick::image_read("/home/charlotte/Documents/Enseignement/Lille/M1 ISN /Statistiques computationnelles/Poly/Pierre-Simon_Laplace.jpg")
+all <- c(bayes,laplace)
+magick::image_append(magick::image_scale(all,geometry="x200"))
+```
+
+</br>
+
+> **Théorème de Bayes**
+>
+> Pour deux évènements $A$ et $B$ :
+$$\mathbb{P}(A|B) = \frac{\mathbb{P}(B|A) \ \mathbb{P}(A)}{\mathbb{P}(B)} $$
+
+---
+# Le théorème de Bayes
+
+- Version continue du théorème pour $X$ et $Y$ deux v.a. :
+
+$$g(y|x) = \frac{f(x|y)h(y)}{\int f(x|y)h(y) dy} $$
+
+--
+
+- Bayes et Laplace appliquent ce résultat à la modélisation statistique :
+ - en représentant l'*incertitude* entourant $\theta$ par une *distribution* $\pi$
+
+$$p(\theta | x) = \frac{f(x|\theta) \pi(\theta)}{\int f(x|\theta) \pi(\theta) d\theta} $$
+ - le paramètre du modèle statistique est donc considéré comme **aléatoire**
+
+---
+# Modélisation Bayésienne
+
+$\mathcal{X} = (X_1,\dots,X_n)$ i.i.d de loi $f$ qui dépend d'une quantité $\theta$
+
+- .orange[**Modèle statistique fréquentiste**]
+  - $\theta$ est un paramètre déterministe
+  - $X_i \sim f(\cdot ; \theta)$ &rarr; $f(\cdot;\theta)$ est la loi **marginale** des observations $X_i$
+  - L'inférence se fait à l'aide de la **vraisemblance**
+
+--
+
+- .green[**Modèle statistique bayésien**]
+  - $\theta$ est une variable aléatoire
+  - $X_i \mid \theta \sim f(\cdot | \theta)$ &rarr; $f(\cdot |\theta)$ est la loi **conditionnelle** des observations $X_i$ sachant $\theta$
+  - On ajoute une loi sur $\theta$, appelée **loi a priori** : $\theta  \sim \pi$
+  - L'inférence se fait à l'aide de la **vraisemblance** .red[**et de la loi a priori**], combinées dans la .green[**distribution a posteriori**]
+  - Loi a posteriori : loi conditionnelle de $\theta$ sachant $\{\mathcal{X}=x\}$, notée $p(\theta \mid x)$.
+
+
+---
+# Exemple historique (Laplace, 1786)
+
+**Question** : est-ce que la probabilité $\theta$ d'avoir un garçon est plus grande que celle d'avoir une fille ?
+
+--
+
+- <span style="color:#2a6099">**données**</span> : naissances à Paris entre 1745 et 1770 : 251 527 garçons et 241 945 filles
+
+ &rarr; loi des observations ? $\dots$
+
+---
+# Exemple historique (Laplace, 1786)
+
+**Question** : est-ce que la probabilité $\theta$ d'avoir un garçon est plus grande que celle d'avoir une fille ?
+
+- <span style="color:#2a6099">**données**</span> : naissances à Paris entre 1745 et 1770 : 251 527 garçons et 241 945 filles
+
+ &rarr; loi des observations ? $X_i \mid \theta \sim \mathcal{B}(\theta) \Leftrightarrow X \mid \mathcal{B}(n,\theta)$ où $X_i =1$ si garçon et $0$ sinon et $X = \sum_{i=1}^n X_i$.
+
+
+--
+
+- <span style="color:#ffe933">**loi a priori**</span> : $\dots$ 
+
+
+---
+# Exemple historique (Laplace, 1786)
+
+**Question** : est-ce que la probabilité $\theta$ d'avoir un garçon est plus grande que celle d'avoir une fille ?
+
+- <span style="color:#2a6099">**données**</span> : naissances à Paris entre 1745 et 1770 : 251 527 garçons et 241 945 filles
+
+ &rarr; loi des observations ? $X_i \mid \theta \sim \mathcal{B}(\theta) \Leftrightarrow X \mid \mathcal{B}(n,\theta)$ où $X_i =1$ si garçon et $0$ sinon et $X = \sum_{i=1}^n X_i$.
+
+- <span style="color:#ffe933">**loi a priori**</span> : la probabilité d'avoir un garçon peut valoir n'importe quoi entre 0 et 1 &rarr; $\theta \sim \mathcal{U}([0,1])$
+
+--
+
+- <span style="color:#77bc65">**loi a posteriori**</span> : $\dots$ 
+
+
+---
+# Exemple historique (Laplace, 1786)
+
+**Question** : est-ce que la probabilité $\theta$ d'avoir un garçon est plus grande que celle d'avoir une fille ?
+
+- <span style="color:#2a6099">**données**</span> : naissances à Paris entre 1745 et 1770 : 251 527 garçons et 241 945 filles
+
+ &rarr; loi des observations ? $X_i \mid \theta \sim \mathcal{B}(\theta) \Leftrightarrow X \mid \mathcal{B}(n,\theta)$ où $X_i =1$ si garçon et $0$ sinon et $X = \sum_{i=1}^n X_i$.
+
+- <span style="color:#ffe933">**loi a priori**</span> : la probabilité d'avoir un garçon peut valoir n'importe quoi entre 0 et 1 &rarr; $\theta \sim \mathcal{U}([0,1])$
+
+- <span style="color:#77bc65">**loi a posteriori**</span> : $\theta \mid x \sim \text{Beta}(x+1,n-x+1)$ 
+
+--
+
+- On obtient par le calcul $\mathbb{P}(\theta \leq 1/2 | (251 527, 241 945)) = 1.15 \cdot 10^{-42}$
+
+--
+```{r}
+xg <- 251527
+xf <- 241945
+pbeta(0.5,251527+1,241945+1)
+```
+
+
+---
+# Le modèle Beta-binomial
+
+- Exemple : sondage électoral .small[(inspiré de *Bayes Rule! An Introduction to Applied Bayesian Modeling*)]
+
+- **Contexte** : on souhaite évaluer les chances d'une candidate A face à une autre à l'aide d'un sondage.
+
+--
+
+- On note $X_1,\dots,X_n$ l'intention de vote de chaque électeur et $\theta$ la probabilité pour qu'un électeur choisisse A.
+
+--
+
+- Modèle fréquentiste : $X_i \sim \mathcal{B}(\theta) \ \Leftrightarrow \ \sum_{i=1}^n X_i =: X \sim \mathcal{B}(n,\theta)$
+
+--
+
+- Modèle bayésien :
+\begin{align}
+X | \theta & \sim \mathcal{B}(n,\theta) \\
+\theta & \sim \pi
+\end{align}
+
+
+---
+# Le modèle Beta-binomial
+
+- Modèle bayésien : $X | \theta \sim \mathcal{B}(n,\theta), \quad \theta \sim \pi$
+ &rarr; comment choisir $\pi$ ?
+
+--
+
+- On a déjà réalisé plusieurs sondages :
+
+</br>
+</br>
+```{r, echo=FALSE, fig.width=5, fig.height=4, fig.align='center', fig.retina=2, message=FALSE, warning=FALSE}
+set.seed(0)
+d <- rbeta(25,12,17)
+ggplot(data=data.frame(d=d),aes(x=d)) + geom_histogram(fill="lightgrey",col="darkgrey") + xlim(c(0,1)) + xlab("Pourcentage de votants pour A") + ylab("")
+```
+--
+
+- On aimerait choisir une densité de probabilité sur $[0,1]$ qui reflète ces informations &rarr; on peut prendre la loi $\text{Beta}(a,b)$
+
+---
+class: my-one-page-font
+# Le modèle Beta-binomial
+
+- La loi Beta a pour densité : $f(x;a,b) = \frac{\Gamma(a+b)}{\Gamma(a)\Gamma(b)} x^{a-1} (1-x)^{b-1} \mathbb{1}_{[0,1]}(x)$
+
+- $X \sim \text{Beta}(a,b)$ : $\mathbb{E}(X) = \frac{a}{a+b}$, $\text{Var}(X) = \frac{ab}{(a+b)^2(a+b+1)}$
+
+- Si $a>1,b>1$ on peut aussi paramétrer la loi Beta par son mode $m = \frac{a-1}{a+b-2}$ et sa concentration $s=a+b$
+
+--
+
+```{r, echo=FALSE, fig.width=8, fig.height=5, fig.align='center', fig.retina=2}
+x<-seq(0,1,0.001)
+b1 <- dbeta(x,0.8,3)
+b2 <- dbeta(x,1,5)
+b3 <- dbeta(x,2,5)
+b31 <- dbeta(x,3,9)
+b4 <- dbeta(x,0.5,0.5)
+b5 <- dbeta(x,1,1)
+b6 <- dbeta(x,5,5)
+b66 <- dbeta(x,20,20)
+b70 <- dbeta(x,12,4)
+b7 <- dbeta(x,5,2)
+b8 <- dbeta(x,5,1)
+b9 <- dbeta(x,3,0.8)
+data <- data.frame(x=rep(x,12),beta=c(b1,b2,b3,b31,b4,b5,b6,b66,b70,b7,b8,b9),dist=rep(c("Beta(0.8,3)","Beta(1,5)","Beta(2,5)","Beta(3,9)","Beta(0.5,0.5)","Beta(1,1)","Beta(5,5)","Beta(20,20)","Beta(12,4)","Beta(5,2)","Beta(2,1)","Beta(5,1)"),each=length(x)))
+data$dist <- factor(data$dist,levels=c("Beta(0.8,3)","Beta(1,5)","Beta(2,5)","Beta(3,9)","Beta(0.5,0.5)","Beta(1,1)","Beta(5,5)","Beta(20,20)","Beta(12,4)","Beta(5,2)","Beta(2,1)","Beta(5,1)"))
+ggplot(data=data,aes(x=x,y=beta,group=dist)) + geom_line() + facet_wrap(~dist) + scale_x_continuous(breaks=c(0,0.25,0.50,0.75,1)) + ylim(c(0,5.02))
+```
+
+---
+# Le modèle Beta-binomial
+
+- Que choisir ici ?
+- Mode observé dans les sondages : 0.375 &rarr; $m=0.375$
+
+--
+
+```{r, echo=FALSE, fig.width=12, fig.height=4, fig.align='center', fig.retina=2, message=FALSE, warning=FALSE}
+x<-seq(0,1,0.001)
+m <- 0.375
+s <- c(10,20,30,50)
+bs <- lapply(s,FUN=function(i){dbeta(x,m*(i-2)+1,i-m*(i-2)-1)})
+bs <- do.call("c",bs)
+data <- data.frame(x=rep(x,4),beta=bs,dist=rep(paste0("s=",s),each=length(x)))
+data$dist <- factor(data$dist,levels=paste0("s=",s))
+dd <- data.frame(d=rep(d,4),dist=rep(paste0("s=",s),each=length(d)))
+dd$dist <- factor(dd$dist,levels=paste0("s=",s))
+ggplot(data=dd,aes(x=d,group=dist)) + geom_histogram(fill="lightgrey",col="darkgrey") + facet_wrap(~dist,nc=4) + geom_line(data=data,aes(x=x,y=beta))
+#ggplot(data=data,aes(x=x,y=beta,group=dist)) + geom_line() + facet_wrap(~dist,nc=4) + scale_x_continuous(breaks=c(0,0.25,0.50,0.75,1))
+```
+
+---
+# Le modèle Beta-binomial
+
+- Loi a priori : $\pi(\theta)$ &rarr; loi $\text{Beta}(a,b)$ avec $a=$ `r m*(20-2)+1` et $b=$ `r 20-m*(20-2)-1` (hyperparamètres)
+
+- Vraisemblance : on fait un nouveau sondage sur $n=50$ personnes &rarr; $X | \theta \sim \mathcal{B}(50,\theta)$ et on observe $X(\omega) = 20$.
+
+</br>
+
+```{r , echo=FALSE, fig.width=5, fig.height=4, fig.align='center', fig.retina=2}
+#theta <- seq(1,9,1)/10
+#lik <- lapply(theta, FUN=function(p){dbinom(seq(0,50),50,p)})
+#dlik <- do.call("c",lik)
+#obs <- data.frame(x=rep(20,length(theta)),lik=dbinom(20,50,theta),dist=paste0("B(50,",theta,")"))
+#ddlik <- data.frame(x=rep(seq(0,50,1),length(theta)),lik=dlik,dist=rep(paste0("B(50,",theta,")"),each=51))
+#ggplot(data=ddlik,aes(x=x)) + geom_point(aes(y=lik),col="darkgrey",size=0.1) + facet_wrap(~dist) + geom_linerange(aes(ymax=lik,ymin=0),col="darkgrey") + geom_point(data=obs,aes(x=x,y=lik)) + geom_linerange(data=obs,aes(ymax=lik,ymin=0))
+
+theta <- seq(0,1,0.001)
+lik <- dbinom(20,50,theta)
+ggplot(data=NULL,aes(x=theta,y=lik)) + geom_line()
+```
+
+---
+# Le modèle Beta-binomial
+
+Loi a posteriori $\text{Beta}(20+7.75,30+12.25)$
+
+```{r, echo=FALSE, fig.width=7, fig.height=5, fig.align='center', fig.retina=2, message=FALSE}
+cst <- integrate(function(x){dbinom(20,50,x)},lower=0,upper=1)
+data_all <- data.frame(x=rep(seq(0,1,0.001),3),y=c(dbeta(seq(0,1,0.001),7.75,12.25),dbinom(20,50,x)/cst$value,dbeta(x,20+7.75,30+12.25)),dist=rep(c("Loi a priori","Vraisemblance (normalisée)","Loi a posteriori"),each=1001))
+ggplot(data=data_all,aes(x=x,y=y,col=dist)) + geom_line(lwd=2) + scale_color_discrete("") + scale_color_manual("",values=c("#77bc65","#ffd700","#2a6099"))
+```
+<span style="color:red">**La vraisemblance est renormalisée de telle sorte à ce que son intégrale soit égale à 1, pour pouvoir la comparer plus facilement aux densités a priori et a posteriori qui sont des densités de probabilités pour $\theta$, contrairement à la vraisemblance.**</span>
+
+---
+# Le modèle Beta-binomial
+
+- Que se passe t-il si on change de loi a priori ?
+
+--
+
+```{r, echo=FALSE, fig.width=12, fig.height=7, fig.align='center', fig.retina=2}
+cst <- integrate(function(x){dbinom(20,50,x)},lower=0,upper=1)
+priors <- c(dbeta(x,1,1),dbeta(x,1,5),dbeta(x,3,10),
+            dbeta(x,10,10),dbeta(x,10,3),dbeta(x,5,1))
+posteriors <- c(dbeta(x,20+1,30+1),dbeta(x,20+1,30+5),dbeta(x,20+3,30+10),
+            dbeta(x,20+10,30+10),dbeta(x,20+10,30+3),dbeta(x,20+5,30+1))
+data_all <- data.frame(x=rep(x,18),y=c(priors,rep(dbinom(20,50,x)/cst$value,6),posteriors),dist=rep(c("Loi a priori","Vraisemblance (normalisée)","Loi a posteriori"),each=6006),prior=rep(rep(c("Beta(1,1)","Beta(1,5)","Beta(3,10)","Beta(10,10)","Beta(10,3)","Beta(5,1)"),each=1001),3))
+ggplot(data=data_all,aes(x=x,y=y,col=dist)) + geom_line(lwd=1) + facet_wrap(~prior) + scale_color_manual("",values=c("#77bc65","#ffd700","#2a6099")) + theme(legend.position = "bottom")
+```
+
+---
+# Le modèle Beta-binomial
+
+- Que se passe t-il si la taille de l'échantillon augmente ? ou diminue ?
+
+```{r, echo=FALSE, fig.width=11, fig.height=6.5, fig.align='center', fig.retina=2}
+nobs <- 200
+xobs <- 0.4*nobs
+cst2 <- integrate(function(x){dbinom(xobs,nobs,x)},lower=0,upper=1)
+posteriors2 <- c(dbeta(x,xobs+1,nobs-xobs+1),dbeta(x,xobs+1,nobs-xobs+5),dbeta(x,xobs+3,nobs-xobs+10),
+            dbeta(x,xobs+10,nobs-xobs+10),dbeta(x,xobs+10,nobs-xobs+3),dbeta(x,xobs+5,nobs-xobs+1))
+data_all2 <- data.frame(x=rep(x,18),y=c(priors,rep(dbinom(xobs,nobs,x)/cst2$value,6),posteriors2),dist=rep(c("Loi a priori","Vraisemblance (normalisée)","Loi a posteriori"),each=6006),prior=rep(rep(c("Beta(1,1)","Beta(1,5)","Beta(3,10)","Beta(10,10)","Beta(10,3)","Beta(5,1)"),each=1001),3),n="n=200")
+data_all$n <- "n=50"
+nobs <- 10
+xobs <- 0.4*nobs
+cst3 <- integrate(function(x){dbinom(xobs,nobs,x)},lower=0,upper=1)
+posteriors3 <- c(dbeta(x,xobs+1,nobs-xobs+1),dbeta(x,xobs+1,nobs-xobs+5),dbeta(x,xobs+3,nobs-xobs+10),
+            dbeta(x,xobs+10,nobs-xobs+10),dbeta(x,xobs+10,nobs-xobs+3),dbeta(x,xobs+5,nobs-xobs+1))
+data_all3 <- data.frame(x=rep(x,18),y=c(priors,rep(dbinom(xobs,nobs,x)/cst3$value,6),posteriors3),dist=rep(c("Loi a priori","Vraisemblance (normalisée)","Loi a posteriori"),each=6006),prior=rep(rep(c("Beta(1,1)","Beta(1,5)","Beta(3,10)","Beta(10,10)","Beta(10,3)","Beta(5,1)"),each=1001),3),n="n=10")
+data_all123 <- rbind(data_all,data_all2,data_all3)
+data_all123$n <- factor(data_all123$n,levels=c("n=10","n=50","n=200"))
+ggplot(data=data_all123,aes(x=x,y=y,col=dist)) + geom_line(lwd=1) + facet_grid(n~prior) + scale_color_manual("",values=c("#77bc65","#ffd700","#2a6099")) + theme(legend.position = "bottom")
+```
+
+<span style="color:#16A085">**fin du cours 15 (11/03/2025)**</span>
