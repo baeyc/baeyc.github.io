@@ -213,6 +213,9 @@ Sys.setenv('RETICULATE_PYTHON'='/usr/bin/python3')
   
 ** 4. Statistiques bayésiennes**
   - [Cours 15](#c15) (11/03/2025)
+  - Cours 16 (pas de slides) (17/03/2025)
+  - [Cours 17](#c16) (18/03/2025)
+  - [Cours 18](#c18) (24/03/2025)
 ]
 
 ---
@@ -760,11 +763,7 @@ x <- seq(0,13,0.01)
 y <- dgamma(x,2.5,1)
 d <- data.frame(x=rep(x,2),y=rep(y,2),type=rep(c("HDI","Quantiles"),each=length(x)),
                 xmin=c(qgamma(0.025,2.5,1)),xmax=c(qgamma(0.975,2.5,1)))
-ggplot(data=d,aes(x,y)) + geom_line() + stat_function(fun = dgamma,args = list(shape=2.5, rate=1),geom = "area",
-                                                         fill = "red", alpha = 0.5, xlim = c(0,qgamma(0.025,2.5,1))) +
-                                        stat_function(fun = dgamma,args = list(shape=2.5, rate=1),geom = "area",
-                                                         fill = "red", alpha = 0.5, xlim = c(qgamma(0.975,2.5,1),10)) +
-  ggtitle(expression(paste("Loi (densité) de ",hat(theta)-theta))) + xlim(c(-0.75,10)) + annotate(geom="text",x=qgamma(0.025,2.5,1)+0.15,y=-0.015,label="H^-1~(alpha/2)",parse=TRUE) + geom_vline(xintercept = 0) + geom_segment(x=qgamma(0.025,2.5,1),xend=qgamma(0.025,2.5,1),y=-0.005,yend=0.005) + geom_hline(yintercept = 0) + 
+ggplot(data=d,aes(x,y)) + geom_line() + stat_function(fun = dgamma,args = list(shape=2.5, rate=1),geom = "area",fill = "red", alpha = 0.5, xlim = c(0,qgamma(0.025,2.5,1))) + stat_function(fun = dgamma,args = list(shape=2.5, rate=1),geom = "area",fill = "red", alpha = 0.5, xlim = c(qgamma(0.975,2.5,1),10)) + ggtitle(expression(paste("Loi (densité) de ",hat(theta)-theta))) + xlim(c(-0.75,10)) + annotate(geom="text",x=qgamma(0.025,2.5,1)+0.15,y=-0.015,label="H^-1~(alpha/2)",parse=TRUE) + geom_vline(xintercept = 0) + geom_segment(x=qgamma(0.025,2.5,1),xend=qgamma(0.025,2.5,1),y=-0.005,yend=0.005) + geom_hline(yintercept = 0) + 
   annotate(geom="text",x=qgamma(0.975,2.5,1),y=-0.01,label="H^-1~(1-alpha/2)",parse=TRUE) + 
   geom_segment(x=qgamma(0.975,2.5,1),xend=qgamma(0.975,2.5,1),y=-0.005,yend=0.005) +
   geom_segment(x=7,xend=8,y=0.005,yend=0.07,lwd=0.1) + geom_segment(x=0.25,xend=-0.5,y=0.0075,yend=0.07,lwd=0.1) +
@@ -3979,3 +3978,447 @@ ggplot(data=data_all123,aes(x=x,y=y,col=dist)) + geom_line(lwd=1) + facet_grid(n
 ```
 
 <span style="color:#16A085">**fin du cours 15 (11/03/2025)**</span>
+
+
+---
+name: c16
+# Modèle Beta-binomial
+
+Estimateurs ponctuels : moyenne a posteriori et maximum a posterior
+
+```{r , echo=FALSE, fig.width=12, fig.height=6, fig.align='center', fig.retina=2, message=F,warning=F}
+a<-7.75;b<-12.25;nobs=5;xobs=2
+postmean <- (xobs+a)/(nobs+a+b)
+map <- (xobs+a-1)/(nobs+a+b-2)
+dpost <- data.frame(x=seq(0,1,0.001),y=dbeta(x,2+a,3+b),mod=1)
+a2<-2;b2<-10;nobs=5;xobs=2
+postmean2 <- (xobs+a2)/(nobs+a2+b2)
+map2 <- (xobs+a2-1)/(nobs+a2+b2-2)
+dpost2 <- data.frame(x=seq(0,1,0.001),y=dbeta(x,2+a2,3+b2),mod=2)
+dpost <- rbind(dpost,dpost2)
+dseg <- data.frame(y=c(dbeta(postmean,xobs+a,nobs-xobs+b),
+                       dbeta(map,xobs+a,nobs-xobs+b),
+                       dbeta(postmean2,xobs+a2,nobs-xobs+b2),
+                       dbeta(map2,xobs+a2,nobs-xobs+b2)),
+                    x=c(postmean,map,postmean2,map2),
+                    mod = c(1,1,2,2),
+                   type=c("Moyenne a posteriori","Maximum a posteriori","Moyenne a posteriori","Maximum a posteriori"))
+ggplot(data=dpost,aes(x=x,y=y)) + geom_line(lwd=1,col="#77bc65") + theme(legend.position = "bottom") + geom_segment(data=dseg,aes(x=x,xend=x,y=0,yend=y,linetype=type),linewidth = 0.75) +
+  #geom_segment(aes(linetype="Moyenne a posteriori"),y=0,yend=,x=postmean,xend=postmean, col="#77bc65") + geom_segment(aes(linetype="Maximum a posteriori"),y=0,yend=,x=map,xend=map,col="#77bc65") +
+   #geom_segment(aes(linetype="Moyenne a posteriori"),y=0,yend=,x=postmean2,xend=postmean2, col="#77bc65") + geom_segment(aes(linetype="Maximum a posteriori"),y=0,yend=,x=map2,xend=map2,col="#77bc65") + 
+  scale_linetype_discrete("") + facet_grid(~as.factor(mod))
+```
+
+
+---
+# Modèle Beta-binomial
+
+Intervalle de crédibilité à 95%
+ - en utilisant les quantiles :
+```{r}
+qbeta(c(0.025,0.975),xobs+a,nobs-xobs+b)
+```
+ - en utilisant la région de plus forte densité : (librairie `HDInterval` sous R et `PyMC` sous Python)
+```{r}
+library(HDInterval)
+hdi(qbeta,0.95,shape1=xobs+a,shape2=nobs-xobs+b)
+```
+
+---
+# Modèle Beta-binomial
+
+Représentation graphique de l'intervalle de crédibilité
+
+
+```{r , echo=FALSE, fig.width=6, fig.height=5, fig.align='center', fig.retina=2, warning=FALSE, message=FALSE}
+a<-7.75;b<-12.25;nobs=50;xobs=20
+dpost <- data.frame(x=seq(0,1,0.001),y=dbeta(x,xobs+a,nobs-xobs+b),mod=1)
+q1 <- qbeta(0.025,xobs+a,nobs-xobs+b); q2 <- qbeta(0.975,xobs+a,nobs-xobs+b)
+qhdi <- hdi(qbeta,0.95,shape1=xobs+a,shape2=nobs-xobs+b)
+ggplot(data=dpost,aes(x=x,y=y)) + geom_line(lwd=1,col="#77bc65") + theme(legend.position = "bottom") + stat_function(fun = dbeta,xlim = c(q1,q2), args = list(shape1=xobs+a,shape2=nobs-xobs+b), geom = "area", fill="#77bc65", alpha=0.15) +
+  stat_function(fun = dbeta,xlim = qhdi, args = list(shape1=xobs+a,shape2=nobs-xobs+b), geom = "area", fill="#77bc65", alpha=0.15) + xlim(c(0.15,0.6)) + geom_segment(x=0.45,xend=0.55,y=2,yend=4,lwd=0.1,col="#77bc65",lwd=3) +
+  annotate(geom="text",x=0.55,y=4.2,label="1-alpha",parse=TRUE,size=5)
+```
+
+
+---
+# Modèle Beta-binomial
+
+La différence entre l'intervalle de crédibilité basé sur les quantiles et celui basé sur l'HDI est plus visible en cas de distribution asymétrique :
+
+```{r , echo=FALSE, fig.width=6, fig.height=5, fig.align='center', fig.retina=2, message=F,warning=F}
+a<-1;b<-3;nobs=3;xobs=1
+q1 <- qbeta(0.025,xobs+a,nobs-xobs+b); q2 <- qbeta(0.975,xobs+a,nobs-xobs+b)
+qhdi <- hdi(qbeta,0.95,shape1=xobs+a,shape2=nobs-xobs+b)
+dpost <- data.frame(x=x,y=dbeta(x,xobs+a,nobs-xobs+b))
+ggplot(data=dpost,aes(x=x,y=y)) + geom_line(lwd=1,col="#77bc65") + theme(legend.position = "bottom") + stat_function(fun = dbeta,xlim = c(q1,q2), args = list(shape1=xobs+a,shape2=nobs-xobs+b), geom = "area", fill="#77bc65", alpha=0.15) +
+  stat_function(fun = dbeta,xlim = qhdi, args = list(shape1=xobs+a,shape2=nobs-xobs+b), geom = "area", fill="#77bc65", alpha=0.15) + geom_segment(aes(linetype="IC quantiles"), x=q1,xend=q1,y=0,yend=dbeta(q1,xobs+a,nobs-xobs+b),col="#77bc65",lwd=0.5) +
+  geom_segment(aes(linetype="IC quantiles"), x=q2,xend=q2,y=0,yend=dbeta(q2,xobs+a,nobs-xobs+b),col="#77bc65",lwd=0.5) +
+  geom_segment(aes(linetype="IC HDI"), x=qhdi[1],xend=qhdi[1],y=0,yend=dbeta(qhdi[1],xobs+a,nobs-xobs+b),col="#77bc65",lwd=0.5) +
+  geom_segment(aes(linetype="IC HDI"), x=qhdi[2],xend=qhdi[2],y=0,yend=dbeta(qhdi[2],xobs+a,nobs-xobs+b),col="#77bc65",lwd=0.5) + scale_linetype_discrete("")
+```
+
+ - Intervalle de crédibilité donné par les quantiles : [0.043 ; 0.641]
+ - Intervalle de crédibilité donné par HDI : [0.018 ; 0.591]
+
+
+
+---
+# Modèle Beta-binomial
+
+Test d'hypothèses : $H_0 : \theta \leq 0.5 \quad \text{vs.} \quad H_1 : \theta > 0.5$
+
+ - risque relatif a posteriori : $\frac{\mathbb{P}(\theta \leq 0.5 | x)}{\mathbb{P}(\theta > 0.5 | x)} = \frac{\int \mathbb{1}_{t\leq 0.5} p(\theta | x)d\theta}{\int \mathbb{1}_{t > 0.5} p(\theta | x)d\theta}$
+```{r}
+pbeta(0.5,20+7.75,30+12.25)/(1-pbeta(0.5,20+7.75,30+12.25))
+```
+
+ - risque relatif a priori : $\frac{\mathbb{P}(\theta \leq 0.5)}{\mathbb{P}(\theta > 0.5)} = \frac{\int \mathbb{1}_{t\leq 0.5} \pi(\theta)d\theta}{\int \mathbb{1}_{t > 0.5} \pi(\theta)d\theta}$
+```{r}
+pbeta(0.5,7.75,12.25)/(1-pbeta(0.5,7.75,12.25))
+```
+
+ - facteur de Bayes : $BF = \frac{\mathbb{P}(\theta \leq 0.5 | x)}{\mathbb{P}(\theta > 0.5 | x)}  / \frac{\mathbb{P}(\theta \leq 0.5)}{\mathbb{P}(\theta > 0.5)}$
+```{r}
+(pbeta(0.5,20+7.75,30+12.25)/(1-pbeta(0.5,20+7.75,30+12.25))) / (pbeta(0.5,7.75,12.25)/(1-pbeta(0.5,7.75,12.25)))
+```
+
+---
+# Le facteur de Bayes
+
+</br>
+
+```{r , echo=FALSE, fig.width=8, fig.height=6, fig.align='center', fig.retina=2}
+a<-7.75;b<-12.25;nobs=50;xobs=20
+dpost <- data.frame(x=seq(0,1,0.001),y=dbeta(x,20+7.75,30+12.25))
+dprior <- data.frame(x=seq(0,1,0.001),y=dbeta(x,7.75,12.25))
+ggplot(data=dpost,aes(x=x,y=y)) + stat_function(fun = dbeta, args=list(shape1=xobs+a,nobs-xobs+b),xlim=c(0,0.5),geom="area",fill="#77bc65",alpha=0.35) + xlim(c(0,1)) + geom_line(aes(col="Loi a posteriori"),lwd=1) + geom_line(data=dprior,aes(col="Loi a priori"),lwd=1) + stat_function(fun = dbeta, args=list(shape1=a,b),xlim=c(0,0.5),geom="area",fill="#ffd700",alpha=0.35) + scale_color_manual("",values=c("#77bc65","#ffd700")) + theme(legend.position = "bottom")
+```
+
+
+---
+# Le facteur de Bayes
+
+Echelle d'aide à la décision (Kass et Raftery, 1995)
+
+</br>
+
+```{r, echo=FALSE}
+bf_1 <- data.frame(BF=c("1 < BF < 3","3 < BF < 20","20 < BF < 150","BF > 150"),
+                   lnBF=c("entre 0 et 2","entre 2 et 6","entre 6 et 10","supérieur à 10"),
+                   Force=c("Mérite à peine d'être mentionnée","Positive","Forte","Très forte"))
+knitr::kable(bf_1, row.names = NA, align='cccc',
+      col.names=c("BF","2 log(BF)","Force de la preuve pour H0"))
+```
+
+
+
+---
+class: inverse, middle, center
+
+# Lien avec la théorie de la décision
+
+---
+class: my-one-page-font
+# Fonction de perte
+
+Fonction $\ell : \Theta \times \Theta \rightarrow \mathbb{R}^+$ telle que $\ell(\theta,\theta') = 0 \Leftrightarrow \theta = \theta'$.
+
+.left-code[
+```{r, echo=FALSE, fig.width=5, fig.height=6, fig.align='center', fig.retina=2, warning=FALSE, message=FALSE}
+ecart <- seq(-2,2,0.01)
+ql <- ecart^2
+al <- abs(ecart)
+hl <- ifelse(abs(ecart)<1.5,0.5*ql,1.5*al-0.5*1.5^2)
+par(mar=c(8, 4, 4, 4), xpd=TRUE)
+plot(ecart,ql,type="l",col="#0000CC",lwd=2,xlab=expression(theta-theta*"'"),ylab="perte")
+lines(ecart,al,col="#CC0000",lwd=2)
+lines(ecart,hl,col="#CC7700",lwd=2)
+legend("bottom",legend=c("quadratique","absolue","Hubert"),lty=1,col=c("#0000CC","#CC0000","#CC7700"),bty="n",lwd=2,inset=c(0,-0.4),horiz=TRUE)
+```
+]
+.right-plot[
+- perte quadratique $\ell(\theta,\theta')=(\theta - \theta')^2$ : très utilisée en pratique
+ - .green[.bold[avantages :]] convexe, différentiable
+ - .red[.bold[inconvénients :]] donne un poids important aux erreurs extrêmes
+- perte absolue $\ell(\theta,\theta')=|\theta - \theta'|$
+ - .green[.bold[avantages :]] convexe, moins de poids sur les extrêmes
+ - .red[.bold[inconvénients :]] non différentiable
+- perte de Hubert : compromis entre les deux
+$\small \ell(\theta,\theta')= \frac{1}{2} (\theta - \theta')^2 \mathbf{1}_{\theta-\theta'<k} + (k |\theta - \theta'| - \frac{1}{2}k^2)\mathbf{1}_{\theta - \theta' \geq k}$
+]
+
+---
+# Fonction de risque
+
+Fonction $R : \Theta \rightarrow \mathbb{R}^+$ telle que $R(\theta,T(\mathcal{X})) = \mathbb{E}_\theta (\ell(\theta,T(\mathcal{X}))) = \int_E \ell(\theta, T(x)) dP_\theta(x).$
+
+**Exemple :** $\small X \sim \mathcal{B}(n,\theta)$, estimateurs :
+- $\hat{\theta}_1 = \frac{X}{n}$ (EMV)
+- $\hat{\theta}_2 = \frac{X + \sqrt{n}/2}{n+\sqrt{n}}$ (estimateur de Bayes minimax)
+- $\hat{\theta}_3 = \frac{1}{2}$ (estimateur constant)
+- $\hat{\theta}_4 = \frac{X+1}{n+2}$ (MAP avec loi a priori uniforme sur $[0,1]$)
+et perte quadratique.
+
+--
+
+
+```{r, echo=FALSE, fig.width=12, fig.height=3, fig.align='center', fig.retina=2, warning=FALSE, message=FALSE}
+x <- seq(0,1,0.01)
+n <- c(10,20,100,1000)
+res <- lapply(n,FUN=function(ni){
+r1 <- x*(1-x)/ni
+r2 <- rep(1/4/(1+sqrt(ni))^2,length(x))
+r3 <- (x-0.5)^2
+a <- b <- 1
+r4 <- (((a+b)^2-ni)*x^2 + (ni-2*a*(a+b))*x+a^2)/(ni+a+b)^2
+d <- data.frame(x=rep(x,4),r=c(r1,r2,r3,r4),risque=rep(c("R1","R2","R3","R4"),each=length(x)),n=paste0("n=",rep(ni,4*length(x))))
+return(d)
+})
+d <- do.call(rbind,res)
+d$n <- factor(d$n,levels=c("n=10","n=20","n=100","n=1000"))
+ggplot(data=d,aes(x=x,y=r,col=risque,group=risque)) + geom_line(lwd=1) + facet_wrap(~n,nr=1) + ylim(c(0,0.03)) + scale_color_brewer(palette="Dark2") +xlab(expression(theta))
+```
+
+---
+# Fonction de risque
+
+Zoom sur les 3 risques R1, R2 et R4.
+
+```{r, echo=FALSE, fig.width=12, fig.height=3, fig.align='center', fig.retina=2, warning=FALSE, message=FALSE}
+library(RColorBrewer)
+coul <- brewer.pal(4,"Dark2")[c(1,2,4)]
+d %>% filter(risque != "R3") %>% ggplot(aes(x=x,y=r,col=risque,group=risque)) + geom_line(lwd=1) + facet_wrap(~n,nr=1,scales="free") + scale_color_manual(values=coul) + xlab(expression(theta))
+```
+
+Chaque fonction de risque en fonction de $n$.
+
+```{r, echo=FALSE, fig.width=12, fig.height=3, fig.align='center', fig.retina=2, warning=FALSE, message=FALSE}
+ggplot(data=d,aes(x=x,y=r,col=n,group=n)) + geom_line(lwd=1) + facet_wrap(~risque,nr=1,scales="free") + xlab(expression(theta))#+ ylim(c(0,0.03))
+```
+
+
+---
+# Risque de Bayes
+
+Pour une loi a priori $\pi$, $R_{B} (\pi,T(\mathcal{X})) = \int_\Theta R(\theta,T(\mathcal{X})) \pi(\theta) d\theta$.
+
+Suite exemple : modèle binomial, loi a priori $\small \mathcal{U}([0,1])$, $\hat{\theta}_1 = \frac{X}{n}$, $\hat{\theta}_2 = \frac{X + \sqrt{n}/2}{n+\sqrt{n}}$, $\hat{\theta}_3 = \frac{1}{2}$, $\hat{\theta}_4 = \frac{X+1}{n+2}$.
+
+```{r, echo=FALSE, fig.width=10, fig.height=5, fig.align='center', fig.retina=2, warning=FALSE, message=FALSE}
+n <- seq(10,100)
+r1 <- 1/6/n
+r2 <- 1/4/(1+sqrt(n))^2
+r3 <- rep(1/12,length(n))
+r4 <- 1/6/(n+2)
+par(mar=c(7, 2, 1, 2), xpd=TRUE,mfrow=c(1,2))
+plot(n,log(r1),type="l",col="#0000CC",lwd=2,xlab="n",ylab="risque de Bayes (log)",ylim=c(-6.3,-2.4))
+lines(n,log(r2),col="#CC0000",lwd=2)
+lines(n,log(r3),col="#CC7700",lwd=2)
+lines(n,log(r4),col="#007700",lwd=2)
+legend("bottom",legend=c("R1","R2","R3","R4"),lty=1,col=c("#0000CC","#CC0000","#CC7700","#007700"),bty="n",lwd=2,inset=c(0,-0.3),horiz=TRUE)
+plot(n,log(r1),type="l",col="#0000CC",lwd=2,xlab="n",ylab="risque de Bayes (log)")
+lines(n,log(r2),col="#CC0000",lwd=2)
+lines(n,log(r4),col="#007700",lwd=2)
+```
+
+---
+# Vue d'ensemble
+
+</br>
+```{r, out.width='2200px', echo = FALSE}
+magick::image_read_pdf("/home/charlotte/Documents/Enseignement/Lille/M1 ISN /Statistiques computationnelles/Poly/risque.pdf")
+```
+
+
+---
+# Principaux résultats
+
+> **Théorème :** Pour toute loi a priori $\pi$, on a  $R_B(\pi) \leq R_M$
+
+&rarr; le risque de Bayes est toujours plus petit que le risque minimax
+
+> **Théorème :** Un estimateur de Bayes unique à équivalence près, pour une loi a priori $\pi$, est admissible.
+
+&rarr; un estimateur de Bayes, c'est-à-dire qui minimise l'espérance de la fonction de perte par rapport à la loi a posteriori, est admissible. .red[.bold[On dispose donc une procédure pour construire des estimateurs admissibles]]
+
+> **Théorème :** Un estimateur admissible et de risque constant est un estimateur minimax.
+
+&rarr; **si on peut construire un estimateur de Bayes de risque constant, alors il sera minimax**
+
+> **Théorème :** Un estimateur de Bayes pour une loi a priori $\pi$ dont la fonction de risque est majorée par son risque de Bayes est minimax.
+
+
+
+<span style="color:#16A085">**fin du cours 17 (18/03/2025)**</span>
+
+---
+name: c18
+class: inverse, middle, center
+
+# Choix de la loi a priori
+
+---
+# Choix de la loi a priori
+
+Plusieurs cas possibles (combinaisons possibles) :
+ 1. utiliser l'information dont on dispose (dires d'experts, litérature, ...)
+
+ 3. utiliser des familles de lois conjuguées
+
+ 2. utiliser des a priori "impropres"
+
+ 4. utiliser des a priori "non informatifs"
+
+
+.red[Dans tous les cas, le choix de la loi a priori doit être .bold[justifié] et doit être fait .bold[en amont], i.e. .bold[avant] d'avoir vu et analysé les données.]
+
+.blue[.bold[En pratique, on peut aussi comparer les résultats obtenus avec différents a priori.]]
+
+---
+# 1. Prise en compte de l'information subjective
+
+- pas toujours facile d'en déduire une **forme paramétrique** précise
+
+- pas toujours facile de **combiner** les différentes sources d'information
+
+&rarr; la loi a priori permet de résumer l'information disponible, mais aussi de prendre en compte l'incertitude entourant cette information
+
+- biais cognitifs et difficulté à évaluer de petits (resp. grands) ordres de grandeur
+
+---
+# Quelques exemples de biais cognitifs
+
+ - **biais de "proximité"** : on a tendance à accorder une plus grande probabilité à un évènement qui nous concerne ou que nous avons rencontré récemment
+
+ - **biais d'ajustement et d'ancrage** : influence de la première impression ou information
+
+ - **biais de confiance** : on a tendance à sous-estimer l'intervalle de variation d'une quantité (sous-évaluation de l'incertitude)
+
+ - **biais d'équiprobabilité** : on à tendance à attribuer trop souvent la probabilité uniforme à un ensemble d'évènements. Lié aussi au biais existant lorsqu'on oublie la fréquence de base d'un évènement avant d'en évaluer des probabilités liées à cet évènement.
+
+ - **biais d'autorité** : attribuer trop de valeur au jugement d'une personne dépositaire d'une autorité
+
+ - **biais monétaire** : attribuer une plus grande efficacité aux processus/traitements plus chers
+
+ - **biais de genre**, biais socio-culturels
+
+ - ...
+
+---
+# Construction de la loi a priori
+
+Quelques approches :
+ - identifier des quantités clés (moyenne, médiane, quantiles, ...) et en déduire une loi paramétrique
+
+  - c'est ce que l'on a fait dans l'exemple Beta-binomial
+  - dans ce cas il vaut mieux choisir une loi "plus large" que ce que suggèrent l'information
+
+ - évaluer la robustesse des résultats au choix de la loi a priori
+
+ - introduire un niveau hiérarchique supplémentaire dans la définition de la loi a priori (*modélisation Bayésienne hiérarchique*)
+
+---
+class: my-one-page-font
+# 2. Utiliser des lois conjuguées
+
+L'approche précédente n'est pas toujours possible :
+ - Pas toujours d'information disponible ou de qualité
+
+ - Volonté de rester le plus "objectif" possible, en utilisant juste l'information du modèle
+
+--
+
+Choisir un a priori conjugué :
+ - permet d'utiliser un a priori qui ne dépend que du choix du modèle (i.e. de la vraisemblance)
+
+ - limite la part de "subjectivité" au choix des paramètres de la loi a priori (et pas à sa forme paramétrique)
+
+ - facilite l'analyse car la loi a posteriori est explicite
+
+ - constitue tout de même un choix ! et à ce titre a une influence sur les résultats
+
+ - peut être incompatible avec l'information dont on dispose (dans ce cas il ne faut pas l'utiliser !)
+
+
+---
+# Exemples de lois conjuguées
+
+  Pour un échantillon $X_1,\dots,X_n$ iid
+
+- Vraisemblance : $\mathcal{N}(\theta,\sigma^2)$, $\sigma$ connue &rarr; loi conjuguée Gaussienne.
+
+--
+
+- Vraisemblance $\mathcal{N}(\mu,1/\theta)$, $\mu$ connue &rarr; loi conjuguée Gamma.
+
+--
+
+- Vraisemblance $\mathcal{G}(k,\theta)$, $k$ connu &rarr; loi conjuguée Gamma.
+
+--
+
+- Vraisemblance $\mathcal{B}(\theta)$ &rarr; loi conjuguée Beta.
+
+--
+
+- Vraisemblance $\mathcal{P}(\theta)$ &rarr; loi conjuguée Gamma.
+
+--
+
+- Vraisemblance $\mathcal{NB}(m,\theta)$ &rarr; loi conjuguée Beta.
+
+---
+# Lois conjuguées et famille exponentielle
+
+Une densité $f$ appartient à la **famille exponentielle** si elle s'écrit sous la forme :
+
+$$f_\theta(x) = h(x) \exp \left( \langle \theta , T(x) \rangle - A(\theta) \right)$$
+
+Si la loi des observations appartient à cette famille exponentielle, un choix  naturel de loi a priori conjuguée est :
+
+$$\pi(\theta) = K(\mu,\lambda) \exp\left(\langle \theta , \mu \rangle - \lambda A(\theta)\right) $$
+
+ce qui conduit à la loi a posteriori :
+
+$$p(\theta | x) \propto \exp \left(\langle \theta, \mu + \sum_{i=1}^nT(x_i) \rangle - (\lambda + n) A(\theta) \right) $$
+--
+
+</br>
+**Propriété :** si $T(X)=X$, la moyenne a posteriori est une combinaison linéaire de la moyenne a priori et de la moyenne empirique des observations :
+$$\mathbb{E}(\theta | x) = \frac{\mu + n\bar{X}}{\lambda + n}$$
+
+---
+# 3. Loi a priori impropre
+
+- Mesure sur $\Theta$ qui n'est pas nécessairement une mesure de probabilité (ni même une mesure de masse totale finie)
+
+- Utilisable **uniquement** si la loi a posteriori qui en découle est une mesure de probabilité.
+
+- **Exemple** : $X \sim \mathcal{N}(\theta,1)$ et $\pi(\theta) = 1$.
+
+--
+
+- .red[**La loi a posteriori peut ne pas être définie pour certaines observations**] &rarr; exemple dans le modèle Beta-binomial si prior impropre $\text{Beta}(0,0)$.
+
+---
+# 4. Lois a priori non-informatives
+
+- A priori de Laplace &rarr; lois uniformes sur $\Theta$
+
+ - peut conduire à des a priori impropres
+ - pas d'invariance par reparamétrisation
+
+--
+
+- A priori de Jeffreys &rarr; lien avec l'information de Fisher
+
+ - si $\theta \in \mathbb{R}$ : $\pi(\theta) \propto I^{1/2}(\theta)$
+ - si $\theta \in \mathbb{R}^d, d> 1$ : $\pi(\theta) \propto \det(I(\theta))^{1/2}$
+
+ - **invariant par reparamétrisation**
+
+--
+
+> **Proposition** : Soit $\pi$ la mesure a priori de Jeffreys pour $\theta$, et soit $\eta = g(\theta)$, avec $g$ un $\mathcal{C}^1$-difféomorphisme. Alors la mesure image de $\pi$ par $g$ est la mesure a priori de Jeffreys pour $\eta$.
+

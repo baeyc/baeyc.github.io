@@ -201,6 +201,9 @@ MathJax.Hub.Config({
   
 ** 4. Statistiques bayésiennes**
   - [Cours 15](#c15) (11/03/2025)
+  - Cours 16 (pas de slides) (17/03/2025)
+  - [Cours 17](#c16) (18/03/2025)
+  - [Cours 18](#c18) (24/03/2025)
 ]
 
 ---
@@ -3249,6 +3252,386 @@ Loi a posteriori `\(\text{Beta}(20+7.75,30+12.25)\)`
 &lt;img src="slides_25_files/figure-html/unnamed-chunk-167-1.png" width="792" style="display: block; margin: auto;" /&gt;
 
 &lt;span style="color:#16A085"&gt;**fin du cours 15 (11/03/2025)**&lt;/span&gt;
+
+
+---
+name: c16
+# Modèle Beta-binomial
+
+Estimateurs ponctuels : moyenne a posteriori et maximum a posterior
+
+&lt;img src="slides_25_files/figure-html/unnamed-chunk-168-1.png" width="864" style="display: block; margin: auto;" /&gt;
+
+
+---
+# Modèle Beta-binomial
+
+Intervalle de crédibilité à 95%
+ - en utilisant les quantiles :
+
+``` r
+qbeta(c(0.025,0.975),xobs+a,nobs-xobs+b)
+```
+
+```
+## [1] 0.2126936 0.5839809
+```
+ - en utilisant la région de plus forte densité : (librairie `HDInterval` sous R et `PyMC` sous Python)
+
+``` r
+library(HDInterval)
+hdi(qbeta,0.95,shape1=xobs+a,shape2=nobs-xobs+b)
+```
+
+```
+##     lower     upper 
+## 0.2071049 0.5776388 
+## attr(,"credMass")
+## [1] 0.95
+```
+
+---
+# Modèle Beta-binomial
+
+Représentation graphique de l'intervalle de crédibilité
+
+
+&lt;img src="slides_25_files/figure-html/unnamed-chunk-171-1.png" width="432" style="display: block; margin: auto;" /&gt;
+
+
+---
+# Modèle Beta-binomial
+
+La différence entre l'intervalle de crédibilité basé sur les quantiles et celui basé sur l'HDI est plus visible en cas de distribution asymétrique :
+
+&lt;img src="slides_25_files/figure-html/unnamed-chunk-172-1.png" width="432" style="display: block; margin: auto;" /&gt;
+
+ - Intervalle de crédibilité donné par les quantiles : [0.043 ; 0.641]
+ - Intervalle de crédibilité donné par HDI : [0.018 ; 0.591]
+
+
+
+---
+# Modèle Beta-binomial
+
+Test d'hypothèses : `\(H_0 : \theta \leq 0.5 \quad \text{vs.} \quad H_1 : \theta &gt; 0.5\)`
+
+ - risque relatif a posteriori : `\(\frac{\mathbb{P}(\theta \leq 0.5 | x)}{\mathbb{P}(\theta &gt; 0.5 | x)} = \frac{\int \mathbb{1}_{t\leq 0.5} p(\theta | x)d\theta}{\int \mathbb{1}_{t &gt; 0.5} p(\theta | x)d\theta}\)`
+
+``` r
+pbeta(0.5,20+7.75,30+12.25)/(1-pbeta(0.5,20+7.75,30+12.25))
+```
+
+```
+## [1] 23.96023
+```
+
+ - risque relatif a priori : `\(\frac{\mathbb{P}(\theta \leq 0.5)}{\mathbb{P}(\theta &gt; 0.5)} = \frac{\int \mathbb{1}_{t\leq 0.5} \pi(\theta)d\theta}{\int \mathbb{1}_{t &gt; 0.5} \pi(\theta)d\theta}\)`
+
+``` r
+pbeta(0.5,7.75,12.25)/(1-pbeta(0.5,7.75,12.25))
+```
+
+```
+## [1] 5.624588
+```
+
+ - facteur de Bayes : `\(BF = \frac{\mathbb{P}(\theta \leq 0.5 | x)}{\mathbb{P}(\theta &gt; 0.5 | x)}  / \frac{\mathbb{P}(\theta \leq 0.5)}{\mathbb{P}(\theta &gt; 0.5)}\)`
+
+``` r
+(pbeta(0.5,20+7.75,30+12.25)/(1-pbeta(0.5,20+7.75,30+12.25))) / (pbeta(0.5,7.75,12.25)/(1-pbeta(0.5,7.75,12.25)))
+```
+
+```
+## [1] 4.259908
+```
+
+---
+# Le facteur de Bayes
+
+&lt;/br&gt;
+
+&lt;img src="slides_25_files/figure-html/unnamed-chunk-176-1.png" width="576" style="display: block; margin: auto;" /&gt;
+
+
+---
+# Le facteur de Bayes
+
+Echelle d'aide à la décision (Kass et Raftery, 1995)
+
+&lt;/br&gt;
+
+
+|      BF       |   2 log(BF)    |    Force de la preuve pour H0    |
+|:-------------:|:--------------:|:--------------------------------:|
+|  1 &lt; BF &lt; 3   |  entre 0 et 2  | Mérite à peine d'être mentionnée |
+|  3 &lt; BF &lt; 20  |  entre 2 et 6  |             Positive             |
+| 20 &lt; BF &lt; 150 | entre 6 et 10  |              Forte               |
+|   BF &gt; 150    | supérieur à 10 |            Très forte            |
+
+
+
+---
+class: inverse, middle, center
+
+# Lien avec la théorie de la décision
+
+---
+class: my-one-page-font
+# Fonction de perte
+
+Fonction `\(\ell : \Theta \times \Theta \rightarrow \mathbb{R}^+\)` telle que `\(\ell(\theta,\theta') = 0 \Leftrightarrow \theta = \theta'\)`.
+
+.left-code[
+&lt;img src="slides_25_files/figure-html/unnamed-chunk-178-1.png" width="360" style="display: block; margin: auto;" /&gt;
+]
+.right-plot[
+- perte quadratique `\(\ell(\theta,\theta')=(\theta - \theta')^2\)` : très utilisée en pratique
+ - .green[.bold[avantages :]] convexe, différentiable
+ - .red[.bold[inconvénients :]] donne un poids important aux erreurs extrêmes
+- perte absolue `\(\ell(\theta,\theta')=|\theta - \theta'|\)`
+ - .green[.bold[avantages :]] convexe, moins de poids sur les extrêmes
+ - .red[.bold[inconvénients :]] non différentiable
+- perte de Hubert : compromis entre les deux
+`\(\small \ell(\theta,\theta')= \frac{1}{2} (\theta - \theta')^2 \mathbf{1}_{\theta-\theta'&lt;k} + (k |\theta - \theta'| - \frac{1}{2}k^2)\mathbf{1}_{\theta - \theta' \geq k}\)`
+]
+
+---
+# Fonction de risque
+
+Fonction `\(R : \Theta \rightarrow \mathbb{R}^+\)` telle que `\(R(\theta,T(\mathcal{X})) = \mathbb{E}_\theta (\ell(\theta,T(\mathcal{X}))) = \int_E \ell(\theta, T(x)) dP_\theta(x).\)`
+
+**Exemple :** `\(\small X \sim \mathcal{B}(n,\theta)\)`, estimateurs :
+- `\(\hat{\theta}_1 = \frac{X}{n}\)` (EMV)
+- `\(\hat{\theta}_2 = \frac{X + \sqrt{n}/2}{n+\sqrt{n}}\)` (estimateur de Bayes minimax)
+- `\(\hat{\theta}_3 = \frac{1}{2}\)` (estimateur constant)
+- `\(\hat{\theta}_4 = \frac{X+1}{n+2}\)` (MAP avec loi a priori uniforme sur `\([0,1]\)`)
+et perte quadratique.
+
+--
+
+
+&lt;img src="slides_25_files/figure-html/unnamed-chunk-179-1.png" width="864" style="display: block; margin: auto;" /&gt;
+
+---
+# Fonction de risque
+
+Zoom sur les 3 risques R1, R2 et R4.
+
+&lt;img src="slides_25_files/figure-html/unnamed-chunk-180-1.png" width="864" style="display: block; margin: auto;" /&gt;
+
+Chaque fonction de risque en fonction de `\(n\)`.
+
+&lt;img src="slides_25_files/figure-html/unnamed-chunk-181-1.png" width="864" style="display: block; margin: auto;" /&gt;
+
+
+---
+# Risque de Bayes
+
+Pour une loi a priori `\(\pi\)`, `\(R_{B} (\pi,T(\mathcal{X})) = \int_\Theta R(\theta,T(\mathcal{X})) \pi(\theta) d\theta\)`.
+
+Suite exemple : modèle binomial, loi a priori `\(\small \mathcal{U}([0,1])\)`, `\(\hat{\theta}_1 = \frac{X}{n}\)`, `\(\hat{\theta}_2 = \frac{X + \sqrt{n}/2}{n+\sqrt{n}}\)`, `\(\hat{\theta}_3 = \frac{1}{2}\)`, `\(\hat{\theta}_4 = \frac{X+1}{n+2}\)`.
+
+&lt;img src="slides_25_files/figure-html/unnamed-chunk-182-1.png" width="720" style="display: block; margin: auto;" /&gt;
+
+---
+# Vue d'ensemble
+
+&lt;/br&gt;
+&lt;img src="slides_25_files/figure-html/unnamed-chunk-183-1.png" width="2200px" /&gt;
+
+
+---
+# Principaux résultats
+
+&gt; **Théorème :** Pour toute loi a priori `\(\pi\)`, on a  `\(R_B(\pi) \leq R_M\)`
+
+&amp;rarr; le risque de Bayes est toujours plus petit que le risque minimax
+
+&gt; **Théorème :** Un estimateur de Bayes unique à équivalence près, pour une loi a priori `\(\pi\)`, est admissible.
+
+&amp;rarr; un estimateur de Bayes, c'est-à-dire qui minimise l'espérance de la fonction de perte par rapport à la loi a posteriori, est admissible. .red[.bold[On dispose donc une procédure pour construire des estimateurs admissibles]]
+
+&gt; **Théorème :** Un estimateur admissible et de risque constant est un estimateur minimax.
+
+&amp;rarr; **si on peut construire un estimateur de Bayes de risque constant, alors il sera minimax**
+
+&gt; **Théorème :** Un estimateur de Bayes pour une loi a priori `\(\pi\)` dont la fonction de risque est majorée par son risque de Bayes est minimax.
+
+
+
+&lt;span style="color:#16A085"&gt;**fin du cours 17 (18/03/2025)**&lt;/span&gt;
+
+---
+name: c18
+class: inverse, middle, center
+
+# Choix de la loi a priori
+
+---
+# Choix de la loi a priori
+
+Plusieurs cas possibles (combinaisons possibles) :
+ 1. utiliser l'information dont on dispose (dires d'experts, litérature, ...)
+
+ 3. utiliser des familles de lois conjuguées
+
+ 2. utiliser des a priori "impropres"
+
+ 4. utiliser des a priori "non informatifs"
+
+
+.red[Dans tous les cas, le choix de la loi a priori doit être .bold[justifié] et doit être fait .bold[en amont], i.e. .bold[avant] d'avoir vu et analysé les données.]
+
+.blue[.bold[En pratique, on peut aussi comparer les résultats obtenus avec différents a priori.]]
+
+---
+# 1. Prise en compte de l'information subjective
+
+- pas toujours facile d'en déduire une **forme paramétrique** précise
+
+- pas toujours facile de **combiner** les différentes sources d'information
+
+&amp;rarr; la loi a priori permet de résumer l'information disponible, mais aussi de prendre en compte l'incertitude entourant cette information
+
+- biais cognitifs et difficulté à évaluer de petits (resp. grands) ordres de grandeur
+
+---
+# Quelques exemples de biais cognitifs
+
+ - **biais de "proximité"** : on a tendance à accorder une plus grande probabilité à un évènement qui nous concerne ou que nous avons rencontré récemment
+
+ - **biais d'ajustement et d'ancrage** : influence de la première impression ou information
+
+ - **biais de confiance** : on a tendance à sous-estimer l'intervalle de variation d'une quantité (sous-évaluation de l'incertitude)
+
+ - **biais d'équiprobabilité** : on à tendance à attribuer trop souvent la probabilité uniforme à un ensemble d'évènements. Lié aussi au biais existant lorsqu'on oublie la fréquence de base d'un évènement avant d'en évaluer des probabilités liées à cet évènement.
+
+ - **biais d'autorité** : attribuer trop de valeur au jugement d'une personne dépositaire d'une autorité
+
+ - **biais monétaire** : attribuer une plus grande efficacité aux processus/traitements plus chers
+
+ - **biais de genre**, biais socio-culturels
+
+ - ...
+
+---
+# Construction de la loi a priori
+
+Quelques approches :
+ - identifier des quantités clés (moyenne, médiane, quantiles, ...) et en déduire une loi paramétrique
+
+  - c'est ce que l'on a fait dans l'exemple Beta-binomial
+  - dans ce cas il vaut mieux choisir une loi "plus large" que ce que suggèrent l'information
+
+ - évaluer la robustesse des résultats au choix de la loi a priori
+
+ - introduire un niveau hiérarchique supplémentaire dans la définition de la loi a priori (*modélisation Bayésienne hiérarchique*)
+
+---
+class: my-one-page-font
+# 2. Utiliser des lois conjuguées
+
+L'approche précédente n'est pas toujours possible :
+ - Pas toujours d'information disponible ou de qualité
+
+ - Volonté de rester le plus "objectif" possible, en utilisant juste l'information du modèle
+
+--
+
+Choisir un a priori conjugué :
+ - permet d'utiliser un a priori qui ne dépend que du choix du modèle (i.e. de la vraisemblance)
+
+ - limite la part de "subjectivité" au choix des paramètres de la loi a priori (et pas à sa forme paramétrique)
+
+ - facilite l'analyse car la loi a posteriori est explicite
+
+ - constitue tout de même un choix ! et à ce titre a une influence sur les résultats
+
+ - peut être incompatible avec l'information dont on dispose (dans ce cas il ne faut pas l'utiliser !)
+
+
+---
+# Exemples de lois conjuguées
+
+  Pour un échantillon `\(X_1,\dots,X_n\)` iid
+
+- Vraisemblance : `\(\mathcal{N}(\theta,\sigma^2)\)`, `\(\sigma\)` connue &amp;rarr; loi conjuguée Gaussienne.
+
+--
+
+- Vraisemblance `\(\mathcal{N}(\mu,1/\theta)\)`, `\(\mu\)` connue &amp;rarr; loi conjuguée Gamma.
+
+--
+
+- Vraisemblance `\(\mathcal{G}(k,\theta)\)`, `\(k\)` connu &amp;rarr; loi conjuguée Gamma.
+
+--
+
+- Vraisemblance `\(\mathcal{B}(\theta)\)` &amp;rarr; loi conjuguée Beta.
+
+--
+
+- Vraisemblance `\(\mathcal{P}(\theta)\)` &amp;rarr; loi conjuguée Gamma.
+
+--
+
+- Vraisemblance `\(\mathcal{NB}(m,\theta)\)` &amp;rarr; loi conjuguée Beta.
+
+---
+# Lois conjuguées et famille exponentielle
+
+Une densité `\(f\)` appartient à la **famille exponentielle** si elle s'écrit sous la forme :
+
+`$$f_\theta(x) = h(x) \exp \left( \langle \theta , T(x) \rangle - A(\theta) \right)$$`
+
+Si la loi des observations appartient à cette famille exponentielle, un choix  naturel de loi a priori conjuguée est :
+
+$$\pi(\theta) = K(\mu,\lambda) \exp\left(\langle \theta , \mu \rangle - \lambda A(\theta)\right) $$
+
+ce qui conduit à la loi a posteriori :
+
+$$p(\theta | x) \propto \exp \left(\langle \theta, \mu + \sum_{i=1}^nT(x_i) \rangle - (\lambda + n) A(\theta) \right) $$
+--
+
+&lt;/br&gt;
+**Propriété :** si `\(T(X)=X\)`, la moyenne a posteriori est une combinaison linéaire de la moyenne a priori et de la moyenne empirique des observations :
+`$$\mathbb{E}(\theta | x) = \frac{\mu + n\bar{X}}{\lambda + n}$$`
+
+---
+# 3. Loi a priori impropre
+
+- Mesure sur `\(\Theta\)` qui n'est pas nécessairement une mesure de probabilité (ni même une mesure de masse totale finie)
+
+- Utilisable **uniquement** si la loi a posteriori qui en découle est une mesure de probabilité.
+
+- **Exemple** : `\(X \sim \mathcal{N}(\theta,1)\)` et `\(\pi(\theta) = 1\)`.
+
+--
+
+- .red[**La loi a posteriori peut ne pas être définie pour certaines observations**] &amp;rarr; exemple dans le modèle Beta-binomial si prior impropre `\(\text{Beta}(0,0)\)`.
+
+---
+# 4. Lois a priori non-informatives
+
+- A priori de Laplace &amp;rarr; lois uniformes sur `\(\Theta\)`
+
+ - peut conduire à des a priori impropres
+ - pas d'invariance par reparamétrisation
+
+--
+
+- A priori de Jeffreys &amp;rarr; lien avec l'information de Fisher
+
+ - si `\(\theta \in \mathbb{R}\)` : `\(\pi(\theta) \propto I^{1/2}(\theta)\)`
+ - si `\(\theta \in \mathbb{R}^d, d&gt; 1\)` : `\(\pi(\theta) \propto \det(I(\theta))^{1/2}\)`
+
+ - **invariant par reparamétrisation**
+
+--
+
+&gt; **Proposition** : Soit `\(\pi\)` la mesure a priori de Jeffreys pour `\(\theta\)`, et soit `\(\eta = g(\theta)\)`, avec `\(g\)` un `\(\mathcal{C}^1\)`-difféomorphisme. Alors la mesure image de `\(\pi\)` par `\(g\)` est la mesure a priori de Jeffreys pour `\(\eta\)`.
+
     </textarea>
 <style data-target="print-only">@media screen {.remark-slide-container{display:block;}.remark-slide-scaler{box-shadow:none;}}</style>
 <script src="https://remarkjs.com/downloads/remark-latest.min.js"></script>
