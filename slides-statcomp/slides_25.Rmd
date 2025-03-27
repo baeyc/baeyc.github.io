@@ -216,6 +216,7 @@ Sys.setenv('RETICULATE_PYTHON'='/usr/bin/python3')
   - Cours 16 (pas de slides) (17/03/2025)
   - [Cours 17](#c16) (18/03/2025)
   - [Cours 18](#c18) (24/03/2025)
+  - [Cours 19](#c19) (25/03/2025)
 ]
 
 ---
@@ -3387,7 +3388,7 @@ name: simu_f
  - algorithme de Metropolis-Hastings <span style="color:#16A085">&rarr; **éch. MC** </span>
  - Metropolis-within-Gibbs <span style="color:#16A085">&rarr; **éch. MC** </span>
 
-
+[retour](#simu_post)
 ---
 # Résumé des épisodes précédents
 
@@ -4422,3 +4423,333 @@ $$\mathbb{E}(\theta | x) = \frac{\mu + n\bar{X}}{\lambda + n}$$
 
 > **Proposition** : Soit $\pi$ la mesure a priori de Jeffreys pour $\theta$, et soit $\eta = g(\theta)$, avec $g$ un $\mathcal{C}^1$-difféomorphisme. Alors la mesure image de $\pi$ par $g$ est la mesure a priori de Jeffreys pour $\eta$.
 
+
+<span style="color:#16A085">**fin du cours 18 (24/03/2025)**</span>
+
+
+---
+name: c19
+class: inverse, middle, center
+
+# Identification de la loi a posteriori
+
+---
+# Loi a posteriori
+
+**Cas 1 : expression exacte disponible** (famille de lois conjuguées, calcul explicite possible)
+
+A partir de cette expression, on peut chercher à calculer :
+ - moyenne, médiane, maximum a posteriori
+ - quantiles pour régions de crédibilité
+ - HDI
+ - facteurs de Bayes
+
+&rarr; pas toujours facile à calculer même à partir de l'expression analytique
+
+--
+
+**Cas 2 : expression connue à une constante près**
+
+- Impossible de calculer moyenne ou médiane a posteriori ni intervalles de crédibilité, facteurs de Bayes, ...
+
+- Toujours possible de calculer le mode a posteriori
+
+--
+
+&rarr; **on recourt à des approximations de type Monte-Carlo**
+
+---
+name: simu_post
+# Simulations selon la loi a posteriori
+
+Quelles méthodes utiliser ? [petit retour en arrière ...](#simu_f)
+
+---
+# Simulations selon la loi a posteriori
+
+**Exemple** : exercice 3 de la fiche de TD 4, pour $\small X | \theta \sim \mathcal{B}(n,\theta)$ et $\small \theta \sim \mathcal{U}([1/2,1])$. 
+On a : 
+
+--
+
+$\small p(\theta | x) = \frac{1}{1-F_{B(x+1,n-x+1)}} \frac{\Gamma(n+2)}{\Gamma(x+1)\Gamma(n-x+1)}\theta^x(1-\theta)^{n-x} \mathbb{1}_{[1/2,1]}(\theta)$
+
+- méthode de la fonction inverse
+
+--
+
+```{r, eval=FALSE}
+n <- 10; X <- 3; c <- 1-pbeta(1/2,X+1,n-X+1)
+p3 <- function(x){ifelse(x<1/2|x>1, 0, dbeta(x,X+1,n-X+1)/c)}
+U <- runif(10000) ; ech_finv <- qbeta(c*U+pbeta(1/2,X+1,n-X+1), X+1, n-X+1)
+```
+
+```{r, echo=FALSE, fig.width=6, fig.height=4, fig.align='center', fig.retina=2, warning=FALSE, message=FALSE}
+n <- 10; X <- 3; c <- 1-pbeta(1/2,X+1,n-X+1)
+p3 <- function(x){ifelse(x<1/2|x>1,0,dbeta(x,X+1,n-X+1)/c)}
+
+ech_finv <- qbeta(c*runif(10000)+pbeta(1/2,X+1,n-X+1),X+1,n-X+1)
+x <- seq(0,1,0.001)
+ggplot(data=NULL,aes(x=ech_finv)) + geom_histogram(aes(y=..density..),col="darkgrey",fill="grey",bins=30) + geom_line(aes(x=x,y=p3(x)),col="red")
+```
+
+
+---
+# Simulations selon la loi a posteriori
+
+**Exemple** : $\small p(\theta | x) = \frac{1}{1-F_{B(x+1,n-x+1)}} \frac{\Gamma(n+2)}{\Gamma(x+1)\Gamma(n-x+1)}\theta^x(1-\theta)^{n-x} \mathbb{1}_{[1/2,1]}(\theta)$
+
+- acceptation-rejet
+
+---
+# Simulations selon la loi a posteriori
+
+**Exemple** : $\small p(\theta | x) = \frac{1}{1-F_{B(x+1,n-x+1)}} \frac{\Gamma(n+2)}{\Gamma(x+1)\Gamma(n-x+1)}\theta^x(1-\theta)^{n-x} \mathbb{1}_{[1/2,1]}(\theta)$
+
+- acceptation-rejet &rarr;  $\small p(\theta|x) \leq M (2 \cdot \mathbb{1}_{[1/2,1]}(\theta))$
+
+--
+
+```{r, eval=FALSE}
+n <- 10; X <- 3; c <- 1-pbeta(1/2,X+1,n-X+1)
+M <- dbeta(1/2,X+1,n-X+1)/c
+
+Y <- runif(10000,1/2,1)
+U <- runif(10000,0,M)
+ech_ar <- Y[U<p3(Y)]
+```
+
+
+```{r, echo=FALSE, fig.width=8, fig.height=4, fig.align='center', fig.retina=2, warning=FALSE, message=FALSE}
+n <- 10; X <- 3; c <- 1-pbeta(1/2,X+1,n-X+1)
+M <- dbeta(1/2,X+1,n-X+1)/c
+pp1 <- ggplot(data=NULL,aes(x=x,y=p3(x))) + geom_line(col="red") + geom_line(aes(x=x,y=ifelse(x<1/2,0,M)))
+
+Y <- runif(10000,1/2,1)
+U <- runif(10000,0,M)
+ech_ar <- Y[U<p3(Y)]
+pp2 <- ggplot(data=NULL,aes(x=ech_ar)) + geom_histogram(aes(y=..density..),col="darkgrey",fill="grey",bins=30) + geom_line(aes(x=x,y=p3(x)),col="red")
+
+gridExtra::marrangeGrob(list(pp1,pp2),ncol=2,nrow=1,top="")
+```
+
+---
+# Simulations selon la loi a posteriori
+
+**Exemple** : $\small p(\theta | x) \propto \tilde{p}(\theta | x)$ avec $\tilde{p}(\theta|x) =  \theta^x(1-\theta)^{n-x} \mathbb{1}_{[1/2,1]}(\theta)$
+
+- acceptation-rejet : fonctionne aussi si on connaît la loi a posteriori à une constante près 
+
+---
+# Simulations selon la loi a posteriori
+
+**Exemple** : $\small p(\theta | x) \propto \tilde{p}(\theta | x)$ avec $\tilde{p}(\theta|x) =  \theta^x(1-\theta)^{n-x} \mathbb{1}_{[1/2,1]}(\theta)$
+
+- acceptation-rejet : fonctionne aussi si on connaît la loi a posteriori à une constante près &rarr;  $\small \tilde{p}(\theta|x) \leq M (2 \cdot \mathbb{1}_{[1/2,1]}(\theta))$ avec $M=1/2^{n+1}$.
+
+--
+
+```{r, eval=FALSE}
+Mtilde <- 1/2^(n+1)
+ptilde3 <- function(x){ifelse(x<1/2|x>1,0,x^(X)*(1-x)^(n-X))}
+Y <- runif(10000,1/2,1)
+U <- runif(10000,0,1)
+ech_ar_tilde <- Y[U<(ptilde3(Y)/Mtilde/dunif(Y,1/2,1))]
+```
+
+```{r, echo=FALSE, fig.width=4, fig.height=3, fig.align='center', fig.retina=2, warning=FALSE, message=FALSE}
+n <- 10; X <- 3;
+Mtilde <- 1/2^{n+1}
+ptilde3 <- function(x){ifelse(x<1/2|x>1,0,x^(X)*(1-x)^(n-X))}
+
+Y <- runif(10000,1/2,1)
+U <- runif(10000,0,1)
+ech_ar_tilde <- Y[U<(ptilde3(Y)/Mtilde/dunif(Y,1/2,1))]
+ggplot(data=NULL,aes(x=ech_ar_tilde)) + geom_histogram(aes(y=..density..),col="darkgrey",fill="grey",bins=30) + geom_line(aes(x=x,y=p3(x)),col="red")
+```
+
+---
+class: my-one-page-font
+# Simulations selon la loi a posteriori
+
+<!-- **Exemple** : $\small p(\theta | x) = \frac{1}{1-F_{B(x+1,n-x+1)}} \frac{\Gamma(n+2)}{\Gamma(x+1)\Gamma(n-x+1)}\theta^x(1-\theta)^{n-x} \mathbb{1}_{[1/2,1]}(\theta)$ -->
+
+- échantillonnage préférentiel
+
+--
+
+```{r, eval=FALSE}
+Z1 <- runif(20000,1/2,1)
+w <- p3(Z1)/dunif(Z1,1/2,1)
+ech_is <- sample(Z1,prob = w/sum(w),10000)
+Z2 <- runif(100000,1/2,1)
+w <- p3(Z2)/dunif(Z2,1/2,1)
+ech_is_2 <- sample(Z2,prob = w/sum(w),10000)
+```
+
+```{r, echo=FALSE, fig.width=8, fig.height=4, fig.align='center', fig.retina=2, warning=FALSE, message=FALSE}
+Z1 <- runif(20000,1/2,1)
+w <- p3(Z1)/dunif(Z1,1/2,1)
+ech_is <- sample(Z1,prob = w/sum(w),10000)
+
+Z2 <- runif(100000,1/2,1)
+w <- p3(Z2)/dunif(Z2,1/2,1)
+ech_is_2 <- sample(Z2,prob = w/sum(w),10000)
+
+pp1 <- ggplot(data=NULL,aes(x=ech_is)) + geom_histogram(aes(y=..density..),col="darkgrey",fill="grey",bins=30) + geom_line(aes(x=x,y=p3(x)),col="red") + ggtitle("Taille échantillonneur préférentiel : 20000")
+
+pp2 <- ggplot(data=NULL,aes(x=ech_is_2)) + geom_histogram(aes(y=..density..),col="darkgrey",fill="grey",bins=30) + geom_line(aes(x=x,y=p3(x)),col="red") + ggtitle("Taille échantillonneur préférentiel : 100000")
+
+gridExtra::marrangeGrob(list(pp1,pp2),ncol=2,nrow=1,top="")
+```
+
+
+---
+# Simulations selon la loi a posteriori
+
+**Exemple** : $\small p(\theta | x) = \frac{1}{1-F_{B(x+1,n-x+1)}} \frac{\Gamma(n+2)}{\Gamma(x+1)\Gamma(n-x+1)}\theta^x(1-\theta)^{n-x} \mathbb{1}_{[1/2,1]}(\theta)$
+
+- Metropolis-Hastings à loi instrumentale indépendante
+
+--
+
+```{r}
+chaine1 <- rep(0,10000); chaine1[1] <- runif(1,1/2,1)
+chaine2 <- rep(0,10000); chaine2[1] <- runif(1,1/2,1)
+for (i in 2:10000){
+# loi instrumentale U([1/2,1])
+cand1 <- runif(1,1/2,1)
+alpha1 <- min(1,p3(cand1)/p3(chaine1[i-1])*dunif(chaine1[i-1])/dunif(cand1))
+chaine1[i] <- ifelse(runif(1)<alpha1,cand1,chaine1[i-1])
+
+# loi instrumentale Beta(X+1,n-X+1)
+cand2 <- rbeta(1,X+1,n-X+1)
+alpha2 <- min(1,p3(cand2)/p3(chaine2[i-1])*dbeta(chaine2[i-1],X+1,n-X+1)/dbeta(cand2,X+1,n-X+1))
+chaine2[i] <- ifelse(runif(1)<alpha2,cand2,chaine2[i-1])
+}
+```
+
+```{r, echo=FALSE, results='hold'}
+print(paste("Taux d'acceptation avec loi instrumentale U([1/2,1]) :",length(unique(chaine1))/length(chaine1)))
+print(paste("Taux d'acceptation avec loi instrumentale Beta(X+1,n-X+1) :",length(unique(chaine2))/length(chaine2)))
+```
+
+---
+# Simulations selon la loi a posteriori
+
+**Exemple** : $\small p(\theta | x) = \frac{1}{1-F_{B(x+1,n-x+1)}} \frac{\Gamma(n+2)}{\Gamma(x+1)\Gamma(n-x+1)}\theta^x(1-\theta)^{n-x} \mathbb{1}_{[1/2,1]}(\theta)$
+
+- Metropolis-Hastings à loi instrumentale indépendante
+
+```{r, echo=FALSE, fig.width=12, fig.height=6, fig.align='center', fig.retina=2, warning=FALSE, message=FALSE}
+bacf <- acf(chaine1, plot = FALSE)
+bacfdf1 <- with(bacf, data.frame(lag, acf))
+bacf <- acf(chaine2, plot = FALSE)
+bacfdf2 <- with(bacf, data.frame(lag, acf))
+
+q1 <- ggplot(data = bacfdf1, mapping = aes(x = lag, y = acf)) +
+geom_hline(aes(yintercept = 0)) +
+geom_segment(mapping = aes(xend = lag, yend = 0)) + ggtitle("Loi instrumentale U([1/2,1])")
+q2 <- ggplot(data = bacfdf2, mapping = aes(x = lag, y = acf)) +
+geom_hline(aes(yintercept = 0)) +
+geom_segment(mapping = aes(xend = lag, yend = 0)) + ggtitle("Loi instrumentale Beta(X+1,n-X+1)")
+
+trace1 <- ggplot(data=NULL,aes(x=1:10000,y=chaine1)) + geom_line() + xlab("Itération")
+trace2 <- ggplot(data=NULL,aes(x=1:10000,y=chaine2)) + geom_line() + xlab("Itération")
+
+h1 <- ggplot(data=NULL,aes(x=chaine1)) +  geom_histogram(aes(y=..density..),col="darkgrey",fill="grey",bins=30) + geom_line(aes(x=x,y=p3(x)),col="red")
+
+h2 <- ggplot(data=NULL,aes(x=chaine2)) +  geom_histogram(aes(y=..density..),col="darkgrey",fill="grey",bins=30) + geom_line(aes(x=x,y=p3(x)),col="red")
+
+gridExtra::marrangeGrob(list(q1,q2,trace1,trace2,h1,h2),ncol=3,nrow=2,top="")
+```
+
+
+---
+# Simulations selon la loi a posteriori
+
+**Exemple** : $\small p(\theta | x) = \frac{1}{1-F_{B(x+1,n-x+1)}} \frac{\Gamma(n+2)}{\Gamma(x+1)\Gamma(n-x+1)}\theta^x(1-\theta)^{n-x} \mathbb{1}_{[1/2,1]}(\theta)$
+
+- Metropolis-Hastings à marche aléatoire
+
+--
+
+```{r}
+chaine <- rep(0,10000); chaine[1] <- runif(1,1/2,1)
+for (i in 2:10000){
+cand <- chaine[i-1] + rnorm(1,0,0.1)
+alpha <- min(1,p3(cand)/p3(chaine[i-1]))
+chaine[i] <- ifelse(runif(1)<alpha,cand,chaine[i-1])}
+```
+
+```{r, echo=FALSE}
+print(paste("Taux d'acceptation :",length(unique(chaine))/length(chaine)))
+```
+```{r, echo=FALSE, fig.width=10, fig.height=3.5, fig.align='center', fig.retina=2, warning=FALSE, message=FALSE}
+bacf <- acf(chaine, plot = FALSE)
+bacfdf1 <- with(bacf, data.frame(lag, acf))
+
+q1 <- ggplot(data = bacfdf1, mapping = aes(x = lag, y = acf)) +
+geom_hline(aes(yintercept = 0)) +
+geom_segment(mapping = aes(xend = lag, yend = 0))
+
+trace1 <- ggplot(data=NULL,aes(x=1:10000,y=chaine)) + geom_line() + xlab("Itération")
+
+h1 <- ggplot(data=NULL,aes(x=chaine)) +  geom_histogram(aes(y=..density..),col="darkgrey",fill="grey",bins=30) + geom_line(aes(x=x,y=p3(x)),col="red")
+
+gridExtra::marrangeGrob(list(q1,trace1,h1),ncol=3,nrow=1,top="")
+```
+
+---
+class: my-one-page-font
+# Simulations selon la loi a posteriori
+
+Que faire de ces échantillons (i.i.d. ou issus de chaînes de Markov) ?
+- calcul de la moyenne, médiane, maximum a posteriori
+- calcul d'intervalles de crédibilité, de facteurs de Bayes
+
+**Exemple (suite) :** estimation de la moyenne a posteriori (vraie valeur : `r round((X+1)/(n+2)*(1-pbeta(1/2,X+2,n-X+1))/(1-pbeta(1/2,X+1,n-X+1)),4)`).
+
+```{r, echo=FALSE, message=F}
+library(kableExtra)
+library(coda)
+tab <- data.frame(method=c("Fonction inverse","Acceptation-rejet (AR)","AR sans la constante",
+                           "EP de taille 20000","EP de taille 100000","MH à proposition indépendante",
+                           "MH à marche aléatoire U([1/2,1])","MH à marche aléatoire Beta(X+1,n-X+1)"),
+                  m=c(mean(ech_finv),mean(ech_ar),mean(ech_ar_tilde),mean(ech_is),mean(ech_is_2),mean(chaine1),mean(chaine2),mean(chaine)),
+                  v=c(sd(ech_finv)/sqrt(10000),sd(ech_ar)/sqrt(length(ech_ar)),sd(ech_ar_tilde)/sqrt(length(ech_ar_tilde)),sd(ech_is)/sqrt(10000),sd(ech_is_2)/sqrt(10000),summary(mcmc(chaine1))$statistics[4],summary(mcmc(chaine2))$statistics[4],summary(mcmc(chaine))$statistics[4]),
+                  n=c(10000,length(ech_ar),length(ech_ar_tilde),10000,10000,round(effectiveSize(mcmc(chaine1))),round(effectiveSize(mcmc(chaine2))),round(effectiveSize(mcmc(chaine)))))
+
+tab[4,4] <- cell_spec(tab[4,4], color="red")
+tab[5,4] <- cell_spec(tab[5,4], color="red")
+knitr::kable(tab,row.names = NA, align='lccc',digits=c(0,4,6,0),
+             col.names=c("Méthode","Moyenne a posteriori","Ecart-type","Taille (eff) éch"))
+```
+
+---
+# Simulations selon la loi a posteriori
+
+Comparaison des résultats de la diapo précédente :
+ - la **meilleure méthode** au sens de l'écart-type de l'estimateur est celle de la **fonction inverse**
+ - pour cette approche, on a généré 10000 simulations iid de loi uniforme pour un obtenir échantillon iid de taille 10000 selon la loi cible
+ - pour l'acceptation-rejet, on a obtenu un échantillon iid de taille env. 1750 selon la loi cible, soit env. 10 fois plus petit que pour la fonction inverse &rarr; l'écart-type est donc env. $\sqrt{10}$ fois plus grand
+ - les **deux échantillons obtenus par EP** ont en fait été générés à partir d'échantillons de taille beaucoup plus grande &rarr; ils peuvent atteindre une variance similaire à la méthode de la fonction inverse mais sont bien **plus coûteux**
+ - les **méthodes MCMC**, à cause de la corrélation entre les simulations, conduisent à des **écart-types plus élevés** que dans le cas iid
+
+
+---
+# Simulations selon la loi a posteriori
+
+Pour calculer l'écart-type associé aux méthodes MCMC :
+ - soit on "élague" la chaine en ne gardant qu'une valeur toutes les $m$ itérations, où $m$ est choisi de telle sorte que l'autocorrélation entre $X_n$ et $X_{n-m}$ soit négligeable, et on calcule l'écart-type sur le vecteur obtenu (qui sera donc de taille plus petite)
+ - soit on utilise le package `ccoda` et la fonction `summary()` qui renvoie l'écart-type estimé par des méthodes de séries temporelles
+ 
+```{r}
+# méthode 1
+chaine_elaguee <- chaine[seq(1,length(chaine),by=20)] # d'après le graphe d'autocorrélation 
+sd(chaine_elaguee)/sqrt(length(chaine_elaguee))
+
+# méthode 2
+library(coda)
+summary(mcmc(chaine))
+```
