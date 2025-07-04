@@ -31,7 +31,7 @@ I am interested in applied and computational statistics. More precisely, my rese
   
 ### Curriculum
 
-You can find my resume [here](files/cv.pdf) (in French).
+You can find my resume [here](files/cv_2025.pdf) (in French).
 
 Between October 2016 and August 2017, I was a post-doctoral student in the [Biomathematics](http://biomathematics.mics.centralesupelec.fr/) team of [MICS laboratory](https://Since 2017, I'm an assistant professor (maître de conférence) at Laboratoire Paul Painlevé (Université of Lille).
 ).
