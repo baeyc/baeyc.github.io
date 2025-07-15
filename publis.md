@@ -6,7 +6,7 @@ subtitle: Publications and prepublications
 
 ### Preprints
 
-
+1. Disentangling the sources of variation in functional responses: between-individuals variability, measurements errors and inherent stochasticity of the prey-predator interaction process. with S. Billiard and M. Delattre, 2025. [[bioRxiv]](https://www.biorxiv.org/content/10.1101/2025.07.09.663660v1)
 3. Verbal statistical learning: Prior knowledge impacts word identification but not metacognition. Zmuda, Baey, Mairano, Basirat (2020). [[PsyArXiv]](https://psyarxiv.com/uk2dr/)
 
 ### Publications
