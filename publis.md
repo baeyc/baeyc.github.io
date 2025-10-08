@@ -11,7 +11,7 @@ subtitle: Publications and prepublications
 
 ### Publications
 
-1. Estimation of ratios of normalizing constants using stochastic approximation : the SARIS algorithm. T. Guédon, C. Baey, E. Kuhn. *To appear in Statistics and computing* (2025). [[arxiv]](https://arxiv.org/abs/2408.13022)
+1. Estimation of ratios of normalizing constants using stochastic approximation : the SARIS algorithm. T. Guédon, C. Baey, E. Kuhn. *Statistics and computing*, 35(166), (2025). [[journal]](link.springer.com/article/10.1007/s11222-025-10664-0) [[arxiv]](https://arxiv.org/abs/2408.13022)
 1. Assessing Inter-Individual Genetic Variability in Peach Sugar Metabolism through Reliable Parameter Estimation of a Kinetic Model. H. Kanso, M.-M. Memah, V. Baldazzi, B. Quilot-Turion, C. Baey. *European Journal of Agronomy*, 168, 2025. [[journal]](https://www.sciencedirect.com/science/article/pii/S1161030125001376), [[bioRxiv]](https://www.biorxiv.org/content/10.1101/2023.08.10.552764v1.full)
 1. Bootstrap test procedure for variance components in nonlinear mixed effects models in the presence of nuisance parameters and singular Fisher Information Matrix. T. Guédon, C. Baey, E. Kuhn. *Biometrika*, 111 (4):1331–1348, 2024 [[journal]](https://academic.oup.com/biomet/advance-article-abstract/doi/10.1093/biomet/asae025/7693699), [[arxiv]](https://arxiv.org/abs/2306.10779)
 1. Efficient preconditioned stochastic gradient descent for estimation in latent variable models. C. Baey, M. Delattre, E. Kuhn, J.B. Leger, S. Lemler. *International Conference in Machine Learning (ICML)*, 2023. [[OpenReview]](https://openreview.net/pdf?id=ikbUw7okHD)
