@@ -1,7 +1,7 @@
 ---
 title: "Statistiques computationnelles"
 author: <font size="5"> Charlotte Baey </font>
-date: <font size="5"> M1 MA - 2024/2025 </font>
+date: <font size="5"> M1 MA - 2025/2026 </font>
 output:
   xaringan::moon_reader:
     css: [default, metropolis, metropolis-fonts, hygge]
@@ -183,6 +183,14 @@ Sys.setenv('RETICULATE_PYTHON'='/usr/bin/python3')
 - 1 DS final d'une durée de 3h
 
 .red[**Aucun document autorisé lors des examens.**]
+
+---
+# Sommaire
+
+<!-- .pull-left[ -->
+**1. Méthodes de ré-échantillonnage**
+  - [Cours 1](#c1) (12/01/2026)
+  - [Cours 2](#c2) (12/01/2026)
 
 ---
 name: c1
@@ -448,8 +456,8 @@ name: c2
  <!-- - peut-être utilisé pour la médiane empirique -->
  <!-- - peut permettre d'estimer la distribution de $\hat{\theta}$ -->
 
-<!--</br>
-<span style="color:#16A085">**fin du cours 1 (22/01/2024)**</span>-->
+
+<span style="color:#16A085">**fin du cours 1**</span>-
 
 ---
 # Du jackknife au bootstrap
@@ -619,3 +627,4 @@ $G$ inconnue $\longrightarrow$ $G^*$ connue $\longrightarrow$ $\hat{G}^*_B$ appr
 ]
 
 </br>
+<span style="color:#16A085">**fin du cours 2**</span>
