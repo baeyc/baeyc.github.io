@@ -191,6 +191,8 @@ Sys.setenv('RETICULATE_PYTHON'='/usr/bin/python3')
 **1. Méthodes de ré-échantillonnage**
   - [Cours 1](#c1) (12/01/2026)
   - [Cours 2](#c2) (12/01/2026)
+  - [Cours 3](#c3) (19/01/2026)
+  - [Cours 4](#c4) (20/01/2026)
 
 ---
 name: c1
@@ -534,8 +536,42 @@ magick::image_read_pdf("/home/charlotte/Documents/Enseignement/Lille/M1 ISN /Sta
 ```
 
 
+---
+# Bootstrap
+
+.pull-left[
+### Monde réel
+.left[
+<span style="color:white">**on raisonne conditionnellement à $F_n$**</span>
+- échantillon $\mathcal{X} = (X_1,\dots,X_n)$
+- $X_i$ de loi inconnue $F$
+- paramètre $\theta(F)$
+- estimateur $\hat{\theta} = T(\mathcal{X})$
+- loi de $\hat{\theta}$ : $G$ inconnue
+]
+]
+.pull-right[
+### Monde Bootstrap 
+.left[
+<span style="color:red">**on raisonne conditionnellement à $F_n$**</span>
+- échantillon bootstrap $\mathcal{X}^* = (X_{1}^*,\dots,X_{n}^*)$
+- $X_{i}^*$ de loi connue $F_n$
+- paramètre $\theta(F_n) = \hat{\theta}$
+- statistique bootstrapée $\hat{\theta}^* = T(\mathcal{X}^*)$
+- loi de $\hat{\theta}^*$ : $G^*$ connue
+]
+]
+
+</br>
+.center[
+$G$ inconnue $\longrightarrow$ $G^*$ connue $\longrightarrow$ $\hat{G}^*_B$ approximation bootstrap
+]
+
+</br>
+<span style="color:#16A085">**fin du cours 2**</span>
 
 ---
+name: c3
 # Fonction de répartition empirique
 
  
@@ -594,37 +630,166 @@ d <- do.call(rbind,d)
 
 d %>% filter(n<1000) %>% ggplot(aes(x,group=rep)) + stat_ecdf(geom="step",col="darkgrey") + stat_function(fun=punif) + facet_wrap(~n,nrow=1) + xlim(c(-0.2,1.2))
 ```
+<span style="color:#16A085">**fin du cours 3**</span>
+
+
+---
+name: c4
+# Bootstrap : principe du plug-in
+
+ - on remplace $F$ par sa version empirique $F_n$ 
+
+
+```{r, echo=FALSE, fig.width=12, fig.height=6,fig.retina=2}
+set.seed(1999)
+x <- rnorm(15)
+par(mfrow=c(1,2))
+curve(pnorm(x),from=-2.5,to=2.5,xlab="",ylab="",main=expression(Loi~des~X[i]))
+plot(ecdf(x),xaxt='n',xlim=c(-2.5,2.5),main=expression(Loi~des~X[bi]^"*"))
+text(sort(x),y = par("usr")[3]-0.075,labels=paste0("X(",1:15,")"),xpd=NA,cex=0.75,srt=45)
+axis(1,at=sort(x),labels=rep("",15),cex.axis=0.75)
+lines(seq(-3,3,0.1),pnorm(seq(-3,3,0.1)),xlab="",ylab="",col="grey")
+```
+<!-- .pull-left[ -->
+<!-- .center[ -->
+<!-- espérance : $\theta = \int x dF(x)$ ]]-->
+<!-- .pull-right[ -->
+<!-- espérance : $\int x dF_n(x) = \frac{1}{n} \sum_{i=1}^n X_i$] -->
+
+---
+# Bootstrap : principe du plug-in
+
+#### Exemple  
+$\theta = \mathbb{E}(X_1) = \int x dF(x)$ 
+
+--
+
+Méthode du plug-in : on estime $\theta$ par $\hat{\theta} = \int x dF_n(x) = \frac{1}{n}\sum_{i=1}^n X_i$.
+
+--
+
+Dans l'échantillon bootstrap, les $X_{b,i}^*$ sont distribuées selon la loi $F_n$, et ont pour espérance
+
+$\theta^* = \int x dF_n(x) = \hat{\theta}$
+
+--
+
+La statistique bootstrapée $\hat{\theta}^*_b = \frac{1}{n}\sum_{i=1}^n X_{b,i}^*$ est donc à $\theta^*$ ce que $\hat{\theta}$ est à $\theta$.
+
+---
+# Bootstrap 
+
+#### Exemple 2 : estimation du biais de $\hat{\theta}$
+
+Paramètre $\theta(F)$ estimé par $\hat{\theta} = \theta(F_n)$
+
+--
+
+Biais : $b(\hat{\theta}) = \mathbb{E}_F(\hat{\theta}) - \theta = \int xdG(x) - \theta(F)$
+
+--
+
+Dans le monde bootstrap : 
+
+$$b^*(\hat{\theta}) = \int x dG^*(x) - \theta(F_n) = \int x dG^*(x) - \hat{\theta}$$
+
+--
+
+Estimateur du bootstrap :
+
+$$\hat{b}^*(\hat{\theta}) = \int x d\hat{G}^*_B(x) - \hat{\theta} = \frac{1}{B} \sum_{i=1}^B \hat{\theta}^*_b - \hat{\theta}$$
 
 ---
 # Bootstrap
 
-.pull-left[
-### Monde réel
-.left[
-<span style="color:white">**on raisonne conditionnellement à $F_n$**</span>
-- échantillon $\mathcal{X} = (X_1,\dots,X_n)$
-- $X_i$ de loi inconnue $F$
-- paramètre $\theta(F)$
-- estimateur $\hat{\theta} = T(\mathcal{X})$
-- loi de $\hat{\theta}$ : $G$ inconnue
-]
-]
-.pull-right[
-### Monde Bootstrap 
-.left[
-<span style="color:red">**on raisonne conditionnellement à $F_n$**</span>
-- échantillon bootstrap $\mathcal{X}^* = (X_{1}^*,\dots,X_{n}^*)$
-- $X_{i}^*$ de loi connue $F_n$
-- paramètre $\theta(F_n) = \hat{\theta}$
-- statistique bootstrapée $\hat{\theta}^* = T(\mathcal{X}^*)$
-- loi de $\hat{\theta}^*$ : $G^*$ connue
-]
-]
+#### Exemple 3 : estimation de la variance de $\hat{\theta}$
+
+Variance : $\text{Var} (\hat{\theta}) = \mathbb{E}_F\big[(\hat{\theta} - \mathbb{E}(\hat{\theta}))^2\big] = \int (x - \int x dG(x))^2dG(x)$
+
+--
+
+Dans le monde bootstrap :
+
+$$\text{Var}^*(\hat{\theta}) = \int (x - \int x dG^*(x))^2 dG^*(x)$$
+
+--
+
+Estimateur du bootstrap :
+
+$$\hat{\text{Var}}^*(\hat{\theta}) = \int (x - \int x d\hat{G}_B^*(x))^2 d\hat{G}_B^*(x) = \frac{1}{B} \sum_{b=1}^B \big(\hat{\theta}^*_b - \frac{1}{B} \sum_{b=1}^B \hat{\theta}^*_b \big)^2$$
+
+$\rightarrow$ c'est la variance empirique des statistiques bootstrapées $\hat{\theta}^*_1,\dots,\hat{\theta}^*_B$.
 
 </br>
-.center[
-$G$ inconnue $\longrightarrow$ $G^*$ connue $\longrightarrow$ $\hat{G}^*_B$ approximation bootstrap
-]
 
-</br>
-<span style="color:#16A085">**fin du cours 2**</span>
+---
+# Construction d'intervalles de confiance
+
+#### Méthode du bootstrap classique
+Point de départ : l'existence d'une quantité pivotale, par exemple $\hat{\theta} - \theta$, de loi $H$.
+
+--
+ 
+```{r echo=FALSE, fig.width=5,fig.height=5,warning=FALSE,fig.retina=2} 
+library(ggplot2)
+x <- seq(0,13,0.01)
+y <- dgamma(x,2.5,1)
+d <- data.frame(x=rep(x,2),y=rep(y,2),type=rep(c("HDI","Quantiles"),each=length(x)),
+                xmin=c(qgamma(0.025,2.5,1)),xmax=c(qgamma(0.975,2.5,1)))
+ggplot(data=d,aes(x,y)) + geom_line() + stat_function(fun = dgamma,args = list(shape=2.5, rate=1),geom = "area",fill = "red", alpha = 0.5, xlim = c(0,qgamma(0.025,2.5,1))) + stat_function(fun = dgamma,args = list(shape=2.5, rate=1),geom = "area",fill = "red", alpha = 0.5, xlim = c(qgamma(0.975,2.5,1),10)) + ggtitle(expression(paste("Loi (densité) de ",hat(theta)-theta))) + xlim(c(-0.75,10)) + annotate(geom="text",x=qgamma(0.025,2.5,1)+0.15,y=-0.015,label="H^-1~(alpha/2)",parse=TRUE) + geom_vline(xintercept = 0) + geom_segment(x=qgamma(0.025,2.5,1),xend=qgamma(0.025,2.5,1),y=-0.005,yend=0.005) + geom_hline(yintercept = 0) + 
+  annotate(geom="text",x=qgamma(0.975,2.5,1),y=-0.01,label="H^-1~(1-alpha/2)",parse=TRUE) + 
+  geom_segment(x=qgamma(0.975,2.5,1),xend=qgamma(0.975,2.5,1),y=-0.005,yend=0.005) +
+  geom_segment(x=7,xend=8,y=0.005,yend=0.07,lwd=0.1) + geom_segment(x=0.25,xend=-0.5,y=0.0075,yend=0.07,lwd=0.1) +
+  annotate(geom="text",x=-0.55,y=0.08,label="alpha/2",parse=TRUE) + annotate(geom="text",x=8.1,y=0.08,label="alpha/2",parse=TRUE)
+```
+ 
+--
+
+IC : $I(1-\alpha) =  \big[\hat{\theta} - H^{-1}(1-\alpha/2); \hat{\theta} - H^{-1}(\alpha/2)\big]$
+ 
+---
+# Construction d'intervalles de confiance
+ 
+Version bootstrap empirique : $\hat{I}^*(1-\alpha) =  \big[\hat{\theta} - (\hat{H}^*_B)^{-1}(1-\alpha/2); \hat{\theta} - (\hat{H}^*_B)^{-1}(\alpha/2)\big]$
+ 
+#### Calcul des quantiles de $\hat{H}^*_B$
+ 
+ - $H^*(x) = G^*(x + \hat{\theta})$
+ 
+--
+ 
+```{r echo=FALSE, fig.width=7,fig.height=5, warning=FALSE,fig.retina=2} 
+d <- data.frame(x=rep(x,2),y=c(pgamma(x,2.5,1),pgamma(x-2.5,2.5,1)),type=rep(c("H","G"),each=length(x)),
+                xmin=c(qgamma(0.025,2.5,1)),xmax=c(qgamma(0.975,2.5,1)))
+ggplot(data=d,aes(x,y,col=type)) + geom_line(lwd=1.5) + scale_color_discrete("Fonction") + xlim(c(0,12)) +
+   annotate(geom="text",x=1.4,y=-0.028,label="x",parse=TRUE) + geom_segment(x=1.45,y=0,xend=1.45,yend=0.31,linetype=2,col="black") + geom_segment(x=4,y=0,xend=4,yend=0.31,linetype=2,col="black") +
+  annotate(geom="text",x=4,y=-0.01,label="x+hat(theta)",parse=TRUE) + geom_segment(x = 1.45, y = 0.31, xend = 4, yend = 0.31, arrow = arrow(length = unit(0.015, "npc"), ends = "both"), lwd=0.1, col="black") +   annotate(geom="text",x=2.75,y=0.32,label="hat(theta)",parse=TRUE)
+```
+
+--
+ 
+ - $(H^*)^{-1}(y) = (G^*)^{-1}(y) - \hat{\theta}$
+ 
+---
+# Construction d'intervalles de confiance
+
+#### Méthode du bootstrap classique
+
+$$\hat{I}_{boot}^*(1-\alpha) =  \big[2\hat{\theta} - \hat{\theta}^*_{(\lceil B(1-\alpha/2)\rceil )} ; 2\hat{\theta} - \hat{\theta}^*_{(\lceil B \alpha/2\rceil )}  \big]$$
+
+---
+# Construction d'intervalles de confiance
+
+#### Méthode percentile
+
+<span style="color:red">Hypothèse : il existe une transformation $h$ **croissante** telle que la loi de $h(\hat{\theta})$ soit symétrique autour de $\eta = h(\theta)$</span>
+
+
+IC pour $\eta$ : 
+$$IC_\eta(1-\alpha) = \left[U - H^{-1}_U\left( 1 - \frac{\alpha}{2}\right) ; U - H^{-1}_U \left(\frac{\alpha}{2}\right)\right]. $$
+
+ - $h$ inconnue ?
+ - $H_U$ inconnue ?
+
+<span style="color:#16A085">**fin du cours 4**</span>
+

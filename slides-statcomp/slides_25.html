@@ -179,6 +179,8 @@ MathJax.Hub.Config({
 **1. Méthodes de ré-échantillonnage**
   - [Cours 1](#c1) (12/01/2026)
   - [Cours 2](#c2) (12/01/2026)
+  - [Cours 3](#c3) (19/01/2026)
+  - [Cours 4](#c4) (20/01/2026)
 
 ---
 name: c1
@@ -449,8 +451,42 @@ name: c2
 &lt;img src="slides_25_files/figure-html/unnamed-chunk-25-1.png" width="2000px" /&gt;
 
 
+---
+# Bootstrap
+
+.pull-left[
+### Monde réel
+.left[
+&lt;span style="color:white"&gt;**on raisonne conditionnellement à `\(F_n\)`**&lt;/span&gt;
+- échantillon `\(\mathcal{X} = (X_1,\dots,X_n)\)`
+- `\(X_i\)` de loi inconnue `\(F\)`
+- paramètre `\(\theta(F)\)`
+- estimateur `\(\hat{\theta} = T(\mathcal{X})\)`
+- loi de `\(\hat{\theta}\)` : `\(G\)` inconnue
+]
+]
+.pull-right[
+### Monde Bootstrap 
+.left[
+&lt;span style="color:red"&gt;**on raisonne conditionnellement à `\(F_n\)`**&lt;/span&gt;
+- échantillon bootstrap `\(\mathcal{X}^* = (X_{1}^*,\dots,X_{n}^*)\)`
+- `\(X_{i}^*\)` de loi connue `\(F_n\)`
+- paramètre `\(\theta(F_n) = \hat{\theta}\)`
+- statistique bootstrapée `\(\hat{\theta}^* = T(\mathcal{X}^*)\)`
+- loi de `\(\hat{\theta}^*\)` : `\(G^*\)` connue
+]
+]
+
+&lt;/br&gt;
+.center[
+`\(G\)` inconnue `\(\longrightarrow\)` `\(G^*\)` connue `\(\longrightarrow\)` `\(\hat{G}^*_B\)` approximation bootstrap
+]
+
+&lt;/br&gt;
+&lt;span style="color:#16A085"&gt;**fin du cours 2**&lt;/span&gt;
 
 ---
+name: c3
 # Fonction de répartition empirique
 
  
@@ -486,40 +522,143 @@ name: c2
  - Echantillon uniforme
  
 &lt;img src="slides_25_files/figure-html/unnamed-chunk-31-1.png" width="1152" /&gt;
+&lt;span style="color:#16A085"&gt;**fin du cours 3**&lt;/span&gt;
+
+
+---
+name: c4
+# Bootstrap : principe du plug-in
+
+ - on remplace `\(F\)` par sa version empirique `\(F_n\)` 
+
+
+&lt;img src="slides_25_files/figure-html/unnamed-chunk-32-1.png" width="864" /&gt;
+&lt;!-- .pull-left[ --&gt;
+&lt;!-- .center[ --&gt;
+&lt;!-- espérance : `\(\theta = \int x dF(x)\)` ]]--&gt;
+&lt;!-- .pull-right[ --&gt;
+&lt;!-- espérance : `\(\int x dF_n(x) = \frac{1}{n} \sum_{i=1}^n X_i\)`] --&gt;
+
+---
+# Bootstrap : principe du plug-in
+
+#### Exemple  
+`\(\theta = \mathbb{E}(X_1) = \int x dF(x)\)` 
+
+--
+
+Méthode du plug-in : on estime `\(\theta\)` par `\(\hat{\theta} = \int x dF_n(x) = \frac{1}{n}\sum_{i=1}^n X_i\)`.
+
+--
+
+Dans l'échantillon bootstrap, les `\(X_{b,i}^*\)` sont distribuées selon la loi `\(F_n\)`, et ont pour espérance
+
+`\(\theta^* = \int x dF_n(x) = \hat{\theta}\)`
+
+--
+
+La statistique bootstrapée `\(\hat{\theta}^*_b = \frac{1}{n}\sum_{i=1}^n X_{b,i}^*\)` est donc à `\(\theta^*\)` ce que `\(\hat{\theta}\)` est à `\(\theta\)`.
+
+---
+# Bootstrap 
+
+#### Exemple 2 : estimation du biais de `\(\hat{\theta}\)`
+
+Paramètre `\(\theta(F)\)` estimé par `\(\hat{\theta} = \theta(F_n)\)`
+
+--
+
+Biais : `\(b(\hat{\theta}) = \mathbb{E}_F(\hat{\theta}) - \theta = \int xdG(x) - \theta(F)\)`
+
+--
+
+Dans le monde bootstrap : 
+
+`$$b^*(\hat{\theta}) = \int x dG^*(x) - \theta(F_n) = \int x dG^*(x) - \hat{\theta}$$`
+
+--
+
+Estimateur du bootstrap :
+
+`$$\hat{b}^*(\hat{\theta}) = \int x d\hat{G}^*_B(x) - \hat{\theta} = \frac{1}{B} \sum_{i=1}^B \hat{\theta}^*_b - \hat{\theta}$$`
 
 ---
 # Bootstrap
 
-.pull-left[
-### Monde réel
-.left[
-&lt;span style="color:white"&gt;**on raisonne conditionnellement à `\(F_n\)`**&lt;/span&gt;
-- échantillon `\(\mathcal{X} = (X_1,\dots,X_n)\)`
-- `\(X_i\)` de loi inconnue `\(F\)`
-- paramètre `\(\theta(F)\)`
-- estimateur `\(\hat{\theta} = T(\mathcal{X})\)`
-- loi de `\(\hat{\theta}\)` : `\(G\)` inconnue
-]
-]
-.pull-right[
-### Monde Bootstrap 
-.left[
-&lt;span style="color:red"&gt;**on raisonne conditionnellement à `\(F_n\)`**&lt;/span&gt;
-- échantillon bootstrap `\(\mathcal{X}^* = (X_{1}^*,\dots,X_{n}^*)\)`
-- `\(X_{i}^*\)` de loi connue `\(F_n\)`
-- paramètre `\(\theta(F_n) = \hat{\theta}\)`
-- statistique bootstrapée `\(\hat{\theta}^* = T(\mathcal{X}^*)\)`
-- loi de `\(\hat{\theta}^*\)` : `\(G^*\)` connue
-]
-]
+#### Exemple 3 : estimation de la variance de `\(\hat{\theta}\)`
+
+Variance : `\(\text{Var} (\hat{\theta}) = \mathbb{E}_F\big[(\hat{\theta} - \mathbb{E}(\hat{\theta}))^2\big] = \int (x - \int x dG(x))^2dG(x)\)`
+
+--
+
+Dans le monde bootstrap :
+
+`$$\text{Var}^*(\hat{\theta}) = \int (x - \int x dG^*(x))^2 dG^*(x)$$`
+
+--
+
+Estimateur du bootstrap :
+
+`$$\hat{\text{Var}}^*(\hat{\theta}) = \int (x - \int x d\hat{G}_B^*(x))^2 d\hat{G}_B^*(x) = \frac{1}{B} \sum_{b=1}^B \big(\hat{\theta}^*_b - \frac{1}{B} \sum_{b=1}^B \hat{\theta}^*_b \big)^2$$`
+
+`\(\rightarrow\)` c'est la variance empirique des statistiques bootstrapées `\(\hat{\theta}^*_1,\dots,\hat{\theta}^*_B\)`.
 
 &lt;/br&gt;
-.center[
-`\(G\)` inconnue `\(\longrightarrow\)` `\(G^*\)` connue `\(\longrightarrow\)` `\(\hat{G}^*_B\)` approximation bootstrap
-]
 
-&lt;/br&gt;
-&lt;span style="color:#16A085"&gt;**fin du cours 2**&lt;/span&gt;
+---
+# Construction d'intervalles de confiance
+
+#### Méthode du bootstrap classique
+Point de départ : l'existence d'une quantité pivotale, par exemple `\(\hat{\theta} - \theta\)`, de loi `\(H\)`.
+
+--
+ 
+&lt;img src="slides_25_files/figure-html/unnamed-chunk-33-1.png" width="360" /&gt;
+ 
+--
+
+IC : `\(I(1-\alpha) =  \big[\hat{\theta} - H^{-1}(1-\alpha/2); \hat{\theta} - H^{-1}(\alpha/2)\big]\)`
+ 
+---
+# Construction d'intervalles de confiance
+ 
+Version bootstrap empirique : `\(\hat{I}^*(1-\alpha) =  \big[\hat{\theta} - (\hat{H}^*_B)^{-1}(1-\alpha/2); \hat{\theta} - (\hat{H}^*_B)^{-1}(\alpha/2)\big]\)`
+ 
+#### Calcul des quantiles de `\(\hat{H}^*_B\)`
+ 
+ - `\(H^*(x) = G^*(x + \hat{\theta})\)`
+ 
+--
+ 
+&lt;img src="slides_25_files/figure-html/unnamed-chunk-34-1.png" width="504" /&gt;
+
+--
+ 
+ - `\((H^*)^{-1}(y) = (G^*)^{-1}(y) - \hat{\theta}\)`
+ 
+---
+# Construction d'intervalles de confiance
+
+#### Méthode du bootstrap classique
+
+`$$\hat{I}_{boot}^*(1-\alpha) =  \big[2\hat{\theta} - \hat{\theta}^*_{(\lceil B(1-\alpha/2)\rceil )} ; 2\hat{\theta} - \hat{\theta}^*_{(\lceil B \alpha/2\rceil )}  \big]$$`
+
+---
+# Construction d'intervalles de confiance
+
+#### Méthode percentile
+
+&lt;span style="color:red"&gt;Hypothèse : il existe une transformation `\(h\)` **croissante** telle que la loi de `\(h(\hat{\theta})\)` soit symétrique autour de `\(\eta = h(\theta)\)`&lt;/span&gt;
+
+
+IC pour `\(\eta\)` : 
+$$IC_\eta(1-\alpha) = \left[U - H^{-1}_U\left( 1 - \frac{\alpha}{2}\right) ; U - H^{-1}_U \left(\frac{\alpha}{2}\right)\right]. $$
+
+ - `\(h\)` inconnue ?
+ - `\(H_U\)` inconnue ?
+
+&lt;span style="color:#16A085"&gt;**fin du cours 4**&lt;/span&gt;
+
     </textarea>
 <style data-target="print-only">@media screen {.remark-slide-container{display:block;}.remark-slide-scaler{box-shadow:none;}}</style>
 <script src="https://remarkjs.com/downloads/remark-latest.min.js"></script>
