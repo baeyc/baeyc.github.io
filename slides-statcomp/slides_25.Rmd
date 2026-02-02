@@ -193,6 +193,10 @@ Sys.setenv('RETICULATE_PYTHON'='/usr/bin/python3')
   - [Cours 2](#c2) (12/01/2026)
   - [Cours 3](#c3) (19/01/2026)
   - [Cours 4](#c4) (20/01/2026)
+  - [Cours 5](#c5) (26/01/2026)  
+  
+**2. Méthodes de Monte-Carlo**
+  - [Cours 6](#c6) (27/01/2026)
 
 ---
 name: c1
@@ -213,7 +217,6 @@ class: my-one-page-font
  
  - On utilise/développe/étudie des algorithmes, des astuces numériques/statistiques/computationnelles 
  - L'objectif est de faire de l'inférence, d'étudier la robustesse de méthodes statistiques, de traiter de grands jeux de données, ...
- 
  
 
 ---
@@ -792,4 +795,497 @@ $$IC_\eta(1-\alpha) = \left[U - H^{-1}_U\left( 1 - \frac{\alpha}{2}\right) ; U -
  - $H_U$ inconnue ?
 
 <span style="color:#16A085">**fin du cours 4**</span>
+
+---
+name: c5
+# Construction d'intervalles de confiance
+
+Démarche :
+ 1. construire les échantillons bootstrap $\mathcal{X}_1^*, \dots, \mathcal{X}_B^*$
+ 2. construire les statistiques bootstrapées $\hat{\theta}^*_1, \dots, \hat{\theta}^*_B$ et leurs transformations par $h$ : $U_b^* = h(\hat{\theta}^*_b), \forall b$
+ 3. définir la fonction de répartition de la statistique bootstrap : $$H^*_{U} (x) = \mathbb{P}(U_b^* - U \leq x \mid F_n)$$
+ 4. intervalle de confiance bootstrap pour $\eta = h(\theta)$ : $$IC_\eta^*(1-\alpha) = \left[U - H^{*-1}_{U}\left(1 -\frac{\alpha}{2} \right) ; U - H^{* \ -1}_{U}\left(\frac{\alpha}{2} \right) \right]$$
+ 
+ 
+ 
+---
+# Construction d'intervalles de confiance
+
+.pull-left[
+```{r echo=FALSE, fig.width=5,fig.height=5,warning=FALSE,fig.align='center',fig.retina=2} 
+library(ggplot2)
+x <- seq(-4,4,0.01)
+y <- dnorm(x)
+d <- data.frame(x=x,y=y,xmin=qnorm(0.025),xmax=qnorm(0.975))
+ggplot(data=d,aes(x,y)) + geom_line() + stat_function(fun = dnorm,geom = "area", fill = "red", alpha = 0.5, xlim = c(-3.5,qnorm(0.025))) + stat_function(fun = dnorm,geom = "area", fill = "red", alpha = 0.5, xlim = c(qnorm(0.975),3.5)) +
+  ggtitle(expression(paste("Loi de ",h(hat(theta))-eta))) + xlim(c(-3.5,3.5)) + annotate(geom="text",x=qnorm(0.025)+0.15,y=-0.015,label="H[U]^-1~(alpha/2)",parse=TRUE) +   annotate(geom="text",x=qnorm(0.975),y=-0.015,label="H[U]^-1~(1-alpha/2)",parse=TRUE) + geom_vline(xintercept = 0) + geom_segment(x=qnorm(0.025),xend=qnorm(0.025),y=-0.005,yend=0.005) + geom_hline(yintercept = 0) +  
+  geom_segment(x=qnorm(0.975),xend=qnorm(0.975),y=-0.005,yend=0.005) + geom_segment(x=2.5,xend=3.1,y=0.005,yend=0.07,lwd=0.1) + geom_segment(x=-2.5,xend=-3.1,y=0.005,yend=0.07,lwd=0.1) +
+  annotate(geom="text",x=-3.2,y=0.08,label="alpha/2",parse=TRUE) + annotate(geom="text",x=3.2,y=0.08,label="alpha/2",parse=TRUE)
+```
+]
+.pull-right[
+</br>
+</br>
+</br>
+</br>
+$H^{* \ -1}_{U}\left(\frac{\alpha}{2} \right) = - H^{* \ -1}_{U}\left(1 - \frac{\alpha}{2} \right)$
+]
+
+$$IC_{\eta}^*(1-\alpha) = \left[U + H^{*-1}_{U}\left(\frac{\alpha}{2} \right) ; U + H^{* \ -1}_{U}\left(1-\frac{\alpha}{2} \right) \right]$$
+
+--
+
+$$IC_{\eta}^*(1-\alpha) = \left[G^{*-1}_{U}\left(\frac{\alpha}{2} \right) ; G^{* \ -1}_{U}\left(1-\frac{\alpha}{2} \right) \right]$$
+
+
+---
+# Construction d'intervalles de confiance
+
+#### Méthode $t$-percentile
+
+Repose sur l'existence d'une quantité pivotale de la forme (de loi notée $J_n$):
+
+$$S_n = \sqrt{n} \ \frac{\hat{\theta} - \theta}{\hat{\sigma}}$$
+--
+
+IC classique : $IC(1-\alpha) = \left[\hat{\theta} - \frac{\hat{\sigma}}{\sqrt{n}} J_n^{-1}\left(1-\frac{\alpha}{2}\right) ; \hat{\theta} - \frac{\hat{\sigma}}{\sqrt{n}} J_n^{-1}\left(\frac{\alpha}{2}\right) \right]$
+
+
+--
+
+Démarche bootstrap :
+1. construire les échantillons bootstrap $\mathcal{X}_1^*, \dots, \mathcal{X}_B^*$
+2. construire les statistiques bootstrapées $S^*_b = \sqrt{n} \ \frac{\hat{\theta}^*_b - \hat{\theta}}{\hat{\sigma}^*_b}, \quad b=1,\dots,B$
+3. approcher $J_n^{-1}$ par les quantiles empiriques des statistiques bootstrapées
+	
+	
+$$\hat{I}_{t-\text{boot}}^*(1-\alpha) =  \left[\hat{\theta} - \frac{\hat{\sigma}}{\sqrt{n}} S^*_{\big(\lceil B(1-\frac{\alpha}{2})\rceil\big)}; \hat{\theta} - \frac{\hat{\sigma}}{\sqrt{n}} S^*_{\big(\lceil B(\frac{\alpha}{2})\rceil \big)} \right]$$
+
+---
+# Intervalles de confiance bootstrap
+
+- IC du bootstrap classique :
+$$\hat{I}_{boot}^*(1-\alpha) =  \big[2\hat{\theta} - \hat{\theta}^*_{(\lceil B(1-\alpha/2)\rceil )} ; 2\hat{\theta} - \hat{\theta}^*_{(\lceil B \alpha/2\rceil )}  \big]$$
+
+- IC du bootstrap percentile :
+ $$\hat{I}_{perc}^*(1-\alpha) =  \big[\hat{\theta}^*_{(\lceil B\alpha/2\rceil )} ; \hat{\theta}^*_{(\lceil B(1- \alpha/2)\rceil )}  \big]$$
+ 
+- IC du bootstrap $t$-percentile :
+ $$\hat{I}_{t-\text{boot}}^*(1-\alpha) =  \left[\hat{\theta} - \frac{\hat{\sigma}}{\sqrt{n}} S^*_{(\lceil B(1-\frac{\alpha}{2})\rceil)}; \hat{\theta} - \frac{\hat{\sigma}}{\sqrt{n}} S^*_{(\lceil B(\frac{\alpha}{2})\rceil)} \right]$$
+
+
+---
+# Paramétrique ou non paramétrique ?
+
+- Jusqu'à présent, on a décrit des procédures de bootstrap dit **non-paramétrique**
+
+--
+
+- En effet, on n'a fait aucune hypothèse sur la loi $F$, ni exploité sa forme paramétrique
+
+--
+
+- Au contraire, on a échantillonné les $X_{b,i}^*$ selon la loi $F_n$, qui est un estimateur **non-paramétrique** de $F$
+
+ </br>
+ 
+--
+
+- Il est possible de faire du bootstrap **paramétrique**
+
+--
+
+- Dans ce cas, on va utiliser la forme paramétrique de la loi $F$, que l'on note $F_\theta$.
+
+--
+
+- On échantillonne alors les $X_{b,i}^*$ selon la loi $F_{\hat{\theta}}$, qui est un estimateur **paramétrique** de $F$
+
+<!-- <table> -->
+<!--   <tr style="font-weight:bold"> -->
+<!--     <td> </td> -->
+<!--     <td>Bootstrap non paramétrique</td> -->
+<!--     <td>Bootstrap paramétrique</td> -->
+<!--   </tr> -->
+<!--   <tr> -->
+<!--     <td>hypothèse sur $F$</td> -->
+<!--     <td>pas d'hypothèse particulière</td> -->
+<!--     <td>$F = F_\theta$</td> -->
+<!--   </tr> -->
+<!-- <tr> -->
+<!--     <td>échantillonnage</td> -->
+<!--     <td>selon loi $F_n$</td> -->
+<!--     <td>selon loi $F_{\hat{\theta}}$</td> -->
+<!--   </tr>   -->
+<!-- </table> -->
+
+</br>
+
+--
+
+.center[.red[**RQ : c'est parfois la seule approche possible**]]
+
+---
+# Tests bootstrap
+
+Procédure de test usuelle pour un test de niveau $\alpha$ :
+
+--
+
+- choix des hypothèses $H_0$ et $H_1$
+
+--
+
+- choix d'une statistique de test $T(\mathcal{X})$
+
+--
+
+- identification de la loi (éventuellement asymptotique) de $T(\mathcal{X})$
+
+--
+
+- déterminer la région de rejet **ou** calculer la $p$-valeur du test
+
+--
+
+- conclure
+
+</br>
+--
+
+.center[.red[&rarr;** quelles sont les difficultés possibles ?**]]
+
+---
+# Tests bootstrap
+
+Procédure de test usuelle pour un test de niveau $\alpha$ :
+
+
+- choix des hypothèses $H_0$ et $H_1$ .green[**&rarr; ok**]
+
+
+- choix d'une statistique de test $T(\mathcal{X})$ .green[**&rarr; ok**]
+
+
+- identification de la loi (éventuellement asymptotique) de $T(\mathcal{X})$ .red[**&rarr; loi inconnue**]
+
+- déterminer la région de rejet **ou** calculer la $p$-valeur du test .red[**&rarr; non calculable**]
+
+
+- conclure
+
+
+---
+# Tests bootstrap
+
+#### Exemple avec du bootstrap non paramétrique
+
+$X_1,\dots,X_n$ i.i.d. de loi $F_1$ et $Y_1,\dots,Y_m$ i.i.d. de loi $F_2$.
+
+$$H_0 : F_1 =  F_2 \quad \text{vs.} \quad H_1 : F_1 \neq F_2$$
+ 
+--
+
+On suppose que :
+ - l'égalité en loi se traduit par une égalité de certains paramètres
+--
+
+ - l'on dispose d'une statistique de test $T(\mathcal{X})$ 
+
+--
+
+</br>
+**Objectif** : construire une version bootstrap de $T$ <span style="color:red">**sous $H_0$**</span>
+
+---
+# Tests bootstrap
+
+#### Exemple avec du boostrap paramétrique
+
+$X_1,\dots,X_n$ i.i.d. de loi $F_{\theta,\eta}$, et
+
+$$H_0 : \theta =  \theta_0 \quad \text{vs.} \quad H_1 : \theta \neq \theta_0$$
+
+&rarr; $\eta$ est un *paramètre de nuisance*.
+
+</br>
+--
+
+Exemple du TRV :
+
+$$ T(X_1,\dots,X_n) = \frac{L(X_1,\dots,X_n ; \hat{\theta}, \hat{\eta}_1)}{L(X_1,\dots,X_n ; \theta_0, \hat{\eta}_0)},$$
+</br>
+--
+
+<span style="color:red">**&rarr; la loi de $T$ sous $H_0$ n'est pas connue en présence de paramètres de nuisnace**</span>
+
+</br>
+<span style="color:#16A085">**fin du cours 5**</span>
+
+
+
+---
+name: c6
+class: inverse, middle, center
+
+# II. Méthodes de Monte-Carlo
+
+---
+# Un peu d'histoire ...
+
+- première expérience de type Monte Carlo dûe à Buffon au XVIIIème siècle &rarr; l'aiguille de Buffon
+
+.center[
+<img src="https://upload.wikimedia.org/wikipedia/commons/thumb/5/58/Buffon_needle.svg/1920px-Buffon_needle.svg.png" width="200" align="center">]
+
+--
+
+- les méthodes actuelles sont nées pendant la seconde guerre mondiale au laboratoire américain de Los Alamos &rarr; nom de code *Monte-Carlo*
+
+.center[
+<img src="https://frenchriviera.travel/wp-content/uploads/2018/03/Monte-Carlo-Casino1.jpg" width="300" align="center">
+]
+
+
+
+---
+# Objectif
+
+- Question principale : **l'approximation d'intégrales**
+
+$$\int h(x) dx $$
+
+- Outil théorique à la base des méthodes de Monte-Carlo : **la loi forte des grands nombres**
+
+- Outil pratique nécessaire : **la simulation de variables aléatoires**
+
+
+---
+
+class: inverse, middle, center
+
+# 1. Génération de variables aléatoires
+
+---
+# Génération de variables aléatoires
+
+Lois usuelles &rarr; disponibles sous la plupart des langages ou logiciels 
+
+```{r, echo=FALSE}
+library(reticulate)
+```
+
+```{r}
+# Sous R
+rexp(n=10, rate=1/5)
+```
+
+```{python, eval=FALSE}
+# Sous Python
+from scipy.stats import expon
+expon.rvs(scale=5, size=10)
+```
+
+.red[**attention aux conventions utilisées dans chaque langage !**]
+
+---
+#  Méthode de la fonction inverse
+
+Repose sur le résultat suivant :
+> Soit $F$ une f.d.r. et $F^{-}$ son inverse (généralisée). Soit $U \sim \mathcal{U}([0,1])$. Alors $X = F^{-}(U)$ suit la loi $F$.
+
+--
+
+```{r, echo=FALSE, fig.align='center', fig.height=6, fig.width=7, fig.retina=2}
+set.seed(10101)
+U <- runif(15)
+X <- qnorm(U,sd=0.5)
+
+plot(seq(-2,2,0.001),pnorm(seq(-2,2,0.001),sd=0.5),type="l",xlab="",ylab="",yaxt="n")
+```
+
+
+---
+#  Méthode de la fonction inverse
+
+Repose sur le résultat suivant :
+> Soit $F$ une f.d.r. et $F^{-}$ son inverse (généralisée). Soit $U \sim \mathcal{U}([0,1])$. Alors $X = F^{-}(U)$ suit la loi $F$.
+
+
+```{r, echo=FALSE, fig.align='center', fig.height=6, fig.width=7, fig.retina=2}
+plot(seq(-2,2,0.001),pnorm(seq(-2,2,0.001),sd=0.5),type="l",xlab="",ylab="",yaxt="n")
+mtext(paste0("U[",1:15,"]"),at=U,side=2,line=2,cex=0.75,las=2)
+axis(2,at=sort(U),labels=rep("",15),cex.axis=0.75)
+```
+
+---
+#  Méthode de la fonction inverse
+
+Repose sur le résultat suivant :
+> Soit $F$ une f.d.r. et $F^{-}$ son inverse (généralisée). Soit $U \sim \mathcal{U}([0,1])$. Alors $X = F^{-}(U)$ suit la loi $F$.
+
+```{r, echo=FALSE, fig.align='center', fig.height=6, fig.width=7, fig.retina=2}
+plot(seq(-2,2,0.001),pnorm(seq(-2,2,0.001),sd=0.5),type="l",xlab="",ylab="",yaxt="n")
+mtext(paste0("U[",1:15,"]"),at=U,side=2,line=2,cex=0.75,las=2)
+axis(2,at=sort(U),labels=rep("",15),cex.axis=0.75)
+mtext(paste0("X[",1:15,"]"),at=X,side=1,line=2,cex=0.75,las=2)
+axis(1,at=sort(X),labels=rep("",15),cex.axis=0.75)
+segments(-2,U,X,U,lty=2,col="grey")
+segments(X,U,X,0,lty=2,col="grey")
+```
+
+
+---
+#  Méthode de la fonction inverse
+
+Repose sur le résultat suivant :
+> Soit $F$ une f.d.r. et $F^{-}$ son inverse (généralisée). Soit $U \sim \mathcal{U}([0,1])$. Alors $X = F^{-}(U)$ suit la loi $F$.
+
+```{r, echo=FALSE, fig.align='center', fig.height=6, fig.width=7, fig.retina=2}
+plot(ecdf(X),xlim=c(-2,2),main="",ylab="",yaxt="n")
+points(seq(-2,2,0.001),pnorm(seq(-2,2,0.001),sd=0.5),type="l",xlab="",ylab="",yaxt="n")
+mtext(paste0("U[",1:15,"]"),at=U,side=2,line=2,cex=0.75,las=2)
+axis(2,at=sort(U),labels=rep("",15),cex.axis=0.75)
+mtext(paste0("X[",1:15,"]"),at=X,side=1,line=2,cex=0.75,las=2)
+axis(1,at=sort(X),labels=rep("",15),cex.axis=0.75)
+segments(-2,U,X,U,lty=2,col="grey")
+segments(X,U,X,0,lty=2,col="grey")
+```
+
+
+---
+# Exemple
+
+Loi de Cauchy, de densité $f(x) = \frac{1}{\pi(1+x^2)}$
+
+--
+
+```{r}
+u <- runif(10000)
+finv <- function(u){tan(pi*(u-0.5))}
+x <- finv(u)
+```
+
+--
+
+```{r, echo=FALSE, fig.width=6, fig.height=5, fig.retina=2, fig.align='center', warning=FALSE}
+d <- data.frame(x=x)
+ggplot(d, aes(x)) +
+  geom_histogram(aes(y = after_stat(density)), binwidth = 0.35, fill = "#999999") +
+  stat_function(
+    fun = dcauchy,
+    lwd = 1
+  ) + xlim(c(-10,10))
+```
+
+
+---
+# Méthode d'acceptation-rejet
+
+Proposition :
+> Soit $X$ une v.a. de densité $f$ et soit $g$ une densité de probabilité et une constante $M \geq 1$ t.q. $\forall x, f(x) \leq M g(x)$. Alors pour simuler selon la loi $f$ il suffit de :
+1. simuler $Y \sim g$
+2. simuler $U | Y=y \sim \mathcal{U}([0,Mg(y)])$
+3. si $0 < U < f(Y)$, poser $X=Y$, sinon reprendre l'étape 1.
+
+*Preuve*  <div class="horizontalgap" style="width:10px"></div> 
+
+
+---
+# Méthode d'acceptation-rejet
+
+Illustration
+
+```{r, fig.retina=2, fig.height=7, fig.width=10, echo=FALSE, fig.align='center', warning=FALSE, message=FALSE}
+fx <- function(x){0.65*dnorm(x,0,1.1)+0.35*dnorm(x,4,1)}
+gx <- function(x){1.83*dnorm(x,1.4,2.5)}
+x <- seq(-8,10,length.out=1000)
+dx <- data.frame(x=c(x,x),y=c(fx(x),gx(x)),Fonction=c(rep("f",length(x)),rep("Mg",length(x))))
+ggplot(data=dx,aes(x=x,y=y,col=Fonction)) + geom_line(size=1) #+ geom_point(x=xg,y=0,cex=4) + 
+  #annotate(geom="text",x=xg,y=0.01,label="Y",cex=5) 
+```
+
+---
+# Méthode d'acceptation-rejet
+
+- Tirage de $Y$ selon la loi $g$
+
+```{r, fig.retina=2, fig.height=7, fig.width=10, echo=FALSE, fig.align='center'}
+set.seed(10)
+xg <- rnorm(1,1.4,2.5)
+ggplot(data=dx,aes(x=x,y=y,col=Fonction)) + geom_line(size=1) + geom_point(x=xg,y=0,cex=4) + 
+  annotate(geom="text",x=xg,y=0.01,label="Y1",cex=5) 
+```
+
+
+---
+# Méthode d'acceptation-rejet
+
+- Tirage de $U$ conditionnellement à $Y=y$ selon la loi $\mathcal{U}([0,Mg(y)])$ &rarr; on rejette
+
+```{r, fig.retina=2, fig.height=7, fig.width=10, echo=FALSE, fig.align='center'}
+set.seed(110)
+yg <- runif(1,0,gx(xg))
+ggplot(data=dx,aes(x=x,y=y,col=Fonction)) + geom_line(size=1) + geom_point(x=xg,y=yg,cex=4) + geom_segment(x=xg,y=0,xend=xg,yend=gx(xg)) + geom_point(x=xg,y=0,cex=4) + 
+  annotate(geom="text",x=xg,y=0.01,label="Y1",cex=5) 
+```
+
+---
+# Méthode d'acceptation-rejet
+
+- Tirage de $U$ conditionnellement à $Y=y$ selon la loi $\mathcal{U}([0,Mg(y)])$ &rarr; on accepte 
+
+```{r, fig.retina=2, fig.height=7, fig.width=10, echo=FALSE, fig.align='center'}
+set.seed(1000)
+xg <- rnorm(1,1.4,2.5)
+yg <- runif(1,0,gx(xg))
+ggplot(data=dx,aes(x=x,y=y,col=Fonction)) + geom_line(size=1) + geom_point(x=xg,y=yg,cex=4) +  geom_segment(x=xg,y=0,xend=xg,yend=gx(xg)) + geom_point(x=xg,y=0,cex=4) + 
+  annotate(geom="text",x=xg,y=0.01,label="Y2",cex=5) 
+```
+
+
+
+---
+# Méthode d'acceptation-rejet
+
+A la fin :
+
+```{r, fig.align='center', fig.retina=2, fig.height=7, fig.width=10, echo=FALSE, warning=FALSE, message=FALSE}
+library(gganimate)
+x <- seq(-8,10,0.01)
+fxs <- fx(x)
+gxs <- gx(x)
+set.seed(0)
+xg <- rnorm(5000,1.4,2.5)
+yg <- runif(5000,0,gx(xg))
+u <- ifelse(yg<fx(xg),1,0)
+ddens <- data.frame(x=x,y=fxs,accept=TRUE)
+ddens$accept <- factor(ddens$accept,labels=c("Accepté"))
+ddens1 <- data.frame(x=x,y=gxs,accept=FALSE)
+ddens1$accept <- factor(ddens1$accept,labels=c("Rejeté"))
+dpoints <- data.frame(x=xg,y=yg,accept=u)
+dpoints$accept <- factor(dpoints$accept,labels=c("Rejeté","Accepté"))
+dpoints$n <- rep(seq(100,5000,by=100),each=100)
+ggplot(data = dpoints, aes(x=x,y=y,col=accept))  + geom_point(size=0.9) + geom_line(data=ddens, linewidth=1.1) +  geom_line(data=ddens1, linewidth=1.1) + scale_color_hue(direction=-1) #+ scale_color_brewer(name="",palette="Dark2")# + transition_states(n) + shadow_mark() 
+```
+
+---
+name:c7
+# Méthode d'acceptation-rejet
+
+Proposition :
+> Soit $X$ une v.a. de densité $f$ et soit $g$ une densité de probabilité et une constante $M \geq 1$ t.q. $\forall x, f(x) \leq M g(x)$. Alors pour simuler selon la loi $f$ il suffit de :
+1. simuler $Y \sim g$
+2. simuler $U | Y=y \sim \mathcal{U}([0,Mg(y)])$
+3. si $0 < U < f(Y)$, poser $X=Y$, sinon reprendre l'étape 1.
+
+*Preuve*  <div class="horizontalgap" style="width:10px"></div> 
+
+--
+
+Remarques :
+- on a seulement besoin de connaître $f$ à une constante multiplicative près
+- $\forall x, f(x) \leq M g(x) \Rightarrow \text{supp}(f) \subset \text{supp}(g)$
+- probabilité d'accepter un candidat : $\frac{1}{M}$ (influence du choix de $g$)
+
 
