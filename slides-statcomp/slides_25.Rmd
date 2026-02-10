@@ -197,6 +197,9 @@ Sys.setenv('RETICULATE_PYTHON'='/usr/bin/python3')
   
 **2. Méthodes de Monte-Carlo**
   - [Cours 6](#c6) (27/01/2026)
+  - [Cours 7](#c7) (03/02/2026)  
+  - [Cours 8](#c8) (06/02/2026)  
+  - [Cours 9](#c9) (09/02/2026)  
 
 ---
 name: c1
@@ -1269,8 +1272,8 @@ dpoints$n <- rep(seq(100,5000,by=100),each=100)
 ggplot(data = dpoints, aes(x=x,y=y,col=accept))  + geom_point(size=0.9) + geom_line(data=ddens, linewidth=1.1) +  geom_line(data=ddens1, linewidth=1.1) + scale_color_hue(direction=-1) #+ scale_color_brewer(name="",palette="Dark2")# + transition_states(n) + shadow_mark() 
 ```
 
+
 ---
-name:c7
 # Méthode d'acceptation-rejet
 
 Proposition :
@@ -1283,9 +1286,793 @@ Proposition :
 
 --
 
+
+
+<span style="color:#16A085">**fin du cours 6**</span>
+
+
+---
+name: c7
+# Retour sur l'acceptation-rejet
+
+Rappel de l'algorithme de simulation :
+> Soit $X$ une v.a. de densité $f$ et soit $g$ une densité de probabilité et une constante $M \geq 1$ t.q. $\forall x, f(x) \leq M g(x)$. Alors pour simuler selon la loi $f$ il suffit de :
+1. simuler $Y \sim g$
+2. simuler $U | Y=y \sim \mathcal{U}([0,Mg(y)])$
+3. si $0 < U < f(Y)$, poser $X=Y$, sinon reprendre l'étape 1.
+
+--
+
 Remarques :
 - on a seulement besoin de connaître $f$ à une constante multiplicative près
 - $\forall x, f(x) \leq M g(x) \Rightarrow \text{supp}(f) \subset \text{supp}(g)$
 - probabilité d'accepter un candidat : $\frac{1}{M}$ (influence du choix de $g$)
 
+---
+# Autre formulation (plus générale)
 
+
+> Soit $X$ une v.a. de densité $f$, $g$ une densité de probabilité et $M$ t.q. $\forall x, f(x) \leq M g(x)$. Alors pour simuler selon la loi $f$ il suffit de :
+1. simuler $Y \sim g$
+2. simuler $U \sim \mathcal{U}([0,1])$
+3. si $0 < U < f(Y)/Mg(Y)$, poser $X=Y$, sinon reprendre l'étape 1.
+
+RQ. : cela marche aussi si on connaît $f$ à une constante multiplicative près.
+
+---
+# Exemple 
+
+On veut simuler $X$ selon la loi normale centrée réduite à l'aide d'une loi exponentielle de paramètre 1.
+
+1. par symétrie de la loi normale, il suffit de savoir simuler selon la loi de $|X|$ 
+
+--
+
+2. on génère ensuite $Z$, une Bernoulli de paramètre 1/2 et on pose $X = |X|$ si $Z=1$ et $X=-|X|$ si $Z=0$.
+
+--
+
+3. il faut trouver une constante $M$ telle que $f(x)\leq M g(x)$ pour tout $x$ avec :
+- densité cible $f(x) = \frac{2}{\sqrt{2\pi}} e^{-x^2/2} \mathbb{1}_{x\geq 0}$
+- densité de la loi exponentielle $g(x) = e^{-x} \mathbb{1}_{x>0}$
+
+RQ : on peut chercher $\tilde{M}$ telle que $e^{-x^2/2} \leq \tilde{M} e^{-x}$ pour $x >0$.
+
+---
+class: my-one-page-font
+# Exemple
+
+```{r}
+n <- 1000
+f <- function(x){ifelse(x>0,sqrt(2/pi)*exp(-x^2/2),0)}
+g <- function(x){ifelse(x>0,exp(-x),0)}
+
+M <- sqrt(2*exp(1)/pi) # env. 1.31 -> 1/M = 0.76
+U1 <- runif(n)
+Y <- -log(U1)
+U2 <- runif(n,min = 0, max = M*g(Y))
+absX <- Y[U2<f(Y)]
+Z <- 2*rbinom(length(absX),size = 1, p=1/2) - 1
+X <- Z*absX
+```
+
+--
+
+```{r, echo=FALSE, fig.height=4,fig.width=9,fig.retina=2,fig.align='center'}
+#hist(X,breaks = 20,freq = F, main="")
+#points(seq(-2.5,2.5,0.001),dnorm(seq(-2.5,2.5,0.001)),col="red",type="l")
+x <- seq(0,3,0.001)
+dar <- data.frame(x=rep(x,2),y=c(2*dnorm(x),sqrt(2*exp(1)/pi)*dexp(x)),Fonction=rep(c("f","Mg"),each=length(x)))
+p1 <- ggplot(data=dar,aes(x,y,color=Fonction)) + geom_line()
+p2 <- ggplot(data=data.frame(X=X),aes(x=X)) + geom_histogram(aes(y = after_stat(density)), binwidth = 0.35, fill = "grey",col="darkgrey") + stat_function(fun = dnorm) + ggtitle(paste0("valeurs acceptées : ",length(absX),"/",1000))
+gridExtra::grid.arrange(p1,p2,ncol=2)
+```
+
+---
+# Un cas particulier
+
+Un cas particulier intéressant : le cas $f$ bornée à support compact.
+
+--
+
+- on prend pour $g$ la loi uniforme sur le support de $f$
+- et on simule $U$ uniforme sur $[0,m]$ où $m=\max_x f(x)$
+
+--
+
+ex. : $\displaystyle f(x) = \frac{1}{8} |x^4 - 5x^2 + 4| \ \mathbb{1}_{[-2,2]}(x)$
+```{r, echo=FALSE, fig.height=6,fig.width=8,fig.align='center',fig.retina=2}
+fdens <- function(x){
+  ifelse(abs(x)<2,abs(x^4-5*x^2+4)/8,0)
+}
+
+curve(fdens,from=-2.5,2.5,lwd=2)
+```
+
+---
+# Un cas particulier
+
+Un cas particulier intéressant : le cas $f$ bornée à support compact.
+
+- on prend pour $g$ la loi uniforme sur le support de $f$
+- et on simule $U$ uniforme sur $[0,m]$ où $m=\max_x f(x)$
+
+ex. : $\displaystyle f(x) = \frac{1}{8} |x^4 - 5x^2 + 4| \ \mathbb{1}_{[-2,2]}(x)$
+```{r, echo=FALSE, fig.height=6,fig.width=8,fig.align='center',fig.retina=2}
+curve(fdens,from=-2.5,2.5,lwd=2)
+curve(2*dunif(x,-2,2),from=-2.5,to=2.5,col="red",lwd=2,add=T)
+```
+
+---
+# Un cas particulier
+
+$f(x) = \frac{1}{8} |x^4 - 5x^2 + 4| \ \mathbb{1}_{[-2,2]}(x)$
+
+.pull-left[
+```{r paged.print=FALSE, eval=FALSE}
+Y <- runif(10000,-2,2)
+U <- runif(10000,0,0.5)
+
+accept <- (U<fdens(Y))
+X <- Y[accept]
+
+hist(X,breaks=50,freq=F)
+points(x,fx,type="l",col="red")
+```
+
+```{r, echo=FALSE}
+Y <- runif(10000,-2,2)
+U <- runif(10000,0,0.5)
+accept <- (U<fdens(Y))
+```
+
+```{r}
+mean(accept)
+```
+
+&rarr; la moitié des points simulés est 'perdue'
+]
+
+.pull-right[
+```{r, echo=FALSE}
+Y <- runif(10000,-2,2)
+U <- runif(10000,0,0.5)
+
+accept <- (U<fdens(Y))
+X <- Y[accept]
+
+hist(X,breaks=50,,freq=F,xlab="x",ylab="",main="")
+points(seq(-2,2,0.01),fdens(seq(-2,2,0.01)),type="l",col="red",lwd=2)
+```
+]
+
+
+---
+# Un cas particulier
+
+Visuellement : on peut représenter les points acceptés dans le rectangle $[-2,2] \times [0,1/2]$
+
+</br>
+
+```{r, fig.align='center',fig.height=6,fig.width=8, fig.retina=1,echo=FALSE, warning=FALSE, message=FALSE}
+library(gganimate)
+x <- seq(-2,2,0.01)
+fx <- fdens(x)
+ddens <- data.frame(x=x,y=fx,accept=TRUE)
+ddens$accept <- factor(ddens$accept,labels=c("Accepté"))
+dpoints <- data.frame(x=Y,y=U,accept=accept)
+dpoints$accept <- factor(dpoints$accept,labels=c("Rejeté","Accepté"))
+dpoints$n <- rep(seq(100,10000,by=100),each=100)
+ggplot(data = dpoints, aes(x=x,y=y,col=accept))  + geom_point(size=0.9) + geom_line(data=ddens, linewidth=1.1) + scale_color_discrete(name="") + scale_color_brewer(name="",palette="Dark2")# + transition_states(n) + shadow_mark() 
+```
+
+---
+class: inverse, middle, center
+
+# 2. Méthodes de Monte-Carlo
+
+---
+# Monte Carlo classique
+
+**Objectif** : calculer une intégrale de la forme $\mu = \int h(x) f(x) dx$ où $f$ est une densité de probabilité.
+
+--
+
+> *Définition.* Soit $X_1,\dots,X_n$ un échantillon i.i.d. de loi $f$. L'estimateur de Monte Carlo de $\mu$ est :
+$$\hat{\mu}_n = \frac{1}{n} \sum_{i=1}^n h(X_i)$$
+
+
+Propriétés :
+- estimateur sans biais
+- fortement consistant
+- IC avec le TCL
+
+Remarques :
+- vitesse de convergence en $\sqrt{n}$, indépendante de la dimension
+- ne dépend pas de la régularité de $h$
+
+
+---
+name: c8
+# Monte Carlo classique
+
+**Exemple :** on veut calculer $\int_0^{2\pi} (\sin^2(x) + 2\cos(3x))^2 dx$
+
+--
+```{r,fig.align='center',fig.height=5,fig.width=7, fig.retina=2,echo=FALSE}
+curve((sin(x)^2+2*cos(3*x))^2,from=0,to=2*pi,n = 1000)
+```
+
+On peut ré-écrire l'intégrale sous la forme  
+$$
+\begin{eqnarray}
+I & = & 2\pi \int_{\mathbb{R}} (\sin^2(x) + 2\cos(3x))^2 \frac{1}{2\pi}1_{[0,2\pi]}(x)dx \\
+& = & 2\pi \ \mathbb{E}((\sin^2(X) + 2\cos(3X))^2), \quad X \sim \mathcal{U}([0,2\pi])
+\end{eqnarray}
+$$
+
+---
+# Monte Carlo classique
+
+**Exemple :** on veut calculer $I=2\pi \ \mathbb{E}((\sin^2(X) + 2\cos(3X))^2), \quad X \sim \mathcal{U}([0,2\pi])$
+
+On peut utiliser l'estimateur de Monte-Carlo suivant :
+ 1. on génère $X_1,\dots,X_n$ i.i.d. de loi uniforme sur $[0,2\pi]$
+
+
+```{r,fig.align='center',fig.height=6,fig.width=7, fig.retina=2,echo=FALSE}
+curve((sin(x)^2+2*cos(3*x))^2,from=0,to=2*pi,n = 1000)
+u <- runif(100,0,2*pi)
+```
+
+---
+# Monte Carlo classique
+
+**Exemple :** on veut calculer $I=2\pi \ \mathbb{E}((\sin^2(X) + 2\cos(3X))^2), \quad X \sim \mathcal{U}([0,2\pi])$
+
+On peut utiliser l'estimateur de Monte-Carlo suivant :
+ 1. on génère $X_1,\dots,X_n$ i.i.d. de loi uniforme sur $[0,2\pi]$
+
+
+```{r,fig.align='center',fig.height=6,fig.width=7, fig.retina=2,echo=FALSE}
+curve((sin(x)^2+2*cos(3*x))^2,from=0,to=2*pi,n = 1000)
+u <- runif(100,0,2*pi)
+points(u,0*u,col="red",pch=19,cex=0.5)
+legend(0,8,legend=c("Xi"),col=c("red"),pch=19,bty="n")
+```
+
+---
+# Monte Carlo classique
+
+**Exemple :** on veut calculer $I=2\pi \ \mathbb{E}((\sin^2(X) + 2\cos(3X))^2), \quad X \sim \mathcal{U}([0,2\pi])$
+
+On peut utiliser l'estimateur de Monte-Carlo suivant :
+ 1. on génère $X_1,\dots,X_n$ i.i.d. de loi uniforme sur $[0,2\pi]$
+ 2. on approche $I$ par $\hat{I} = 2 \pi \frac{1}{n}\sum_{i=1}^n (\sin^2(X_i) + 2\cos(3X_i))^2$
+
+```{r,fig.align='center',fig.height=6,fig.width=7, fig.retina=2,echo=FALSE}
+curve((sin(x)^2+2*cos(3*x))^2,from=0,to=2*pi,n = 1000)
+u <- runif(100,0,2*pi)
+points(u,0*u,col="red",pch=19,cex=0.5)
+segments(u,0*u,u,(sin(u)^2+2*cos(3*u))^2,col="red",lwd=0.2)
+points(u,(sin(u)^2+2*cos(3*u))^2,col="black",pch=19,cex=0.5)
+legend(0,8,legend=c("Xi","h(Xi)"),col=c("red","black"),pch=19,bty="n")
+```
+
+---
+# Monte Carlo classique
+
+```{r,fig.align='center',fig.height=6,fig.width=7, fig.retina=2,echo=FALSE}
+curve((sin(x)^2+2*cos(3*x))^2,from=0,to=2*pi,n = 1000)
+points(u,0*u,col="red",pch=19,cex=0.5)
+segments(u,0*u,u,(sin(u)^2+2*cos(3*u))^2,col="red",lwd=0.2)
+points(u,(sin(u)^2+2*cos(3*u))^2,col="black",pch=19,cex=0.5)
+legend(0,8,legend=c("Xi","h(Xi)"),col=c("red","black"),pch=19,bty="n")
+```
+On trouve : 
+```{r, echo=F}
+mi = mean((sin(u)^2+2*cos(3*u))^2)*2*pi
+vari = var((sin(u)^2+2*cos(3*u))^2)*4*pi*pi/100
+print(paste0("Estimation :",round(mi,5),", variance :",round(vari,5),", IC = ",paste0("[",paste0(round(mi+qnorm(c(0.025,0.975))*sqrt(vari),3),collapse=","),"]")))
+print(paste0("La vraie valeur est : ",round(integrate(function(x){(sin(x)^2+2*cos(3*x))^2},lower=0,upper=2*pi)$value,5)))
+```
+
+---
+# Monte Carlo classique
+
+En augmentant la taille de l'échantillon ($n=100000$) :
+
+
+```{r}
+n <- 100000
+u <- runif(n,0,2*pi)
+mi = mean((sin(u)^2+2*cos(3*u))^2)*2*pi
+vari = var((sin(u)^2+2*cos(3*u))^2)*4*pi*pi/n
+```
+
+```{r, echo=F}
+print(paste0("Estimation : ",round(mi,5),", variance :",round(vari,5),", IC = ",paste0("[",paste0(round(mi+qnorm(c(0.025,0.975))*sqrt(vari),3),collapse=","),"]")))
+print(paste0("La vraie valeur est : ",round(integrate(function(x){(sin(x)^2+2*cos(3*x))^2},lower=0,upper=2*pi)$value,5)))
+```
+
+---
+# Choix de la loi $f$
+
+**Exemple** : on veut calculer $\int_0^1 e^{-x}x^{-a} dx$ pour $0 < a < 1$.
+
+--
+
+Monte Carlo classique &rarr; $f$ densité de la loi uniforme sur $[0,1]$ et $h(x) = e^{-x}x^{-a}$.
+
+--
+
+```{r}
+set.seed(04022025)
+a <- 1/2
+n <- 1000
+X <- runif(n)
+hX <- exp(-X) * X^(-a)
+print(paste0("Estimation : ",mean(hX),", variance : ",var(hX)/n))
+```
+
+--
+
+Peut-on faire mieux ?
+
+---
+# Choix de la loi $f$
+
+```{r}
+set.seed(04022025)
+a <- 1/2
+n <- 1000
+Y <- rexp(n)
+hY <- ifelse(Y < 1,Y^(-a),0)
+print(paste0("Estimation : ",mean(hY),", variance : ",var(hY)/n))
+```
+
+En simulant selon une loi exponentielle à support dans $\mathbb{R}^+$, on a "perdu" certains points : ceux qui sont plus grands que 1. Cela correspondà une proportion :
+
+```{r}
+mean(Y < 1)
+```
+
+---
+# Choix de la loi $f$
+
+A quoi ressemble la fonction $h(x) = e^{-x}x^{-a}$ ?
+
+```{r,fig.align='center',fig.height=4,fig.width=5, fig.retina=2,echo=FALSE}
+xabs <- seq(0,1,0.001)
+yord <- exp(-xabs) * xabs^(-a)
+dd <- data.frame(x=xabs,y=yord)
+drug <- data.frame(x=X)
+ggplot(data=NULL,aes(x=xabs,y=yord)) + geom_line() + ggtitle("Fonction h") + xlab("x") + ylab("h")
+```
+
+
+---
+# Choix de la loi $f$
+
+A quoi ressemble la fonction $h(x) = e^{-x}x^{-a}$ ?
+
+```{r,fig.align='center',fig.height=4,fig.width=7, fig.retina=2,echo=FALSE}
+xabs <- seq(0,1,0.001)
+yord <- exp(-xabs) * xabs^(-a)
+dd <- data.frame(x=xabs,y=yord)
+drug <- data.frame(x=X,Loi="Uniforme [0,1]")
+ggplot(data=NULL,aes(x=xabs,y=yord)) + geom_line() + geom_rug(data=drug,aes(x=x,col=Loi), inherit.aes=FALSE, linewidth=0.1) + ggtitle("Fonction h") + xlab("x") + ylab("h")
+
+#xpred <- rbinom(10000,10,ech_finv)
+#ggplot(data=NULL,aes(x=as.factor(xpred))) + geom_bar(fill="grey",col="darkgrey") + #geom_rug(aes(x=as.factor(X)),col="red",lwd=2,length=unit(0.05, "npc")) + xlab("Prédictions")
+```
+&rarr; en échantillonnant selon la loi uniforme, on obtient des points répartis de façon **uniforme** sur $[0,1]$.
+
+&rarr; Peut-on trouver une loi d'échantillonnage qui produise plus de points proches de 0 ?
+
+
+---
+# Choix de la loi $f$
+
+Prenons $f(x) = (1-a) \ x^{-a} \mathbb{1}_{[0,1]}(x)$ et $\tilde{h}(x) = e^{-x}/ (1-a)$
+
+--
+
+```{r, fig.align='center',fig.height=4,fig.width=5, fig.retina=2,echo=FALSE}
+yord2 <- (1-a)*xabs^(-a)
+ggplot(data=NULL,aes(x=xabs,y=yord2)) + geom_line() + ggtitle("Densité g") + xlab("x") + ylab("g")
+```
+--
+
+```{r}
+Z <- X^(1/(1-a))
+hZ <- exp(-Z) / (1-a)
+print(paste0("Estimation : ",mean(hZ),", variance : ",var(hZ)/n))
+```
+
+
+
+<span style="color:#16A085">**fin du cours 8**</span>
+
+---
+name: c9
+# Echantillonnage préférentiel
+
+**Exemple 2** : calculer $\mathbb{P}(X>10)$ pour $X \sim \mathcal{E}(1)$.
+--
+
+```{r, results='hold'}
+1 - pexp(10) # vraie valeur calculée à l'aide de la fonction de répartition
+mean(rexp(1000)>10) # estimation par Monte Carlo naïf
+```
+--
+
+L'estimateur est nul ... on n'a peut-être pas eu de chance sur ce tirage de 1000 ? Et si on ré-essayait ?
+
+
+---
+# Echantillonnage préférentiel
+
+On tire 100 fois un échantillon de taille $n=1000$ et on regarde ce que vaut l'estimateur par Monte Carlo sur chacun de ces 100 tirages.
+
+```{r}
+repet_1000 <- sapply(1:100,FUN = function(i){mean(rexp(1000)>10)})
+```
+
+--
+
+```{r echo=FALSE, fig.align='center',fig.height=4,fig.width=4, fig.retina=2}
+hist(repet_1000,xlab="",main="",ylim=c(0,100))
+```
+&rarr; l'estimateur vaut presque tout le temps 0 (96 fois sur 100), le reste du temps il vaut 0.001 (dans ces 4 cas, cela veut dire qu'une seule observation sur les 1000 du tirage était plus grande que 10).
+
+---
+# Echantillonnage préférentiel
+
+
+Que se passe t-il si on augmente la taille des échantillons ?
+
+```{r}
+repet_1000 <- sapply(1:100,FUN = function(i){mean(rexp(1000)>10)})
+repet_10000 <- sapply(1:100,FUN = function(i){mean(rexp(10000)>10)})
+repet_100000 <- sapply(1:100,FUN = function(i){mean(rexp(100000)>10)})
+```
+
+```{r echo=FALSE, fig.height=4,fig.width=12, fig.retina=2}
+par(mfrow=c(1,3))
+hist(repet_1000,main="n=1000",xlab="",freq=F)
+hist(repet_10000,main="n=10000",xlab="",freq=F)
+hist(repet_100000,main="n=100000",xlab="",freq=F)
+```
+
+&rarr; on obtient des résultats "raisonnables" quand $n=100 000$, mais la variance reste très élevée.
+
+
+---
+# Echantillonnage préférentiel
+
+En prenant comme loi instrumentale $\mathcal{E}(1/10)$, on peut ré-écrire :
+
+$$\mathbb{P}(X>10) =\mathbb{E}\left(\mathbf{1}_{Z>10} \ 10 \ e^{-9Z/10}\right) \quad \text{où } Z \sim \mathcal{E}(1/10)$$
+En utilisant Monte-Carlo, on approche cette espérance à l'aide de la moyenne empirique d'un échantillon $Z_1,\dots,Z_n$ de taille $n$ de v.a. iid de loi exponentielle de paramètre 1/10.
+
+$$\hat{p} = \frac{1}{n} \sum_{i=1}^n 10 \ e^{-0.9 Z_i} \mathbf{1}_{Z_i > 10}$$
+
+---
+# Echantillonnage préférentiel
+
+Code correspondant (pour un tirage, donc une estimation) :
+
+```{r}
+Z <- rexp(n,1/10)
+w <- 10*exp(-9*Z/10)  # ou plus généralement : dexp(Z,1)/dexp(Z,1/10)
+mean(w*(Z>10))
+```
+
+--
+
+On fait plusieurs tirages (plusieurs estimations de $p$) :
+
+```{r, echo=F}
+repet_1000 <- sapply(1:100,FUN = function(i){Z<-rexp(1000,1/10);mean(10*exp(-0.9*Z)*(Z>10))})
+```
+
+```{r, echo=F, fig.retina=2, fig.height=5, fig.width=5, fig.align='center'}
+hist(repet_1000,main="n=1000",xlab="",freq=F)
+```
+
+C'est beaucoup mieux qu'avec la loi "naïve" !
+
+---
+# Echantillonnage préférentiel
+
+Avec la loi $\mathcal{E}(1)$ :
+```{r, echo=FALSE}
+repet_1000 <- sapply(1:100,FUN = function(i){mean(rexp(1000)>10)})
+repet_10000 <- sapply(1:100,FUN = function(i){mean(rexp(10000)>10)})
+repet_100000 <- sapply(1:100,FUN = function(i){mean(rexp(100000)>10)})
+```
+
+```{r echo=FALSE, fig.height=3.5,fig.width=12, fig.retina=2}
+ptrue <- 1-pexp(10)
+par(mfrow=c(1,3))
+hist(repet_1000,main="n=1000",xlab="",freq=F)
+abline(v=ptrue,col="red",lwd=2)
+hist(repet_10000,main="n=10000",xlab="",freq=F)
+abline(v=ptrue,col="red",lwd=2)
+hist(repet_100000,main="n=100000",xlab="",freq=F)
+abline(v=ptrue,col="red",lwd=2)
+```
+Avec la loi $\mathcal{E}(1/10)$ :
+
+```{r, echo=FALSE}
+repet_1000 <- sapply(1:100,FUN = function(i){Z<-rexp(1000,1/10);mean(10*exp(-0.9*Z)*(Z>10))})
+repet_10000 <- sapply(1:100,FUN = function(i){Z<-rexp(10000,1/10);mean(10*exp(-0.9*Z)*(Z>10))})
+repet_100000 <- sapply(1:100,FUN = function(i){Z<-rexp(100000,1/10);mean(10*exp(-0.9*Z)*(Z>10))})
+```
+
+```{r, echo=FALSE, fig.height=3.5,fig.width=12, fig.retina=2}
+par(mfrow=c(1,3))
+hist(repet_1000,main="n=1000",xlab="",freq=F)
+abline(v=ptrue,col="red",lwd=2)
+hist(repet_10000,main="n=10000",xlab="",freq=F,xlim=c(3e-5,6e-5))
+abline(v=ptrue,col="red",lwd=2)
+hist(repet_100000,main="n=100000",xlab="",freq=F,xlim=c(3e-5,6e-5))
+abline(v=ptrue,col="red",lwd=2)
+```
+
+
+
+---
+# Choix de la loi instrumentale
+
+- Calcul de la variance de $\tilde{h}_n$
+
+--
+
+- Choix optimal pour $g$ &rarr; celui qui minimise cette variance.
+
+--
+
+- Variance finie si le ratio $f/g$ est borné (i.e. queues de distribution de $g$ plus lourdes)
+
+- La variance est optimale lorsque $g \propto |h|f$ ... mais cette fonction est inconnue
+
+--
+
+- En pratique : choisir $g$ telle que $|h|f/g$ soit (presque) constant, et de variance finie.
+
+
+
+---
+class: my-one-page-font
+# Choix de la loi instrumentale
+
+Que se passe t-il lorsque le ratio $f/g$ n'est pas borné ?
+
+--
+
+ **Exemple** : on veut approcher $\int x^2 e^{-x^2/2} dx = \sqrt{2\pi} \ \mathbb{E}(X^2)$ avec $X \sim \mathcal{N}(0,1)$.
+
+--
+
+ 1. en utilisant comme loi instrumentale la loi $\mathcal{N}(0,0.5^2)$.
+
+```{r, fig.width=8,fig.height=5,fig.retina=2, fig.align='center', echo=FALSE, warning=FALSE}
+x <- seq(-4,4,length.out=1000)
+d <- data.frame(x=rep(x,2),y=c(dnorm(x),dnorm(x,0,0.5)),Loi=rep(c("N(0,1)","N(0,0.5²)"),each=1000))
+ggplot(data=d,aes(x=x,y=y,linetype=Loi)) + geom_line(lwd=1) + scale_linetype_manual(values=c("dashed","solid"))
+```
+
+---
+# Choix de la loi instrumentale
+
+Code et approximation :
+
+```{r, results='hold'}
+set.seed(10022025)
+n <- 1000
+Z1 <- rnorm(n,0,sd=0.5)
+w1 <- dnorm(Z1,0,1)/dnorm(Z1,0,0.5)
+print(paste0("Estimation : ",sqrt(2*pi)*mean(Z1^2*w1),", variance : ",2*pi*var(Z1^2*w1)/n))
+print(paste0("IC : [",paste0(round(sqrt(2*pi)*mean(Z1^2*w1)+qnorm(c(0.025,0.975))*sqrt(2*pi*var(Z1^2*w1)/n),3),collapse=","),"]"))
+```
+
+Vraie valeur : $\sqrt{2 \pi} =$ `r sqrt(2*pi)`.
+
+---
+# Choix de la loi instrumentale
+
+2. avec la loi instrumentale $\mathcal{N}(0,1.2^2)$
+
+```{r, fig.width=8,fig.height=5,fig.retina=2, fig.align='center', echo=FALSE, warning=FALSE}
+x <- seq(-4,4,length.out=1000)
+d <- data.frame(x=rep(x,2),y=c(dnorm(x),dnorm(x,0,1.2)),Loi=rep(c("N(0,1)","N(0,1.2²)"),each=1000))
+ggplot(data=d,aes(x=x,y=y,linetype=Loi)) + geom_line(lwd=1) + scale_linetype_manual(values=c("dashed","solid"))
+```
+
+
+---
+# Choix de la loi instrumentale
+
+Code et approximation :
+
+```{r, results='hold'}
+set.seed(10022025)
+n <- 1000
+Z2 <- rnorm(n,0,sd=1.2)
+w2 <- dnorm(Z2,0,1)/dnorm(Z2,0,1.2)
+print(paste0("Estimation : ",sqrt(2*pi)*mean(Z2^2*w2),", variance : ",2*pi*var(Z2^2*w2)/n))
+print(paste0("IC : [",paste0(round(sqrt(2*pi)*mean(Z2^2*w2)+qnorm(c(0.025,0.975))*sqrt(2*pi*var(Z2^2*w2)/n),3),collapse=","),"]"))
+```
+
+On a divisé la variance par `r floor(var(Z1^2*w1)/var(Z2^2*w2))`.
+
+Vraie valeur : $\sqrt{2 \pi} =$ `r sqrt(2*pi)`.
+
+&rarr; calcul de la loi Gaussienne optimale.
+
+
+---
+class: my-one-page-font
+# Choix de la loi instrumentale
+
+Si le ratio $f/g$ n'est pas borné, certains poids d'importance peuvent être *trop élevés* ce qui donne trop de poids à certaines observations extrêmes.
+
+```{r, echo=F, fig.retina=2, fig.width=8,fig.height=3.4, fig.align='center'}
+dw <- data.frame(w=c(w1,w2),type=rep(c("cas N(0,0.5^2)","cas N(0,1.2^2)"),each=n))
+ggplot(data=dw,aes(x=type,y=w)) + geom_boxplot(fill="lightgrey",width=0.5) + xlab("") + facet_wrap(~type,scales = "free")
+```
+
+```{r, echo=F, fig.retina=2, fig.height=3.4,fig.width=8,fig.env='figure',strip.white=T,fig.align='center'}
+dw <- data.frame(w=c(w1,w2),Z=c(Z1,Z2),type=rep(c("cas N(0,0.5^2)","cas N(0,1.2^2)"),each=n))
+ggplot(data=dw,aes(x=Z,y=w)) + geom_point() + xlab("") + facet_wrap(~type,scales = "free") + xlab("valeurs échantillonnées") + ylab("poids d'importance")
+```
+
+
+---
+# Version auto-normalisée
+
+On peut définir une version *auto-normalisée* de l'estimateur (sous l'hypothèse que $g>0$ dès que $f>0$):
+
+$$\bar{\mu}_n = \frac{\sum_{i=1}^n h(Z_i) f(Z_i)/g(Z_i)}{\sum_{i=1}^n f(Z_i)/g(Z_i)} = \frac{\sum_{i=1}^n w_i h(Z_i)}{\sum_{i=1}^n w_i}$$
+--
+
+Sur notre exemple, cela donne :
+
+```{r, echo=FALSE, fig.retina=2, fig.height=5,fig.width=10, fig.align='center'}
+set.seed(10022025)
+Z <- matrix(rnorm(2000*1000,mean=0,sd=0.5),nrow=2000)
+w0.5 <- dnorm(Z)/dnorm(Z,0,0.5)
+
+Zc <- apply(w0.5*Z^2,2,cumsum)/(1:2000)
+Za <- apply(w0.5*Z^2,2,cumsum)/apply(w0.5,2,cumsum)
+d <- data.frame(x=rep(1:2000,2),ymin=c(apply(Zc,1,min),apply(Za,1,min)),
+                                ymax=c(apply(Zc,1,max),apply(Za,1,max)),
+                                ymean=c(apply(Zc,1,mean),apply(Za,1,mean)),
+                                Method=rep(c("EP classique","ES auto-normalisé"),each=2000),Loi="N(0,0.5²)")
+
+Z <- matrix(rnorm(2000*1000,mean=0,sd=0.8),nrow=2000)
+w0.8 <- dnorm(Z)/dnorm(Z,0,0.8)
+
+Zc <- apply(w0.8*Z^2,2,cumsum)/(1:2000)
+Za <- apply(w0.8*Z^2,2,cumsum)/apply(w0.8,2,cumsum)
+d11 <- data.frame(x=rep(1:2000,2),ymin=c(apply(Zc,1,min),apply(Za,1,min)),
+                                ymax=c(apply(Zc,1,max),apply(Za,1,max)),
+                                ymean=c(apply(Zc,1,mean),apply(Za,1,mean)),
+                                Method=rep(c("EP classique","ES auto-normalisé"),each=2000),Loi="N(0,0.8²)")
+
+Z <- matrix(rnorm(2000*1000,mean=0,sd=1.2),nrow=2000)
+w1.2 <- dnorm(Z)/dnorm(Z,0,1.2)
+
+Zc <- apply(w1.2*Z^2,2,cumsum)/(1:2000)
+Za <- apply(w1.2*Z^2,2,cumsum)/apply(w1.2,2,cumsum)
+d2 <- data.frame(x=rep(1:2000,2),ymin=c(apply(Zc,1,min),apply(Za,1,min)),
+                                ymax=c(apply(Zc,1,max),apply(Za,1,max)),
+                                ymean=c(apply(Zc,1,mean),apply(Za,1,mean)),
+                                Method=rep(c("EP classique","ES auto-normalisé"),each=2000),Loi="N(0,1.2²)")
+
+dall <- rbind(d,d11,d2)
+
+ggplot(data=dall[dall$x>10,],aes(x=x,y=ymean,col=Method)) + geom_line() +
+  geom_ribbon(aes(x,ymin=ymin,ymax=ymax,fill=Method),alpha=0.3) + facet_wrap(~Loi,scales = "free_y") + scale_color_manual(values=c("#F58634","#007965")) + scale_fill_manual(values=c("#F58634","#007965"))
+#orange <- "#FFCC29"
+```
+
+---
+# Version auto-normalisée
+
+En utilisant la version auto-normalisée, on obtient :
+ - un estimateur **biaisé**
+ - fortement consistant
+
+Intérêts/avantages :
+  - peut s'utiliser lorsque $f/g$ est connue à une constante multiplicative près
+  - une variance plus faible .red[**dans certains cas**]
+  - permet également de *simuler* selon la loi $f$
+
+Inconvénients :
+  - hypothèse plus forte sur $g$ ($g>0$ dès que $f>0$, alors qu'en EP classique l'hypothèse $g>0$ dès que $hf>0$ suffit)
+  - la variance est plus compliquée à calculer et ne peut pas être arbitrairement faible
+
+
+---
+# Version auto-normalisée
+
+Simulation selon la loi $f$ :
+
+ &rarr; en échantillonnant selon une loi **discrète** à support sur l'ensemble des $\{Z_1,\dots,Z_n\}$, et où la probabilité de tirer la valeur $Z_i$ est $w_i /\sum_j w_j$.
+
+```{r}
+Z <- rnorm(10000,0,sd=1.5)
+w2 <- dnorm(Z,0,1)/dnorm(Z,0,1.5)
+X <- sample(Z, size = 2000, prob = w2/sum(w2))
+```
+
+```{r, echo=FALSE, fig.width=10, fig.height=4, fig.retina=2, fig.align='center'}
+par(mfrow=c(1,2))
+hist(Z, freq=FALSE,ylim=c(0,0.4),main="Loi des Z (g)")
+lines(seq(-3,3,0.01),dnorm(seq(-3,3,0.01),0,1),col="red",lwd=2)
+hist(X, freq=FALSE,ylim=c(0,0.4),main="Loi des X (f)")
+lines(seq(-3,3,0.01),dnorm(seq(-3,3,0.01),0,1),col="red",lwd=2)
+```
+
+---
+# Version auto-normalisée
+
+.red[**Attention au biais introduit par la méthode**]
+
+- Il faut une **taille d'échantillon suffisante** car la méthode est seulement **asymptotiquement sans biais**
+- Pour échantillonner à l'aide des poids $w_i$, il faut tirer un échantillon plus petit que l'échantillon des $(Z_1,\dots,Z_n)$
+- On perd le caractère "i.i.d."
+
+---
+# Version auto-normalisée
+
+**Exemple : ** on utilise les poids $w_i$ obtenus après un EP de taille $n=1000$ ou $n=10000$ pour tirer un échantillon de taille 800 selon la loi $f$
+
+```{r}
+Z <- rnorm(1000,0,sd=1.5)
+w_1000 <- dnorm(Z,0,1)/dnorm(Z,0,1.5)
+X_1000 <- sample(Z, size = 800, prob = w_1000/sum(w_1000))
+
+Z <- rnorm(10000,0,sd=1.5)
+w_10000 <- dnorm(Z,0,1)/dnorm(Z,0,1.5)
+X_10000 <- sample(Z, size = 800, prob = w_10000/sum(w_10000))
+```
+
+```{r, echo=F, fig.width=10, fig.height=4, fig.retina=2, fig.align='center'}
+par(mfrow=c(1,2))
+hist(X_1000, freq=FALSE,ylim=c(0,0.4),main="EP auto-normalisé de taille 1000",xlab="")
+lines(seq(-3,3,0.01),dnorm(seq(-3,3,0.01),0,1),col="red",lwd=2)
+hist(X_10000, freq=FALSE,ylim=c(0,0.4),main="EP auto-normalisé de taille 10000",xlab="")
+lines(seq(-3,3,0.01),dnorm(seq(-3,3,0.01),0,1),col="red",lwd=2)
+```
+
+
+---
+# Taille effective de l'échantillon
+
+- *effective sampling size* : pour identifier un mauvais choix de $g$
+  - par exemple, on a $\mathbb{E}(f(Z)/g(Z)) = 1$ pour $Z \sim g$ &rarr; on peut comparer la moyenne empirique des $w_i$ à 1
+  - critère ESS :
+    $$ESS = \frac{\left( \sum_{i=1} w_i \right)^2}{\sum_{i=1}^n w_i^2} = \frac{1}{\sum_{i=1}^n \bar{w}_i^2},$$
+
+      avec $\bar{w}_i = \frac{w_i}{\sum_{i=1}^n w_i}$ le poids d'importance normalisé
+
+
+Sur l'exemple précédent :
+```{r, echo=F}
+wbar0.5 <- w0.5[2000,]/sum(w0.5[2000,])
+wbar0.8 <- w0.8[2000,]/sum(w0.8[2000,])
+wbar1.2 <- w1.2[2000,]/sum(w1.2[2000,])
+ESS0.5 <- 1/sum(wbar0.5^2)
+ESS0.8 <- 1/sum(wbar0.8^2)
+ESS1.2 <- 1/sum(wbar1.2^2)
+ess_tab <- data.frame(loi=c("N(0,0.5²)","N(0,0.8²)","N(0,1.2²)"),moy=c(mean(w0.5[2000,]),mean(w0.8[2000,]),mean(w1.2[2000,])),
+            ess=c(ESS0.5,ESS0.8,ESS1.2))
+knitr::kable(ess_tab,row.names=NA,align='ccc',col.names=c("Loi","Moy. empirique des poids","ESS"))
+```
+
+
+<span style="color:#16A085">**fin du cours 8**</span>
