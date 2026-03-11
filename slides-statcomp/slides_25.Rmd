@@ -187,7 +187,7 @@ Sys.setenv('RETICULATE_PYTHON'='/usr/bin/python3')
 ---
 # Sommaire
 
-<!-- .pull-left[ -->
+.pull-left[
 **1. Méthodes de ré-échantillonnage**
   - [Cours 1](#c1) (12/01/2026)
   - [Cours 2](#c2) (12/01/2026)
@@ -204,6 +204,8 @@ Sys.setenv('RETICULATE_PYTHON'='/usr/bin/python3')
   - [Cours 11](#c11) (16/02/2026)
   - [Cours 12](#c12) (02/03/2026)
   - [Cours 13](#c13) (03/03/2026)
+  - [Cours 14](#c14) (09/03/2026)
+]
 
 ---
 name: c1
@@ -3230,3 +3232,896 @@ animate(p)
 ```
 
 <span style="color:#16A085">**fin du cours 13**</span>
+
+
+---
+name: c14
+# Echantillonneur de Gibbs
+
+Idée générale : en dimension $p$ > 1, simuler chaque coordonnée l'une après l'autre
+
+--
+
+**Cas $p=2$**
+
+$(X,Y) \in \mathbb{R}^2$
+  1. **initialisation** : $(X_0,Y_0) = (x_0,y_0)$
+  2. **pour** $n=1, \dots, N$ :
+   - $X_n \sim f_{X|Y}(\cdot | y_{n-1})$
+   - $Y_n \sim f_{Y|X}(\cdot | x_{n})$
+
+--
+
+**Exemple** : $Z=(X,Y) \sim \mathcal{N}\left(\begin{pmatrix}0 \\0 \end{pmatrix}, \begin{pmatrix}1 & \rho \\ \rho & 1 \end{pmatrix}\right)$
+
+---
+# Echantillonneur de Gibbs
+
+```{r}
+n <- 10000; rho <- 0.8; X <- Y <- rep(0,n);
+for (i in 2:n){
+  # mise à jour de la 1ère coordonnée
+  X[i] <- rnorm(1,rho*Y[i-1],sqrt(1-rho^2))
+  # mise à jour de la 2ème coordonnée
+  Y[i] <- rnorm(1,rho*X[i],sqrt(1-rho^2)) }
+```
+
+.pull-left[
+```{r, echo=FALSE, fig.height=5, fig.width=5, fig.retina=2}
+dXY2=data.frame(X=X,Y=Y)
+ggplot(dXY2,aes(x=X,y=Y)) + geom_point()
+```
+]
+.pull-right[
+```{r, echo=FALSE, fig.height=5.2, fig.width=6, fig.retina=2}
+ggplot(dXY2,aes(x=X,y=Y)) + geom_density_2d_filled(alpha = 0.5) +
+  geom_density_2d(linewidth = 0.25, colour = "black")
+```
+]
+
+---
+# Echantillonneur de Gibbs
+
+```{r, eval=FALSE}
+n <- 10000; rho <- 0.8; X <- Y <- rep(0,n);
+for (i in 2:n){
+  # mise à jour de la 1ère coordonnée
+  X[i] <- rnorm(1,rho*Y[i-1],sqrt(1-rho^2))
+  # mise à jour de la 2ème coordonnée
+  Y[i] <- rnorm(1,rho*X[i],sqrt(1-rho^2)) }
+```
+
+.pull-left[
+```{r, echo=FALSE, fig.height=4, fig.width=5, fig.retina=2, message=FALSE}
+ggplot(dXY2,aes(x=X)) + geom_histogram(aes(y=after_stat(density)),fill="grey",col="darkgrey") +  stat_function(fun = dnorm) + ggtitle("Histogramme de la coordonnée X")
+```
+]
+.pull-right[
+```{r, echo=FALSE, fig.height=4, fig.width=5, fig.retina=2, message=FALSE}
+ggplot(dXY2,aes(x=Y)) + geom_histogram(aes(y=after_stat(density)),fill="grey",col="darkgrey") +  stat_function(fun = dnorm) + ggtitle("Histogramme de la coordonnée Y")
+```
+]
+
+---
+# Echantillonneur de Gibbs
+
+En pratique, comment se passe l'itération $n$ ?
+
+<ol>
+<li> on part du point $(X_{n-1},Y_{n-1})$
+</ol>
+
+```{r, echo=FALSE, fig.height=6,fig.width=8,fig.retina=2,fig.align='center'}
+set.seed(220224)
+n <- 1000
+rho <- 0.2
+XY <- matrix(0,nc=2,nr=2*n); XY[1,] <- runif(2)
+for (i in seq(2,2*n-1,by=2)){
+  # mise à jour de la 1ère coordonnée
+  XY[i,1] <- rnorm(1,rho*XY[i-1,2],1-rho^2)
+  XY[i,2] <- XY[i-1,2]
+  # mise à jour de la 2ème coordonnée
+  XY[i+1,2] <- rnorm(1,rho*XY[i,1],1-rho^2)
+  XY[i+1,1] <- XY[i,1]
+}
+
+dXY=data.frame(XY);names(dXY)=c("X","Y")
+dXY[1,] %>% ggplot(aes(x=X,y=Y)) + geom_point() + xlim(c(-2,2)) + ylim(c(-2,2)) + annotate(geom="text",x=dXY[1,1]-0.2,y=dXY[1,2]+0.175,label="X[n-1],Y[n-1]")
+```
+
+---
+# Echantillonneur de Gibbs
+
+En pratique, comment se passe l'itération $n$ ?
+
+<ol start="2">
+<li> on génère la 1ère coordonnée conditionnellement à $Y_{n-1}=y_{n-1}$
+</ol>
+
+```{r, echo=FALSE, fig.height=6,fig.width=8,fig.retina=2,fig.align='center'}
+dXY[1:2,] %>% ggplot(aes(x=X,y=Y)) + geom_point() + xlim(c(-2,2)) + ylim(c(-2,2)) + geom_line(col="darkgrey") +  annotate(geom="text",x=dXY[1,1]-0.2,y=dXY[1,2]+0.175,label="X[n-1],Y[n-1]") +
+  annotate(geom="text",x=dXY[2,1],y=dXY[2,2]+0.175,label="X[n]",col="red") +
+  annotate(geom="text",x=dXY[2,1]+0.25,y=dXY[2,2]+0.175,label=",Y[n-1]")
+```
+
+---
+# Echantillonneur de Gibbs
+
+En pratique, comment se passe l'itération $n$ ?
+
+<ol start="3">
+<li> on génère la 2ème coordonnée conditionnellement à $X_n=x_n$
+</ol>
+
+```{r, echo=FALSE, fig.height=6,fig.width=8,fig.retina=2,fig.align='center'}
+dXY[1:3,] %>% ggplot(aes(x=X,y=Y)) + geom_point() + xlim(c(-2,2)) + ylim(c(-2,2)) + geom_line(col="darkgrey") +  annotate(geom="text",x=dXY[1,1]-0.2,y=dXY[1,2]+0.175,label="X[n-1],Y[n-1]") +
+  annotate(geom="text",x=dXY[2,1],y=dXY[2,2]+0.175,label="X[n]",col="red") +
+  annotate(geom="text",x=dXY[2,1]+0.25,y=dXY[2,2]+0.175,label=",Y[n-1]") +
+  annotate(geom="text",x=dXY[3,1]+0.25,y=dXY[3,2],label="X[n],Y[n]",col="red") +
+  geom_line(data=dXY[c(1,3),],col="black")
+```
+
+---
+# Echantillonneur de Gibbs
+
+&rarr; on ne fait que des mouvements *parallèles aux axes*
+
+```{r, echo=FALSE, fig.height=6,fig.width=8,fig.retina=2,fig.align='center'}
+dXY %>% ggplot(aes(x=X,y=Y)) + geom_point() + geom_path()
+```
+
+---
+# Echantillonneur de Gibbs
+
+ - A un intérêt lorsque la loi jointe $f_{X,Y}$ ou les lois marginales $f_X$ ou $f_Y$ ne peuvent pas être calculées explicitement
+
+--
+
+ - La chaîne $(X_t,Y_t)_t$ est stationnaire de loi $f_{X,Y}$, de même que $(X_t)_t$ et $(Y_t)_t$ sont stationnaires de loi $f_X$ et $f_Y$ resp.
+
+--
+
+ - Simuler selon les lois conditionnelles **suffit** pour obtenir un échantillon selon la loi jointe (théorème de Hammersley-Clifford)
+ - .blue[**Question :** Est-ce le cas si on remplace 'loi conditionnelle' par 'loi marginale' ?]
+
+--
+
+ - C'est un cas particulier de l'algorithme de Metropolis-Hastings
+
+---
+# Echantillonneur de Gibbs
+
+**Cas général $p>2$**
+
+$(X_1,\dots,X_p) \in \mathbb{R}^p$ de loi jointe $f$
+  1. **initialisation** : $(X_{0,1},\dots,X_{0,p}) = (x_{0,1},\dots,x_{0,p})$
+  2. **pour** $n=1, \dots, N$ :
+   - $X_{n,1} \sim f_1(\cdot | x_{n-1,2},\dots,x_{n-1,p})$
+   - $X_{n,2} \sim f_2(\cdot | x_{n,1},x_{n-1,3},\dots,x_{n-1,p})$
+   - $\dots$
+   - $X_{n,p} \sim f_p(\cdot | x_{n,1},\dots,x_{n,p-1})$
+
+- Les densités $f_1,\dots,f_p$ sont appelées *lois conditionnelles complètes*.
+- On ne fait que des simulations en dimension 1
+
+---
+# Echantillonneur de Gibbs
+
+Pourquoi ça marche ?
+
+> *Théorème de Hammersley-Clifford.* Si le support de la loi jointe est le produit cartésien des supports des lois marginales, alors :
+$$f(x_1,\dots,x_p) \propto \prod_{j=1}^p \frac{f_j(x_j | x_1,\dots,x_{j-1},z_{j+1},\dots,z_p)}{f_j(z_j | x_1,\dots,x_{j-1},z_{j+1},\dots,z_p)}$$
+pour tout vecteur $(z_1,\dots,z_p)$ dans le support de $f$.
+
+</br>
+Propriétés de convergence :
+ - Mesure invariante
+ - Irréductibilité et récurrence
+ - Apériodicité
+
+---
+# Condition de positivité
+
+**Exemple :** loi cible $f(x,y) = \frac{1}{2} \left(\mathbb{1}_{[-1,0]\times[-1,0]}(x,y) + \mathbb{1}_{[0,1]\times[0,1]}(x,y)\right)$
+
+--
+
+```{r, echo=FALSE, fig.align='center',fig.height=6,fig.width=8,fig.retina=2}
+d <- data.frame(x=seq(-1.5,1.5,100),y=seq(-1.5,1.5,100))
+p <- ggplot(d,aes(x,y)) + geom_rect(aes(xmin=-1,ymin=-1,xmax=0,ymax=0),fill="grey") + geom_hline(yintercept = 0) +
+  geom_rect(aes(xmin=0,ymin=0,xmax=1,ymax=1),fill="grey") + xlim(c(-1.2,1.2)) + ylim(c(-1.2,1.2)) + geom_vline(xintercept = 0)
+p
+```
+
+---
+# Condition de positivité
+
+**Exemple :** loi cible $f(x,y) = \frac{1}{2} \left(\mathbb{1}_{[-1,0]\times[-1,0]}(x,y) + \mathbb{1}_{[0,1]\times[0,1]}(x,y)\right)$
+
+```{r, echo=FALSE, fig.align='center',fig.height=6,fig.width=8,fig.retina=2}
+fjointe <- function(x,y){return(0.5*(-1 < x & x < 0 & -1 < y & y < 0) + 0.5*(0 < x & x < 1 & 0 < y & y < 1))}
+fxcondy <- function(x,y){fjointe(x,y)/dunif(y,-1,1)}
+fycondx <- function(x,y){fjointe(x,y)/dunif(x,-1,1)}
+
+init <- runif(2,-1,1)
+chaine <- c(init)
+last <- init
+for (n in 1:100){
+  x <- ifelse(0 < last[2] & last[2] < 1, runif(1,0,1), runif(1,-1,0))
+  y <- ifelse(0 < x & x < 1, runif(1,0,1), runif(1,-1,0))
+  chaine <- rbind(chaine,c(x,last[2]))
+  chaine <- rbind(chaine,c(x,y))
+  last <- c(x,y)
+}
+
+dchaine <- as.data.frame(chaine)
+names(dchaine) <- c("x","y")
+
+p + geom_path(data=dchaine,aes(x,y),col=grey(0.4)) + geom_point(data=dchaine[2*(1:100),],aes(x,y)) +
+  geom_point(data=dchaine[1,],col="red",size=2)
+```
+
+---
+class: my-one-page-font
+# Variantes
+
+ - Gibbs avec mise à jour aléatoire : à chaque itération $n$, on choisit aléatoirement la coordonnée à mettre à jour
+ - Metropolis-within-Gibbs : si on ne sait pas simuler selon $f_k$, on peut remplacer par une étape de Metropolis-Hastings :
+
+  **pour** $n=1, \dots, N$ et la coordonnée $k$ :
+   - $Y_{n,k} \sim q_k(\cdot | x_{n,1},\dots,x_{n,k-1},x_{n-1,k},x_{n-1,k+1},\dots,x_{n-1,p})$
+
+   - on pose $X_{n,k} = Y_{n,k}$ avec probabilité $\alpha_k(X_{n-1,k},Y_{n,k})$ et $X_{n,k}=X_{n-1,k}$ avec probabilité $1- \alpha_k(X_{n-1,k},Y_{n,k})$, avec :
+
+    $$\alpha_k(X_{n-1,k},Y_{n,k}) = \min\left[1,\frac{\frac{f_k(Y_{n,k} | X_{n,1},\dots,X_{n,k-1},X_{n-1,k+1},\dots,X_{n-1,p})}{q_k(Y_{nk,} | X_{n,1},\dots,X_{n,k-1},X_{n-1,k},X_{n-1,k+1},\dots,X_{n-1,p})}}{\frac{q_k(X_{n-1,k} | X_{n,1},\dots,X_{n,k-1},Y_{n,k},X_{n-1,k+1},\dots,X_{n-1,p})}{f_k(X_{n-1,k} | X_{n,1},\dots,X_{n,k-1},X_{n-1,k+1},\dots,X_{n-1,p})} } \right]$$
+
+
+---
+# Résumé des épisodes précédents
+
+.bold[Objectif :] estimer $\mu = \int h(x)f(x)dx$ avec $f$ densité de probabilité
+
+--
+
+**Méthode :** <span style="color:orange"> **obtenir des réalisations $X_1,\dots,X_n$ selon la loi $f$**</span> et <span style="color:blue">**poser $\hat{\mu} = \frac{1}{n}\sum_{i=1}^n h(X_i)$**</span>
+
+--
+
+<span style="color:orange">**1. Obtenir des réalisations selon la loi $f$**</span>
+
+- *méthode 1* : simuler directement selon $f$
+
+</br>
+</br>
+</br>
+</br>
+
+- *méthode 2* : utiliser une loi instrumentale $g$
+
+
+---
+# Résumé des épisodes précédents
+
+.bold[Objectif :] estimer $\mu = \int h(x)f(x)dx$ avec $f$ densité de probabilité
+
+**Méthode :** <span style="color:orange"> **obtenir des réalisations $X_1,\dots,X_n$ selon la loi $f$**</span> et <span style="color:blue">**poser $\hat{\mu} = \frac{1}{n}\sum_{i=1}^n h(X_i)$**</span>
+
+<span style="color:orange">**1. Obtenir des réalisations selon la loi $f$**</span>
+
+- *méthode 1* : simuler directement selon $f$
+ - méthode de la fonction inverse
+ - lien avec d'autres lois (e.g. loi conditionnelle, ...)
+ - slice sampler
+ - échantillonneur de Gibbs (en passant par les lois conditionnelles)
+
+- *méthode 2* : utiliser une loi instrumentale $g$
+ - acceptation-rejet
+ - échantillonnage préférentiel avec ré-échantillonnage
+ - algorithme de Metropolis-Hastings
+ - Metropolis-within-Gibbs
+
+---
+name: simu_f
+# Résumé des épisodes précédents
+
+.bold[Objectif :] estimer $\mu = \int h(x)f(x)dx$ avec $f$ densité de probabilité
+
+**Méthode :** <span style="color:orange"> **obtenir des réalisations $X_1,\dots,X_n$ selon la loi $f$**</span> et <span style="color:blue">**poser $\hat{\mu} = \frac{1}{n}\sum_{i=1}^n h(X_i)$**</span>
+
+<span style="color:orange">**1. Obtenir des réalisations selon la loi $f$**</span>
+
+- *méthode 1* : simuler directement selon $f$ <span style="color:red">&rarr; $f$ **connue exactement**</span>
+ - méthode de la fonction inverse <span style="color:#16A085">&rarr; **éch. i.i.d.** </span>
+ - lien avec d'autres lois (e.g. loi conditionnelle, ...) <span style="color:#16A085">&rarr; **éch. i.i.d.** </span>
+ - slice sampler <span style="color:#16A085">&rarr; **éch. MC** </span>
+ - échantillonneur de Gibbs <span style="color:#16A085">&rarr; **éch. MC** </span>
+
+- *méthode 2* : utiliser une loi instrumentale $g$ <span style="color:red">&rarr; $f$ **connue à une constante près** </span>
+ - acceptation-rejet <span style="color:#16A085">&rarr; **éch. i.i.d.** </span>
+ - échantillonnage préférentiel avec ré-échantillonnage <span style="color:#16A085">&rarr; **éch. i.i.d.** </span>
+ - algorithme de Metropolis-Hastings <span style="color:#16A085">&rarr; **éch. MC** </span>
+ - Metropolis-within-Gibbs <span style="color:#16A085">&rarr; **éch. MC** </span>
+
+[retour](#simu_post)
+---
+# Résumé des épisodes précédents
+
+.bold[Objectif :] estimer $\mu = \int h(x)f(x)dx$ avec $f$ densité de probabilité
+
+**Méthode :** <span style="color:orange"> **obtenir des réalisations $X_1,\dots,X_n$ selon la loi $f$**</span> et <span style="color:blue">**poser $\hat{\mu} = \frac{1}{n}\sum_{i=1}^n h(X_i)$**</span>
+
+<span style="color:blue">**2. Poser $\hat{\mu} = \frac{1}{n}\sum_{i=1}^n h(X_i)$ </span> **
+
+- quelle est la qualité de cette approximation ?
+ - convergence
+ - biais
+ - **variance**
+ - coût computationnel
+
+- pour les échantillons de type chaîne de Markov :
+ - convergence de la chaîne ?
+ - exploration de l'espace ?
+ - sensibilité aux conditions initiales ?
+
+---
+# Diagnostics de convergence des algos MCMC
+
+- Les algorithmes MCMC produisent des chaînes de Markov **ergodiques** dont la loi stationnaire est la loi cible $f$
+
+- Comment être sûr(e)/vérifier que la chaîne est bien dans son régime stationnaire ?
+ - **quand peut-on arrêter la chaîne ?**
+ - **quelle est la précision obtenue?**
+
+- Trois types d'outils diagnostics pour étudier :
+ - la convergence de la chaîne vers le régime stationnaire
+ - la convergence des moyennes
+ - la convergence vers un échantillonnage i.i.d.
+
+- Ce sont en général des .red[**conditions "nécessaires" mais pas suffisantes**]
+&rarr; permet de détecter un problème, mais ne garantit pas que tout s'est bien passé !
+
+
+
+---
+# Convergence vers la loi stationnaire (1)
+
+- En pratique (et même en théorie !) il est difficile de tester si la chaîne produit des réalisations selon $f$
+--
+
+- Pour "tester" la convergence vers le régime stationnaire on peut utiliser des .red[**outils graphiques**] :
+ - analyser le **trace plot** (évolution de la chaîne au cours des itérations) pour détecter les fortes non-stationnarités
+```{r, echo=FALSE, fig.height=5, fig.width=10, fig.retina=2, fig.align='center'}
+X1 <- X2 <- X3 <- rep(0,5000);
+for (i in 2:5000){
+  # chaine 1
+  Y <- rnorm(1,X1[i-1],0.1)
+  alpha <- dnorm(Y)/dnorm(X1[i-1])
+  X1[i] <- ifelse(runif(1)<alpha,Y,X1[i-1])
+  # chaine 2
+  Y <- rnorm(1,X2[i-1],2)
+  alpha <- dnorm(Y)/dnorm(X2[i-1])
+  X2[i] <- ifelse(runif(1)<alpha,Y,X2[i-1])
+}
+par(mfrow=c(1,2))
+plot(X1,type="l",xlab="Itération")
+plot(X2,type="l",xlab="Itération")
+```
+
+
+---
+# Convergence vers la loi stationnaire (1)
+
+- En pratique (et même en théorie !) il est difficile de tester si la chaîne produit des réalisations selon $f$
+- Pour "tester" la convergence vers le régime stationnaire on peut utiliser des .red[**outils graphiques**] :
+ - analyser le **trace plot** (évolution de la chaîne au cours des itérations) pour détecter les fortes non-stationnarités
+ - lancer **plusieurs chaînes** (en parallèle) et comparer les résultats
+```{r, echo=FALSE, fig.height=5, fig.width=10, fig.retina=2, fig.align='center'}
+set.seed(202503110)
+X1 <- X2 <- X11 <- X22 <- rep(0,5000);
+X1[1] <- rnorm(1); X11[1] <- rnorm(1); X2[1] <- rnorm(1); X22[1] <- rnorm(1)
+for (i in 2:5000){
+  # chaine 1
+  Y <- rnorm(1,X1[i-1],0.1)
+  Y1 <- rnorm(1,X11[i-1],0.1)
+  alpha1 <- dnorm(Y)/dnorm(X1[i-1])
+  alpha11 <- dnorm(Y1)/dnorm(X11[i-1])
+  X1[i] <- ifelse(runif(1)<alpha1,Y,X1[i-1])
+  X11[i] <- ifelse(runif(1)<alpha11,Y1,X11[i-1])
+  # chaine 2
+  Y <- rnorm(1,X2[i-1],2)
+  Y2 <- rnorm(1,X22[i-1],2)
+  alpha <- dnorm(Y)/dnorm(X2[i-1])
+  alpha2 <- dnorm(Y2)/dnorm(X22[i-1])
+  X2[i] <- ifelse(runif(1)<alpha,Y,X2[i-1])
+  X22[i] <- ifelse(runif(1)<alpha2,Y2,X22[i-1])
+}
+par(mfrow=c(1,2))
+plot(X1,type="l",xlab="Itération")
+points(X11,type="l",col="red")
+plot(X2,type="l",xlab="Itération")
+points(X22,type="l",col="red")
+```
+
+---
+# Convergence vers la loi stationnaire (1)
+
+.red[**Attention à l'effet "we only see where we've been"**]
+&rarr; exemple avec loi cible $0.7\mathcal{N}(1,1) + 0.2\mathcal{N}(6,1)$ et MH à loi instrumentale $\mathcal{N}(0,1)$.
+```{r, echo=FALSE}
+fcible <- function(x){0.7*dnorm(x,1,1)+0.3*dnorm(x,6,1)}
+n <- 10000
+current <- -2
+for (i in 2:n){
+  candidate <- rnorm(1)
+  alpha <- min(1,(fcible(candidate)*dnorm(current[i-1],0,1))/
+                 (fcible(current[i-1])*dnorm(candidate,0,1)))
+  new <- ifelse(runif(1) < alpha, candidate, current[i-1])
+  current <- c(current,new)
+}
+current2 <- 2.5
+for (i in 2:n){
+  candidate <- rnorm(1) # + current2[i-1]
+  alpha <- min(1,(fcible(candidate)*dnorm(current2[i-1],0,1))/(fcible(current2[i-1])*dnorm(candidate,0,1)))
+  new <- ifelse(runif(1) < alpha, candidate, current2[i-1])
+  current2 <- c(current2,new)
+}
+current3 <- 7
+for (i in 2:n){
+  candidate <- rnorm(1) # + current2[i-1]
+  alpha <- min(1,(fcible(candidate)*dnorm(current3[i-1],0,1))/(fcible(current3[i-1])*dnorm(candidate,0,1)))
+  new <- ifelse(runif(1) < alpha, candidate, current3[i-1])
+  current3 <- c(current3,new)
+}
+```
+.pull-left[
+```{r, echo=FALSE, fig.align='center',fig.height=3,fig.width=4.55,fig.retina=2}
+data <- data.frame(mcmc=c(current,current2),chaine=rep(1:2,each=n),iteration=rep(1:n,2))
+ggplot(data=data,aes(x=iteration,y=mcmc,col=as.factor(chaine))) + geom_line() + theme(legend.position = "n") + xlab("Itération") + ylab("Valeur de la chaîne")
+```
+]
+.pull-right[
+```{r, echo=FALSE, fig.align='center',fig.height=3,fig.width=4.5,fig.retina=2, message=FALSE, warning=FALSE}
+ggplot(data=data,aes(x=mcmc,fill=as.factor(chaine))) + geom_histogram(aes(y=..density..),position="identity",alpha=0.5) +
+  stat_function(fun=fcible,col="red") + theme(legend.position = "n") + xlab("Valeur de la chaîne") + ylab("") + xlim(c(-2.5,10))
+```
+]
+.pull-left[
+```{r, echo=FALSE, fig.align='center',fig.height=3,fig.width=4.55,fig.retina=2}
+data <- data.frame(mcmc=c(current,current2,current3),chaine=rep(1:3,each=n),iteration=rep(1:n,3))
+ggplot(data=data,aes(x=iteration,y=mcmc,col=as.factor(chaine))) + geom_line() + theme(legend.position = "n") + xlab("Itération") + ylab("Valeur de la chaîne")
+```
+]
+.pull-right[
+```{r, echo=FALSE, fig.align='center',fig.height=3,fig.width=4.5,fig.retina=2, message=FALSE, warning=FALSE}
+ggplot(data=data,aes(x=mcmc,fill=as.factor(chaine))) + geom_histogram(aes(y=..density..),position="identity",alpha=0.5) +
+  stat_function(fun=fcible,col="red") + theme(legend.position = "n") + xlab("Valeur de la chaîne") + ylab("") + xlim(c(-2.5,10))
+```
+]
+
+---
+# Convergence vers la loi stationnaire (2)
+
+On peut aussi utiliser des .red[**tests de stationnarité**] :
+- test de Kolmogorov-Smirnov (fonction `ks.test()` sous R et `scipy.stats.kstest()` sous Python)
+ - attention aux hypothèses du test : .red[**échantillons i.i.d.**]
+
+- test de Heidelberg et Welch (fonction `heidel.diag()` du package `coda` sous R)
+
+- test de Geweke (fonction `geweke.diag()` dans `coda`)
+
+- exploration du support de $f$ &rarr; si $f$ connue exactement et si $d$ petit
+ - approximation par sommes de Riemann
+ - estimation de la densité
+
+---
+class: my-one-page-font
+# Convergence vers la loi stationnaire (3)
+
+- En pratique, on définit aussi une période de chauffe (ou *burn-in*) correspondant aux premières itérations de l'algorithme
+- Ces itérations sont **supprimées** et on ne garde que les itérations suivantes
+```{r, echo=FALSE, fig.height=4, fig.width=7, fig.retina=2, fig.align='center'}
+set.seed(202503110)
+X1 <- rep(0,3000);
+X1[1] <- 10
+for (i in 2:3000){
+  # chaine 2
+  if (i < 500){
+    Y <- rnorm(1,X1[i-1],0.2)
+  }else{
+    Y <- rnorm(1,X1[i-1],1)
+  }
+  #Y2 <- rnorm(1,X22[i-1],2)
+  alpha <- dnorm(Y)/dnorm(X1[i-1])
+  #alpha2 <- dnorm(Y2)/dnorm(X22[i-1])
+  X1[i] <- ifelse(runif(1)<alpha,Y,X1[i-1])
+  #X[i] <- ifelse(runif(1)<alpha2,Y2,X22[i-1])
+}
+d <- data.frame(X=X1,type=(seq(1,3000)<500),it=1:3000)
+ggplot(data=d,aes(x=it,y=X,col=as.factor(type))) + geom_line() + theme(legend.position = "none") + scale_color_manual(values=c("black","darkgrey")) + xlab("Itérations")
+X <- X1
+```
+```{r}
+library(coda)
+heidel.diag(X)
+```
+
+---
+# Convergence des moyennes empiriques (1)
+
+- Si la chaîne a atteint son régime stationnaire, elle doit vérifier le *théorème ergodique*
+
+- Autrement dit, toutes les expressions de la forme $\frac{1}{n}\sum_{i=1}^n h(X_n)$ doivent converger vers $\mathbb{E}(h(X))$ avec $X \sim f$.
+- En pratique, on vérifie la stabilisation de ces quantités :
+  - en traçant l'évolution de la moyenne cumulée
+  - idem pour les quantiles (fonction `cumuplot()` du package `coda`)
+  - variance inter- et intra (plusieurs chaînes) &rarr; fonction `gelman.diag()` du package `coda`
+
+.pull-left[
+```{r, echo=FALSE, fig.height=5, fig.width=8, fig.retina=2, fig.align='center'}
+cumuplot(X,main="Pas de stabilisation",auto.layout = F)
+```
+]
+.pull-right[
+```{r, echo=FALSE, fig.height=5, fig.width=8, fig.retina=2, fig.align='center'}
+cumuplot(X[500:3000],main="Stabilisation (sans le burn-in)",auto.layout = FALSE)
+```
+]
+
+---
+# Convergence vers un échantillonnage i.i.d.
+
+On peut "mesurer" la proximité avec un échantillon i.i.d. :
+
+- en calculant l'effective sampling size &rarr; fonction `effectiveSamplingSize()` du package `coda`
+
+- en traçant l'autocorrélation de la chaîne et en élagant (on enlève le burn-in)
+
+```{r, fig.height=4, fig.width=8, fig.retina=2, fig.align='center'}
+par(mfrow=c(1,2))
+acf(X,main="Toute la chaîne")
+acf(X[500:2000],main="Sans le burn-in")
+```
+
+
+<span style="color:#16A085">**fin du cours 14**</span>
+
+
+---
+name: c15
+class: inverse, middle, center
+
+# III. Introduction aux statistiques bayésiennes
+
+---
+# Le point de vue Bayésien
+
+Combiner notre information <span style="color:#ffe933">**a priori**</span> avec les <span style="color:#2a6099">**observations**</span> pour mettre à jour notre connaissance <span style="color:#77bc65">**a posteriori**</span>
+
+```{r, out.width='800px', echo=FALSE, fig.align='center'}
+magick::image_read_pdf("/home/charlotte/Documents/Enseignement/Lille/M1 ISN /Statistiques computationnelles/Poly/bayesian.pdf")
+```
+
+---
+# Le point de vue Bayésien
+
+Mise à jour **séquentielle** de la connaissance
+
+</br>
+
+```{r, out.width='800px', echo=FALSE, fig.align='center'}
+magick::image_read_pdf("/home/charlotte/Documents/Enseignement/Lille/M1 ISN /Statistiques computationnelles/Poly/bayesian_seq.pdf")
+```
+
+
+---
+# Le point de vue Bayésien
+
+- Mixer l'information a priori avec les observations
+
+- Donner plus ou moins de poids à l'a priori en fonction du contexte
+
+- Interprétation différente des résultats de l'inférence
+ - en bayésien, les probabilités reflètent la *plausabilité* d'un évènement
+ - en fréquentiste, les probabilités s'interprètent comme la *fréquence limite* d'un évènement répété
+
+- Interprétation des tests d'hypothèses beaucoup plus ''naturelle''
+
+---
+# Le théorème de Bayes
+
+Thomas Bayes (1702-1761) et indépendamment Pierre-Simon de Laplace (1749-1827)
+</br>
+
+```{r, out.width='400px', echo=FALSE, fig.align='center'}
+par(mfrow=c(1,2))
+bayes <- magick::image_read("/home/charlotte/Documents/Enseignement/Lille/M1 ISN /Statistiques computationnelles/Poly/Thomas_Bayes.gif")
+laplace <- magick::image_read("/home/charlotte/Documents/Enseignement/Lille/M1 ISN /Statistiques computationnelles/Poly/Pierre-Simon_Laplace.jpg")
+all <- c(bayes,laplace)
+magick::image_append(magick::image_scale(all,geometry="x200"))
+```
+
+</br>
+
+> **Théorème de Bayes**
+>
+> Pour deux évènements $A$ et $B$ :
+$$\mathbb{P}(A|B) = \frac{\mathbb{P}(B|A) \ \mathbb{P}(A)}{\mathbb{P}(B)} $$
+
+---
+# Le théorème de Bayes
+
+- Version continue du théorème pour $X$ et $Y$ deux v.a. :
+
+$$g(y|x) = \frac{f(x|y)h(y)}{\int f(x|y)h(y) dy} $$
+
+--
+
+- Bayes et Laplace appliquent ce résultat à la modélisation statistique :
+ - en représentant l'*incertitude* entourant $\theta$ par une *distribution* $\pi$
+
+$$p(\theta | x) = \frac{f(x|\theta) \pi(\theta)}{\int f(x|\theta) \pi(\theta) d\theta} $$
+ - le paramètre du modèle statistique est donc considéré comme **aléatoire**
+
+---
+# Modélisation Bayésienne
+
+$\mathcal{X} = (X_1,\dots,X_n)$ i.i.d de loi $f$ qui dépend d'une quantité $\theta$
+
+- .orange[**Modèle statistique fréquentiste**]
+  - $\theta$ est un paramètre déterministe
+  - $X_i \sim f(\cdot ; \theta)$ &rarr; $f(\cdot;\theta)$ est la loi **marginale** des observations $X_i$
+  - L'inférence se fait à l'aide de la **vraisemblance**
+
+--
+
+- .green[**Modèle statistique bayésien**]
+  - $\theta$ est une variable aléatoire
+  - $X_i \mid \theta \sim f(\cdot | \theta)$ &rarr; $f(\cdot |\theta)$ est la loi **conditionnelle** des observations $X_i$ sachant $\theta$
+  - On ajoute une loi sur $\theta$, appelée **loi a priori** : $\theta  \sim \pi$
+  - L'inférence se fait à l'aide de la **vraisemblance** .red[**et de la loi a priori**], combinées dans la .green[**distribution a posteriori**]
+  - Loi a posteriori : loi conditionnelle de $\theta$ sachant $\{\mathcal{X}=x\}$, notée $p(\theta \mid x)$.
+
+
+---
+# Exemple historique (Laplace, 1786)
+
+**Question** : est-ce que la probabilité $\theta$ d'avoir un garçon est plus grande que celle d'avoir une fille ?
+
+--
+
+- <span style="color:#2a6099">**données**</span> : naissances à Paris entre 1745 et 1770 : 251 527 garçons et 241 945 filles
+
+ &rarr; loi des observations ? $\dots$
+
+---
+# Exemple historique (Laplace, 1786)
+
+**Question** : est-ce que la probabilité $\theta$ d'avoir un garçon est plus grande que celle d'avoir une fille ?
+
+- <span style="color:#2a6099">**données**</span> : naissances à Paris entre 1745 et 1770 : 251 527 garçons et 241 945 filles
+
+ &rarr; loi des observations ? $X_i \mid \theta \sim \mathcal{B}(\theta) \Leftrightarrow X \mid \mathcal{B}(n,\theta)$ où $X_i =1$ si garçon et $0$ sinon et $X = \sum_{i=1}^n X_i$.
+
+
+--
+
+- <span style="color:#ffe933">**loi a priori**</span> : $\dots$
+
+
+---
+# Exemple historique (Laplace, 1786)
+
+**Question** : est-ce que la probabilité $\theta$ d'avoir un garçon est plus grande que celle d'avoir une fille ?
+
+- <span style="color:#2a6099">**données**</span> : naissances à Paris entre 1745 et 1770 : 251 527 garçons et 241 945 filles
+
+ &rarr; loi des observations ? $X_i \mid \theta \sim \mathcal{B}(\theta) \Leftrightarrow X \mid \mathcal{B}(n,\theta)$ où $X_i =1$ si garçon et $0$ sinon et $X = \sum_{i=1}^n X_i$.
+
+- <span style="color:#ffe933">**loi a priori**</span> : la probabilité d'avoir un garçon peut valoir n'importe quoi entre 0 et 1 &rarr; $\theta \sim \mathcal{U}([0,1])$
+
+--
+
+- <span style="color:#77bc65">**loi a posteriori**</span> : $\dots$
+
+
+---
+# Exemple historique (Laplace, 1786)
+
+**Question** : est-ce que la probabilité $\theta$ d'avoir un garçon est plus grande que celle d'avoir une fille ?
+
+- <span style="color:#2a6099">**données**</span> : naissances à Paris entre 1745 et 1770 : 251 527 garçons et 241 945 filles
+
+ &rarr; loi des observations ? $X_i \mid \theta \sim \mathcal{B}(\theta) \Leftrightarrow X \mid \mathcal{B}(n,\theta)$ où $X_i =1$ si garçon et $0$ sinon et $X = \sum_{i=1}^n X_i$.
+
+- <span style="color:#ffe933">**loi a priori**</span> : la probabilité d'avoir un garçon peut valoir n'importe quoi entre 0 et 1 &rarr; $\theta \sim \mathcal{U}([0,1])$
+
+- <span style="color:#77bc65">**loi a posteriori**</span> : $\theta \mid x \sim \text{Beta}(x+1,n-x+1)$
+
+--
+
+- On obtient par le calcul $\mathbb{P}(\theta \leq 1/2 | (251 527, 241 945)) = 1.15 \cdot 10^{-42}$
+
+--
+```{r}
+xg <- 251527
+xf <- 241945
+pbeta(0.5,251527+1,241945+1)
+```
+
+
+---
+# Le modèle Beta-binomial
+
+- Exemple : sondage électoral .small[(inspiré de *Bayes Rule! An Introduction to Applied Bayesian Modeling*)]
+
+- **Contexte** : on souhaite évaluer les chances d'une candidate A face à une autre à l'aide d'un sondage.
+
+--
+
+- On note $X_1,\dots,X_n$ l'intention de vote de chaque électeur et $\theta$ la probabilité pour qu'un électeur choisisse A.
+
+--
+
+- Modèle fréquentiste : $X_i \sim \mathcal{B}(\theta) \ \Leftrightarrow \ \sum_{i=1}^n X_i =: X \sim \mathcal{B}(n,\theta)$
+
+--
+
+- Modèle bayésien :
+\begin{align}
+X | \theta & \sim \mathcal{B}(n,\theta) \\
+\theta & \sim \pi
+\end{align}
+
+
+---
+# Le modèle Beta-binomial
+
+- Modèle bayésien : $X | \theta \sim \mathcal{B}(n,\theta), \quad \theta \sim \pi$
+ &rarr; comment choisir $\pi$ ?
+
+--
+
+- On a déjà réalisé plusieurs sondages :
+
+</br>
+</br>
+```{r, echo=FALSE, fig.width=5, fig.height=4, fig.align='center', fig.retina=2, message=FALSE, warning=FALSE}
+set.seed(0)
+d <- rbeta(25,12,17)
+ggplot(data=data.frame(d=d),aes(x=d)) + geom_histogram(fill="lightgrey",col="darkgrey") + xlim(c(0,1)) + xlab("Pourcentage de votants pour A") + ylab("")
+```
+--
+
+- On aimerait choisir une densité de probabilité sur $[0,1]$ qui reflète ces informations &rarr; on peut prendre la loi $\text{Beta}(a,b)$
+
+---
+class: my-one-page-font
+# Le modèle Beta-binomial
+
+- La loi Beta a pour densité : $f(x;a,b) = \frac{\Gamma(a+b)}{\Gamma(a)\Gamma(b)} x^{a-1} (1-x)^{b-1} \mathbb{1}_{[0,1]}(x)$
+
+- $X \sim \text{Beta}(a,b)$ : $\mathbb{E}(X) = \frac{a}{a+b}$, $\text{Var}(X) = \frac{ab}{(a+b)^2(a+b+1)}$
+
+- Si $a>1,b>1$ on peut aussi paramétrer la loi Beta par son mode $m = \frac{a-1}{a+b-2}$ et sa concentration $s=a+b$
+
+--
+
+```{r, echo=FALSE, fig.width=8, fig.height=5, fig.align='center', fig.retina=2}
+x<-seq(0,1,0.001)
+b1 <- dbeta(x,0.8,3)
+b2 <- dbeta(x,1,5)
+b3 <- dbeta(x,2,5)
+b31 <- dbeta(x,3,9)
+b4 <- dbeta(x,0.5,0.5)
+b5 <- dbeta(x,1,1)
+b6 <- dbeta(x,5,5)
+b66 <- dbeta(x,20,20)
+b70 <- dbeta(x,12,4)
+b7 <- dbeta(x,5,2)
+b8 <- dbeta(x,5,1)
+b9 <- dbeta(x,3,0.8)
+data <- data.frame(x=rep(x,12),beta=c(b1,b2,b3,b31,b4,b5,b6,b66,b70,b7,b8,b9),dist=rep(c("Beta(0.8,3)","Beta(1,5)","Beta(2,5)","Beta(3,9)","Beta(0.5,0.5)","Beta(1,1)","Beta(5,5)","Beta(20,20)","Beta(12,4)","Beta(5,2)","Beta(2,1)","Beta(5,1)"),each=length(x)))
+data$dist <- factor(data$dist,levels=c("Beta(0.8,3)","Beta(1,5)","Beta(2,5)","Beta(3,9)","Beta(0.5,0.5)","Beta(1,1)","Beta(5,5)","Beta(20,20)","Beta(12,4)","Beta(5,2)","Beta(2,1)","Beta(5,1)"))
+ggplot(data=data,aes(x=x,y=beta,group=dist)) + geom_line() + facet_wrap(~dist) + scale_x_continuous(breaks=c(0,0.25,0.50,0.75,1)) + ylim(c(0,5.02))
+```
+
+---
+# Le modèle Beta-binomial
+
+- Que choisir ici ?
+- Mode observé dans les sondages : 0.375 &rarr; $m=0.375$
+
+--
+
+```{r, echo=FALSE, fig.width=12, fig.height=4, fig.align='center', fig.retina=2, message=FALSE, warning=FALSE}
+x<-seq(0,1,0.001)
+m <- 0.375
+s <- c(10,20,30,50)
+bs <- lapply(s,FUN=function(i){dbeta(x,m*(i-2)+1,i-m*(i-2)-1)})
+bs <- do.call("c",bs)
+data <- data.frame(x=rep(x,4),beta=bs,dist=rep(paste0("s=",s),each=length(x)))
+data$dist <- factor(data$dist,levels=paste0("s=",s))
+dd <- data.frame(d=rep(d,4),dist=rep(paste0("s=",s),each=length(d)))
+dd$dist <- factor(dd$dist,levels=paste0("s=",s))
+ggplot(data=dd,aes(x=d,group=dist)) + geom_histogram(fill="lightgrey",col="darkgrey") + facet_wrap(~dist,nc=4) + geom_line(data=data,aes(x=x,y=beta))
+#ggplot(data=data,aes(x=x,y=beta,group=dist)) + geom_line() + facet_wrap(~dist,nc=4) + scale_x_continuous(breaks=c(0,0.25,0.50,0.75,1))
+```
+
+---
+# Le modèle Beta-binomial
+
+- Loi a priori : $\pi(\theta)$ &rarr; loi $\text{Beta}(a,b)$ avec $a=$ `r m*(20-2)+1` et $b=$ `r 20-m*(20-2)-1` (hyperparamètres)
+
+- Vraisemblance : on fait un nouveau sondage sur $n=50$ personnes &rarr; $X | \theta \sim \mathcal{B}(50,\theta)$ et on observe $X(\omega) = 20$.
+
+</br>
+
+```{r , echo=FALSE, fig.width=5, fig.height=4, fig.align='center', fig.retina=2}
+#theta <- seq(1,9,1)/10
+#lik <- lapply(theta, FUN=function(p){dbinom(seq(0,50),50,p)})
+#dlik <- do.call("c",lik)
+#obs <- data.frame(x=rep(20,length(theta)),lik=dbinom(20,50,theta),dist=paste0("B(50,",theta,")"))
+#ddlik <- data.frame(x=rep(seq(0,50,1),length(theta)),lik=dlik,dist=rep(paste0("B(50,",theta,")"),each=51))
+#ggplot(data=ddlik,aes(x=x)) + geom_point(aes(y=lik),col="darkgrey",size=0.1) + facet_wrap(~dist) + geom_linerange(aes(ymax=lik,ymin=0),col="darkgrey") + geom_point(data=obs,aes(x=x,y=lik)) + geom_linerange(data=obs,aes(ymax=lik,ymin=0))
+
+theta <- seq(0,1,0.001)
+lik <- dbinom(20,50,theta)
+ggplot(data=NULL,aes(x=theta,y=lik)) + geom_line()
+```
+
+---
+# Le modèle Beta-binomial
+
+Loi a posteriori $\text{Beta}(20+7.75,30+12.25)$
+
+```{r, echo=FALSE, fig.width=7, fig.height=5, fig.align='center', fig.retina=2, message=FALSE}
+cst <- integrate(function(x){dbinom(20,50,x)},lower=0,upper=1)
+data_all <- data.frame(x=rep(seq(0,1,0.001),3),y=c(dbeta(seq(0,1,0.001),7.75,12.25),dbinom(20,50,x)/cst$value,dbeta(x,20+7.75,30+12.25)),dist=rep(c("Loi a priori","Vraisemblance (normalisée)","Loi a posteriori"),each=1001))
+ggplot(data=data_all,aes(x=x,y=y,col=dist)) + geom_line(lwd=2) + scale_color_discrete("") + scale_color_manual("",values=c("#77bc65","#ffd700","#2a6099"))
+```
+<span style="color:red">**La vraisemblance est renormalisée de telle sorte à ce que son intégrale soit égale à 1, pour pouvoir la comparer plus facilement aux densités a priori et a posteriori qui sont des densités de probabilités pour $\theta$, contrairement à la vraisemblance.**</span>
+
+---
+# Le modèle Beta-binomial
+
+- Que se passe t-il si on change de loi a priori ?
+
+--
+
+```{r, echo=FALSE, fig.width=12, fig.height=7, fig.align='center', fig.retina=2}
+cst <- integrate(function(x){dbinom(20,50,x)},lower=0,upper=1)
+priors <- c(dbeta(x,1,1),dbeta(x,1,5),dbeta(x,3,10),
+            dbeta(x,10,10),dbeta(x,10,3),dbeta(x,5,1))
+posteriors <- c(dbeta(x,20+1,30+1),dbeta(x,20+1,30+5),dbeta(x,20+3,30+10),
+            dbeta(x,20+10,30+10),dbeta(x,20+10,30+3),dbeta(x,20+5,30+1))
+data_all <- data.frame(x=rep(x,18),y=c(priors,rep(dbinom(20,50,x)/cst$value,6),posteriors),dist=rep(c("Loi a priori","Vraisemblance (normalisée)","Loi a posteriori"),each=6006),prior=rep(rep(c("Beta(1,1)","Beta(1,5)","Beta(3,10)","Beta(10,10)","Beta(10,3)","Beta(5,1)"),each=1001),3))
+ggplot(data=data_all,aes(x=x,y=y,col=dist)) + geom_line(lwd=1) + facet_wrap(~prior) + scale_color_manual("",values=c("#77bc65","#ffd700","#2a6099")) + theme(legend.position = "bottom")
+```
+
+---
+# Le modèle Beta-binomial
+
+- Que se passe t-il si la taille de l'échantillon augmente ? ou diminue ?
+
+```{r, echo=FALSE, fig.width=11, fig.height=6.5, fig.align='center', fig.retina=2}
+nobs <- 200
+xobs <- 0.4*nobs
+cst2 <- integrate(function(x){dbinom(xobs,nobs,x)},lower=0,upper=1)
+posteriors2 <- c(dbeta(x,xobs+1,nobs-xobs+1),dbeta(x,xobs+1,nobs-xobs+5),dbeta(x,xobs+3,nobs-xobs+10),
+            dbeta(x,xobs+10,nobs-xobs+10),dbeta(x,xobs+10,nobs-xobs+3),dbeta(x,xobs+5,nobs-xobs+1))
+data_all2 <- data.frame(x=rep(x,18),y=c(priors,rep(dbinom(xobs,nobs,x)/cst2$value,6),posteriors2),dist=rep(c("Loi a priori","Vraisemblance (normalisée)","Loi a posteriori"),each=6006),prior=rep(rep(c("Beta(1,1)","Beta(1,5)","Beta(3,10)","Beta(10,10)","Beta(10,3)","Beta(5,1)"),each=1001),3),n="n=200")
+data_all$n <- "n=50"
+nobs <- 10
+xobs <- 0.4*nobs
+cst3 <- integrate(function(x){dbinom(xobs,nobs,x)},lower=0,upper=1)
+posteriors3 <- c(dbeta(x,xobs+1,nobs-xobs+1),dbeta(x,xobs+1,nobs-xobs+5),dbeta(x,xobs+3,nobs-xobs+10),
+            dbeta(x,xobs+10,nobs-xobs+10),dbeta(x,xobs+10,nobs-xobs+3),dbeta(x,xobs+5,nobs-xobs+1))
+data_all3 <- data.frame(x=rep(x,18),y=c(priors,rep(dbinom(xobs,nobs,x)/cst3$value,6),posteriors3),dist=rep(c("Loi a priori","Vraisemblance (normalisée)","Loi a posteriori"),each=6006),prior=rep(rep(c("Beta(1,1)","Beta(1,5)","Beta(3,10)","Beta(10,10)","Beta(10,3)","Beta(5,1)"),each=1001),3),n="n=10")
+data_all123 <- rbind(data_all,data_all2,data_all3)
+data_all123$n <- factor(data_all123$n,levels=c("n=10","n=50","n=200"))
+ggplot(data=data_all123,aes(x=x,y=y,col=dist)) + geom_line(lwd=1) + facet_grid(n~prior) + scale_color_manual("",values=c("#77bc65","#ffd700","#2a6099")) + theme(legend.position = "bottom")
+```
+
+<span style="color:#16A085">**fin du cours 15**</span>
+
+
