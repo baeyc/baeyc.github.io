@@ -194,6 +194,11 @@ MathJax.Hub.Config({
   - [Cours 13](#c13) (03/03/2026)
   - [Cours 14](#c14) (09/03/2026)
 ]
+.pull-right[
+**3. Statistiques bayésiennes**
+  - [Cours 15](#c15) (13/03/2026)
+  - [Cours 16](#c16) (16/03/2026)
+]
 
 ---
 name: c1
@@ -2892,6 +2897,480 @@ acf(X[500:2000],main="Sans le burn-in")
 
 
 &lt;span style="color:#16A085"&gt;**fin du cours 14**&lt;/span&gt;
+
+---
+name: c15
+class: inverse, middle, center
+
+# III. Introduction aux statistiques bayésiennes
+
+---
+# Le point de vue Bayésien
+
+Combiner notre information &lt;span style="color:#ffe933"&gt;**a priori**&lt;/span&gt; avec les &lt;span style="color:#2a6099"&gt;**observations**&lt;/span&gt; pour mettre à jour notre connaissance &lt;span style="color:#77bc65"&gt;**a posteriori**&lt;/span&gt;
+
+&lt;img src="slides_25_files/figure-html/unnamed-chunk-161-1.png" width="800px" style="display: block; margin: auto;" /&gt;
+
+---
+# Le point de vue Bayésien
+
+Mise à jour **séquentielle** de la connaissance
+
+&lt;/br&gt;
+
+&lt;img src="slides_25_files/figure-html/unnamed-chunk-162-1.png" width="800px" style="display: block; margin: auto;" /&gt;
+
+
+---
+# Le point de vue Bayésien
+
+- Mixer l'information a priori avec les observations
+
+- Donner plus ou moins de poids à l'a priori en fonction du contexte
+
+- Interprétation différente des résultats de l'inférence
+ - en bayésien, les probabilités reflètent la *plausabilité* d'un évènement
+ - en fréquentiste, les probabilités s'interprètent comme la *fréquence limite* d'un évènement répété
+
+- Interprétation des tests d'hypothèses beaucoup plus ''naturelle''
+
+---
+# Le théorème de Bayes
+
+Thomas Bayes (1702-1761) et indépendamment Pierre-Simon de Laplace (1749-1827)
+&lt;/br&gt;
+
+&lt;img src="slides_25_files/figure-html/unnamed-chunk-163-1.gif" width="400px" style="display: block; margin: auto;" /&gt;
+
+&lt;/br&gt;
+
+&gt; **Théorème de Bayes**
+&gt;
+&gt; Pour deux évènements `\(A\)` et `\(B\)` :
+$$\mathbb{P}(A|B) = \frac{\mathbb{P}(B|A) \ \mathbb{P}(A)}{\mathbb{P}(B)} $$
+
+---
+# Le théorème de Bayes
+
+- Version continue du théorème pour `\(X\)` et `\(Y\)` deux v.a. :
+
+$$g(y|x) = \frac{f(x|y)h(y)}{\int f(x|y)h(y) dy} $$
+
+--
+
+- Bayes et Laplace appliquent ce résultat à la modélisation statistique :
+ - en représentant l'*incertitude* entourant `\(\theta\)` par une *distribution* `\(\pi\)`
+
+$$p(\theta | x) = \frac{f(x|\theta) \pi(\theta)}{\int f(x|\theta) \pi(\theta) d\theta} $$
+ - le paramètre du modèle statistique est donc considéré comme **aléatoire**
+
+---
+# Modélisation Bayésienne
+
+`\(\mathcal{X} = (X_1,\dots,X_n)\)` i.i.d de loi `\(f\)` qui dépend d'une quantité `\(\theta\)`
+
+- .orange[**Modèle statistique fréquentiste**]
+  - `\(\theta\)` est un paramètre déterministe
+  - `\(X_i \sim f(\cdot ; \theta)\)` &amp;rarr; `\(f(\cdot;\theta)\)` est la loi **marginale** des observations `\(X_i\)`
+  - L'inférence se fait à l'aide de la **vraisemblance**
+
+--
+
+- .green[**Modèle statistique bayésien**]
+  - `\(\theta\)` est une variable aléatoire
+  - `\(X_i \mid \theta \sim f(\cdot | \theta)\)` &amp;rarr; `\(f(\cdot |\theta)\)` est la loi **conditionnelle** des observations `\(X_i\)` sachant `\(\theta\)`
+  - On ajoute une loi sur `\(\theta\)`, appelée **loi a priori** : `\(\theta  \sim \pi\)`
+  - L'inférence se fait à l'aide de la **vraisemblance** .red[**et de la loi a priori**], combinées dans la .green[**distribution a posteriori**]
+  - Loi a posteriori : loi conditionnelle de `\(\theta\)` sachant `\(\{\mathcal{X}=x\}\)`, notée `\(p(\theta \mid x)\)`.
+
+
+---
+# Exemple historique (Laplace, 1786)
+
+**Question** : est-ce que la probabilité `\(\theta\)` d'avoir un garçon est plus grande que celle d'avoir une fille ?
+
+--
+
+- &lt;span style="color:#2a6099"&gt;**données**&lt;/span&gt; : naissances à Paris entre 1745 et 1770 : 251 527 garçons et 241 945 filles
+
+ &amp;rarr; loi des observations ? `\(\dots\)`
+
+---
+# Exemple historique (Laplace, 1786)
+
+**Question** : est-ce que la probabilité `\(\theta\)` d'avoir un garçon est plus grande que celle d'avoir une fille ?
+
+- &lt;span style="color:#2a6099"&gt;**données**&lt;/span&gt; : naissances à Paris entre 1745 et 1770 : 251 527 garçons et 241 945 filles
+
+ &amp;rarr; loi des observations ? `\(X_i \mid \theta \sim \mathcal{B}(\theta) \Leftrightarrow X \mid \mathcal{B}(n,\theta)\)` où `\(X_i =1\)` si garçon et `\(0\)` sinon et `\(X = \sum_{i=1}^n X_i\)`.
+
+
+--
+
+- &lt;span style="color:#ffe933"&gt;**loi a priori**&lt;/span&gt; : `\(\dots\)`
+
+
+---
+# Exemple historique (Laplace, 1786)
+
+**Question** : est-ce que la probabilité `\(\theta\)` d'avoir un garçon est plus grande que celle d'avoir une fille ?
+
+- &lt;span style="color:#2a6099"&gt;**données**&lt;/span&gt; : naissances à Paris entre 1745 et 1770 : 251 527 garçons et 241 945 filles
+
+ &amp;rarr; loi des observations ? `\(X_i \mid \theta \sim \mathcal{B}(\theta) \Leftrightarrow X \mid \mathcal{B}(n,\theta)\)` où `\(X_i =1\)` si garçon et `\(0\)` sinon et `\(X = \sum_{i=1}^n X_i\)`.
+
+- &lt;span style="color:#ffe933"&gt;**loi a priori**&lt;/span&gt; : la probabilité d'avoir un garçon peut valoir n'importe quoi entre 0 et 1 &amp;rarr; `\(\theta \sim \mathcal{U}([0,1])\)`
+
+--
+
+- &lt;span style="color:#77bc65"&gt;**loi a posteriori**&lt;/span&gt; : `\(\dots\)`
+
+
+---
+# Exemple historique (Laplace, 1786)
+
+**Question** : est-ce que la probabilité `\(\theta\)` d'avoir un garçon est plus grande que celle d'avoir une fille ?
+
+- &lt;span style="color:#2a6099"&gt;**données**&lt;/span&gt; : naissances à Paris entre 1745 et 1770 : 251 527 garçons et 241 945 filles
+
+ &amp;rarr; loi des observations ? `\(X_i \mid \theta \sim \mathcal{B}(\theta) \Leftrightarrow X \mid \mathcal{B}(n,\theta)\)` où `\(X_i =1\)` si garçon et `\(0\)` sinon et `\(X = \sum_{i=1}^n X_i\)`.
+
+- &lt;span style="color:#ffe933"&gt;**loi a priori**&lt;/span&gt; : la probabilité d'avoir un garçon peut valoir n'importe quoi entre 0 et 1 &amp;rarr; `\(\theta \sim \mathcal{U}([0,1])\)`
+
+- &lt;span style="color:#77bc65"&gt;**loi a posteriori**&lt;/span&gt; : `\(\theta \mid x \sim \text{Beta}(x+1,n-x+1)\)`
+
+--
+
+- On obtient par le calcul `\(\mathbb{P}(\theta \leq 1/2 | (251 527, 241 945)) = 1.15 \cdot 10^{-42}\)`
+
+--
+
+``` r
+xg &lt;- 251527
+xf &lt;- 241945
+pbeta(0.5,251527+1,241945+1)
+```
+
+```
+## [1] 1.146058e-42
+```
+
+
+---
+# Le modèle Beta-binomial
+
+- Exemple : sondage électoral .small[(inspiré de *Bayes Rule! An Introduction to Applied Bayesian Modeling*)]
+
+- **Contexte** : on souhaite évaluer les chances d'une candidate A face à une autre à l'aide d'un sondage.
+
+--
+
+- On note `\(X_1,\dots,X_n\)` l'intention de vote de chaque électeur et `\(\theta\)` la probabilité pour qu'un électeur choisisse A.
+
+--
+
+- Modèle fréquentiste : `\(X_i \sim \mathcal{B}(\theta) \ \Leftrightarrow \ \sum_{i=1}^n X_i =: X \sim \mathcal{B}(n,\theta)\)`
+
+--
+
+- Modèle bayésien :
+`\begin{align}
+X | \theta &amp; \sim \mathcal{B}(n,\theta) \\
+\theta &amp; \sim \pi
+\end{align}`
+
+
+---
+# Le modèle Beta-binomial
+
+- Modèle bayésien : `\(X | \theta \sim \mathcal{B}(n,\theta), \quad \theta \sim \pi\)`
+ &amp;rarr; comment choisir `\(\pi\)` ?
+
+--
+
+- On a déjà réalisé plusieurs sondages :
+
+&lt;/br&gt;
+&lt;/br&gt;
+&lt;img src="slides_25_files/figure-html/unnamed-chunk-165-1.png" width="360" style="display: block; margin: auto;" /&gt;
+--
+
+- On aimerait choisir une densité de probabilité sur `\([0,1]\)` qui reflète ces informations &amp;rarr; on peut prendre la loi `\(\text{Beta}(a,b)\)`
+
+---
+class: my-one-page-font
+# Le modèle Beta-binomial
+
+- La loi Beta a pour densité : `\(f(x;a,b) = \frac{\Gamma(a+b)}{\Gamma(a)\Gamma(b)} x^{a-1} (1-x)^{b-1} \mathbb{1}_{[0,1]}(x)\)`
+
+- `\(X \sim \text{Beta}(a,b)\)` : `\(\mathbb{E}(X) = \frac{a}{a+b}\)`, `\(\text{Var}(X) = \frac{ab}{(a+b)^2(a+b+1)}\)`
+
+- Si `\(a&gt;1,b&gt;1\)` on peut aussi paramétrer la loi Beta par son mode `\(m = \frac{a-1}{a+b-2}\)` et sa concentration `\(s=a+b\)`
+
+--
+
+&lt;img src="slides_25_files/figure-html/unnamed-chunk-166-1.png" width="576" style="display: block; margin: auto;" /&gt;
+
+---
+# Le modèle Beta-binomial
+
+- Que choisir ici ?
+- Mode observé dans les sondages : 0.375 &amp;rarr; `\(m=0.375\)`
+
+--
+
+&lt;img src="slides_25_files/figure-html/unnamed-chunk-167-1.png" width="864" style="display: block; margin: auto;" /&gt;
+
+---
+# Le modèle Beta-binomial
+
+- Loi a priori : `\(\pi(\theta)\)` &amp;rarr; loi `\(\text{Beta}(a,b)\)` avec `\(a=\)` 7.75 et `\(b=\)` 12.25 (hyperparamètres)
+
+- Vraisemblance : on fait un nouveau sondage sur `\(n=50\)` personnes &amp;rarr; `\(X | \theta \sim \mathcal{B}(50,\theta)\)` et on observe `\(X(\omega) = 20\)`.
+
+&lt;/br&gt;
+
+&lt;img src="slides_25_files/figure-html/unnamed-chunk-168-1.png" width="360" style="display: block; margin: auto;" /&gt;
+
+---
+# Le modèle Beta-binomial
+
+Loi a posteriori `\(\text{Beta}(20+7.75,30+12.25)\)`
+
+&lt;img src="slides_25_files/figure-html/unnamed-chunk-169-1.png" width="504" style="display: block; margin: auto;" /&gt;
+&lt;span style="color:red"&gt;**La vraisemblance est renormalisée de telle sorte à ce que son intégrale soit égale à 1, pour pouvoir la comparer plus facilement aux densités a priori et a posteriori qui sont des densités de probabilités pour `\(\theta\)`, contrairement à la vraisemblance.**&lt;/span&gt;
+
+---
+# Le modèle Beta-binomial
+
+- Que se passe t-il si on change de loi a priori ?
+
+--
+
+&lt;img src="slides_25_files/figure-html/unnamed-chunk-170-1.png" width="864" style="display: block; margin: auto;" /&gt;
+
+---
+# Le modèle Beta-binomial
+
+- Que se passe t-il si la taille de l'échantillon augmente ? ou diminue ?
+
+&lt;img src="slides_25_files/figure-html/unnamed-chunk-171-1.png" width="792" style="display: block; margin: auto;" /&gt;
+
+&lt;span style="color:#16A085"&gt;**fin du cours 15**&lt;/span&gt;
+
+
+---
+name: c16
+# Modèle Beta-binomial
+
+Estimateurs ponctuels : moyenne a posteriori et maximum a posterior
+
+&lt;img src="slides_25_files/figure-html/unnamed-chunk-172-1.png" width="864" style="display: block; margin: auto;" /&gt;
+
+
+---
+# Modèle Beta-binomial
+
+Intervalle de crédibilité à 95%
+ - en utilisant les quantiles :
+
+``` r
+qbeta(c(0.025,0.975),xobs+a,nobs-xobs+b)
+```
+
+```
+## [1] 0.2126936 0.5839809
+```
+ - en utilisant la région de plus forte densité : (librairie `HDInterval` sous R et `PyMC` sous Python)
+
+``` r
+library(HDInterval)
+hdi(qbeta,0.95,shape1=xobs+a,shape2=nobs-xobs+b)
+```
+
+```
+##     lower     upper 
+## 0.2071049 0.5776388 
+## attr(,"credMass")
+## [1] 0.95
+```
+
+---
+# Modèle Beta-binomial
+
+Représentation graphique de l'intervalle de crédibilité
+
+
+&lt;img src="slides_25_files/figure-html/unnamed-chunk-175-1.png" width="432" style="display: block; margin: auto;" /&gt;
+
+
+---
+# Modèle Beta-binomial
+
+La différence entre l'intervalle de crédibilité basé sur les quantiles et celui basé sur l'HDI est plus visible en cas de distribution asymétrique :
+
+&lt;img src="slides_25_files/figure-html/unnamed-chunk-176-1.png" width="432" style="display: block; margin: auto;" /&gt;
+
+ - Intervalle de crédibilité donné par les quantiles : [0.043 ; 0.641]
+ - Intervalle de crédibilité donné par HDI : [0.018 ; 0.591]
+
+
+
+---
+# Modèle Beta-binomial
+
+Test d'hypothèses : `\(H_0 : \theta \leq 0.5 \quad \text{vs.} \quad H_1 : \theta &gt; 0.5\)`
+
+ - risque relatif a posteriori : `\(\frac{\mathbb{P}(\theta \leq 0.5 | x)}{\mathbb{P}(\theta &gt; 0.5 | x)} = \frac{\int \mathbb{1}_{t\leq 0.5} p(\theta | x)d\theta}{\int \mathbb{1}_{t &gt; 0.5} p(\theta | x)d\theta}\)`
+
+``` r
+pbeta(0.5,20+7.75,30+12.25)/(1-pbeta(0.5,20+7.75,30+12.25))
+```
+
+```
+## [1] 23.96023
+```
+
+ - risque relatif a priori : `\(\frac{\mathbb{P}(\theta \leq 0.5)}{\mathbb{P}(\theta &gt; 0.5)} = \frac{\int \mathbb{1}_{t\leq 0.5} \pi(\theta)d\theta}{\int \mathbb{1}_{t &gt; 0.5} \pi(\theta)d\theta}\)`
+
+``` r
+pbeta(0.5,7.75,12.25)/(1-pbeta(0.5,7.75,12.25))
+```
+
+```
+## [1] 5.624588
+```
+
+ - facteur de Bayes : `\(BF = \frac{\mathbb{P}(\theta \leq 0.5 | x)}{\mathbb{P}(\theta &gt; 0.5 | x)}  / \frac{\mathbb{P}(\theta \leq 0.5)}{\mathbb{P}(\theta &gt; 0.5)}\)`
+
+``` r
+(pbeta(0.5,20+7.75,30+12.25)/(1-pbeta(0.5,20+7.75,30+12.25))) / (pbeta(0.5,7.75,12.25)/(1-pbeta(0.5,7.75,12.25)))
+```
+
+```
+## [1] 4.259908
+```
+
+---
+# Le facteur de Bayes
+
+&lt;/br&gt;
+
+&lt;img src="slides_25_files/figure-html/unnamed-chunk-180-1.png" width="576" style="display: block; margin: auto;" /&gt;
+
+
+---
+# Le facteur de Bayes
+
+Echelle d'aide à la décision (Kass et Raftery, 1995)
+
+&lt;/br&gt;
+
+
+|      BF       |   2 log(BF)    |    Force de la preuve pour H0    |
+|:-------------:|:--------------:|:--------------------------------:|
+|  1 &lt; BF &lt; 3   |  entre 0 et 2  | Mérite à peine d'être mentionnée |
+|  3 &lt; BF &lt; 20  |  entre 2 et 6  |             Positive             |
+| 20 &lt; BF &lt; 150 | entre 6 et 10  |              Forte               |
+|   BF &gt; 150    | supérieur à 10 |            Très forte            |
+
+
+---
+class: inverse, middle, center
+
+# Lien avec la théorie de la décision
+
+---
+class: my-one-page-font
+# Fonction de perte
+
+Fonction `\(\ell : \Theta \times \Theta \rightarrow \mathbb{R}^+\)` telle que `\(\ell(\theta,\theta') = 0 \Leftrightarrow \theta = \theta'\)`.
+
+.left-code[
+&lt;img src="slides_25_files/figure-html/unnamed-chunk-182-1.png" width="360" style="display: block; margin: auto;" /&gt;
+]
+.right-plot[
+- perte quadratique `\(\ell(\theta,\theta')=(\theta - \theta')^2\)` : très utilisée en pratique
+ - .green[.bold[avantages :]] convexe, différentiable
+ - .red[.bold[inconvénients :]] donne un poids important aux erreurs extrêmes
+- perte absolue `\(\ell(\theta,\theta')=|\theta - \theta'|\)`
+ - .green[.bold[avantages :]] convexe, moins de poids sur les extrêmes
+ - .red[.bold[inconvénients :]] non différentiable
+- perte de Hubert : compromis entre les deux
+`\(\small \ell(\theta,\theta')= \frac{1}{2} (\theta - \theta')^2 \mathbf{1}_{\theta-\theta'&lt;k} + (k |\theta - \theta'| - \frac{1}{2}k^2)\mathbf{1}_{\theta - \theta' \geq k}\)`
+]
+
+---
+# Fonction de risque
+
+Fonction `\(R : \Theta \rightarrow \mathbb{R}^+\)` telle que `\(R(\theta,T(\mathcal{X})) = \mathbb{E}_\theta (\ell(\theta,T(\mathcal{X}))) = \int_E \ell(\theta, T(x)) dP_\theta(x).\)`
+
+**Exemple :** `\(\small X \sim \mathcal{B}(n,\theta)\)`, estimateurs :
+- `\(\hat{\theta}_1 = \frac{X}{n}\)` (EMV)
+- `\(\hat{\theta}_2 = \frac{X + \sqrt{n}/2}{n+\sqrt{n}}\)`
+- `\(\hat{\theta}_3 = \frac{1}{2}\)` (estimateur constant)
+- `\(\hat{\theta}_4 = \frac{X+1}{n+2}\)` (moyenne a posteriori avec loi a priori uniforme sur `\([0,1]\)`)
+
+et perte quadratique.
+
+--
+
+
+&lt;img src="slides_25_files/figure-html/unnamed-chunk-183-1.png" width="864" style="display: block; margin: auto;" /&gt;
+
+---
+# Fonction de risque
+
+Zoom sur les 3 risques R1, R2 et R4.
+
+&lt;img src="slides_25_files/figure-html/unnamed-chunk-184-1.png" width="864" style="display: block; margin: auto;" /&gt;
+
+Chaque fonction de risque en fonction de `\(n\)`.
+
+&lt;img src="slides_25_files/figure-html/unnamed-chunk-185-1.png" width="864" style="display: block; margin: auto;" /&gt;
+
+
+---
+# Risque de Bayes
+
+Pour une loi a priori `\(\pi\)`, `\(R_{B} (\pi,T(\mathcal{X})) = \int_\Theta R(\theta,T(\mathcal{X})) \pi(\theta) d\theta\)`.
+
+Suite exemple : modèle binomial, loi a priori `\(\small \mathcal{U}([0,1])\)`, `\(\hat{\theta}_1 = \frac{X}{n}\)`, `\(\hat{\theta}_2 = \frac{X + \sqrt{n}/2}{n+\sqrt{n}}\)`, `\(\hat{\theta}_3 = \frac{1}{2}\)`, `\(\hat{\theta}_4 = \frac{X+1}{n+2}\)`.
+
+
+&lt;img src="slides_25_files/figure-html/unnamed-chunk-186-1.png" width="576" style="display: block; margin: auto;" /&gt;
+
+---
+# Vue d'ensemble
+
+&lt;/br&gt;
+&lt;img src="slides_25_files/figure-html/unnamed-chunk-187-1.png" width="2200px" /&gt;
+
+
+---
+# Principaux résultats
+
+&gt; **Théorème :** Pour toute loi a priori `\(\pi\)`, on a  `\(R_B(\pi) \leq R_M\)`
+
+--
+
+&amp;rarr; le risque de Bayes est toujours plus petit que le risque minimax
+
+&gt; **Théorème :** Un estimateur de Bayes unique à équivalence près, pour une loi a priori `\(\pi\)`, est admissible.
+
+--
+
+&amp;rarr; un estimateur de Bayes, c'est-à-dire qui minimise l'espérance de la fonction de perte par rapport à la loi a posteriori, est admissible. .red[.bold[On dispose donc une procédure pour construire des estimateurs admissibles]]
+
+&gt; **Théorème :** Un estimateur admissible et de risque constant est un estimateur minimax.
+
+--
+
+&amp;rarr; **si on peut construire un estimateur de Bayes de risque constant, alors il sera minimax**
+
+&gt; **Théorème :** Un estimateur de Bayes pour une loi a priori `\(\pi\)` dont la fonction de risque est majorée par son risque de Bayes est minimax.
+
+--
 
 
 
