@@ -210,6 +210,7 @@ Sys.setenv('RETICULATE_PYTHON'='/usr/bin/python3')
 **3. Statistiques bayésiennes**
   - [Cours 15](#c15) (13/03/2026)
   - [Cours 16](#c16) (16/03/2026)
+  - [Cours 17](#c17) (17/03/2026)
 ]
 
 ---
@@ -4261,6 +4262,7 @@ knitr::kable(bf_1, row.names = NA, align='cccc',
 ```
 
 
+<span style="color:#16A085">**fin du cours 16**</span>
 ---
 class: inverse, middle, center
 
@@ -4403,7 +4405,8 @@ magick::image_read_pdf("/home/charlotte/Documents/Enseignement/Lille/M1 ISN /Sta
 
 > **Théorème :** Un estimateur de Bayes pour une loi a priori $\pi$ dont la fonction de risque est majorée par son risque de Bayes est minimax.
 
---
+
+<span style="color:#16A085">**fin du cours 17**</span>
 
 
 
