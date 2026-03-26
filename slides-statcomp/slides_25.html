@@ -199,6 +199,8 @@ MathJax.Hub.Config({
   - [Cours 15](#c15) (13/03/2026)
   - [Cours 16](#c16) (16/03/2026)
   - [Cours 17](#c17) (17/03/2026)
+  - [Cours 18](#c18) (23/03/2026)
+  - [Cours 19](#c19) (24/03/2026)
 ]
 
 ---
@@ -3277,7 +3279,9 @@ Echelle d'aide à la décision (Kass et Raftery, 1995)
 
 
 &lt;span style="color:#16A085"&gt;**fin du cours 16**&lt;/span&gt;
+
 ---
+name: c17
 class: inverse, middle, center
 
 # Lien avec la théorie de la décision
@@ -3381,6 +3385,463 @@ Suite exemple : modèle binomial, loi a priori `\(\small \mathcal{U}([0,1])\)`, 
 
 &lt;span style="color:#16A085"&gt;**fin du cours 17**&lt;/span&gt;
 
+
+
+---
+name: c18
+class: inverse, middle, center
+
+# Choix de la loi a priori
+
+---
+# Choix de la loi a priori
+
+Plusieurs cas possibles (combinaisons possibles) :
+ 1. utiliser l'information dont on dispose (dires d'experts, litérature, ...)
+
+ 3. utiliser des familles de lois conjuguées
+
+ 2. utiliser des a priori "impropres"
+
+ 4. utiliser des a priori "non informatifs"
+
+
+.red[Dans tous les cas, le choix de la loi a priori doit être .bold[justifié] et doit être fait .bold[en amont], i.e. .bold[avant] d'avoir vu et analysé les données.]
+
+.blue[.bold[En pratique, on peut aussi comparer les résultats obtenus avec différents a priori.]]
+
+---
+# 1. Prise en compte de l'information subjective
+
+- pas toujours facile d'en déduire une **forme paramétrique** précise
+
+- pas toujours facile de **combiner** les différentes sources d'information
+
+&amp;rarr; la loi a priori permet de résumer l'information disponible, mais aussi de prendre en compte l'incertitude entourant cette information
+
+- biais cognitifs et difficulté à évaluer de petits (resp. grands) ordres de grandeur
+
+---
+# Quelques exemples de biais cognitifs
+
+ - **biais de "proximité"** : on a tendance à accorder une plus grande probabilité à un évènement qui nous concerne ou que nous avons rencontré récemment
+
+ - **biais d'ajustement et d'ancrage** : influence de la première impression ou information
+
+ - **biais de confiance** : on a tendance à sous-estimer l'intervalle de variation d'une quantité (sous-évaluation de l'incertitude)
+
+ - **biais d'équiprobabilité** : on à tendance à attribuer trop souvent la probabilité uniforme à un ensemble d'évènements. Lié aussi au biais existant lorsqu'on oublie la fréquence de base d'un évènement avant d'en évaluer des probabilités liées à cet évènement.
+
+ - **biais d'autorité** : attribuer trop de valeur au jugement d'une personne dépositaire d'une autorité
+
+ - **biais monétaire** : attribuer une plus grande efficacité aux processus/traitements plus chers
+
+ - **biais de genre**, biais socio-culturels
+
+ - ...
+
+---
+# Construction de la loi a priori
+
+Quelques approches :
+ - identifier des quantités clés (moyenne, médiane, quantiles, ...) et en déduire une loi paramétrique
+
+  - c'est ce que l'on a fait dans l'exemple Beta-binomial
+  - dans ce cas il vaut mieux choisir une loi "plus large" que ce que suggèrent l'information
+
+ - évaluer la robustesse des résultats au choix de la loi a priori
+
+ - introduire un niveau hiérarchique supplémentaire dans la définition de la loi a priori (*modélisation Bayésienne hiérarchique*)
+
+---
+class: my-one-page-font
+# 2. Utiliser des lois conjuguées
+
+L'approche précédente n'est pas toujours possible :
+ - Pas toujours d'information disponible ou de qualité
+
+ - Volonté de rester le plus "objectif" possible, en utilisant juste l'information du modèle
+
+--
+
+Choisir un a priori conjugué :
+ - permet d'utiliser un a priori qui ne dépend que du choix du modèle (i.e. de la vraisemblance)
+
+ - limite la part de "subjectivité" au choix des paramètres de la loi a priori (et pas à sa forme paramétrique)
+
+ - facilite l'analyse car la loi a posteriori est explicite
+
+ - constitue tout de même un choix ! et à ce titre a une influence sur les résultats
+
+ - peut être incompatible avec l'information dont on dispose (dans ce cas il ne faut pas l'utiliser !)
+
+
+---
+# Exemples de lois conjuguées
+
+  Pour un échantillon `\(X_1,\dots,X_n\)` iid
+
+- Vraisemblance : `\(\mathcal{N}(\theta,\sigma^2)\)`, `\(\sigma\)` connue &amp;rarr; loi conjuguée Gaussienne.
+
+--
+
+- Vraisemblance `\(\mathcal{N}(\mu,1/\theta)\)`, `\(\mu\)` connue &amp;rarr; loi conjuguée Gamma.
+
+--
+
+- Vraisemblance `\(\mathcal{G}(k,\theta)\)`, `\(k\)` connu &amp;rarr; loi conjuguée Gamma.
+
+--
+
+- Vraisemblance `\(\mathcal{B}(\theta)\)` &amp;rarr; loi conjuguée Beta.
+
+--
+
+- Vraisemblance `\(\mathcal{P}(\theta)\)` &amp;rarr; loi conjuguée Gamma.
+
+--
+
+- Vraisemblance `\(\mathcal{NB}(m,\theta)\)` &amp;rarr; loi conjuguée Beta.
+
+---
+# Lois conjuguées et famille exponentielle
+
+Une densité `\(f\)` appartient à la **famille exponentielle** si elle s'écrit sous la forme :
+
+`$$f_\theta(x) = h(x) \exp \left( \langle \theta , T(x) \rangle - A(\theta) \right)$$`
+
+Si la loi des observations appartient à cette famille exponentielle, un choix  naturel de loi a priori conjuguée est :
+
+$$\pi(\theta) = K(\mu,\lambda) \exp\left(\langle \theta , \mu \rangle - \lambda A(\theta)\right) $$
+
+ce qui conduit à la loi a posteriori :
+
+$$p(\theta | x) \propto \exp \left(\langle \theta, \mu + \sum_{i=1}^nT(x_i) \rangle - (\lambda + n) A(\theta) \right) $$
+--
+
+&lt;/br&gt;
+**Propriété :** si `\(T(X)=X\)`, la moyenne a posteriori est une combinaison linéaire de la moyenne a priori et de la moyenne empirique des observations :
+`$$\mathbb{E}(\theta | x) = \frac{\mu + n\bar{X}}{\lambda + n}$$`
+
+---
+# 3. Loi a priori impropre
+
+- Mesure sur `\(\Theta\)` qui n'est pas nécessairement une mesure de probabilité (ni même une mesure de masse totale finie)
+
+- Utilisable **uniquement** si la loi a posteriori qui en découle est une mesure de probabilité.
+
+- **Exemple** : `\(X \sim \mathcal{N}(\theta,1)\)` et `\(\pi(\theta) = 1\)`.
+
+--
+
+- .red[**La loi a posteriori peut ne pas être définie pour certaines observations**] &amp;rarr; exemple dans le modèle Beta-binomial si prior impropre `\(\text{Beta}(0,0)\)`.
+
+---
+# 4. Lois a priori non-informatives
+
+- A priori de Laplace &amp;rarr; lois uniformes sur `\(\Theta\)`
+
+ - peut conduire à des a priori impropres
+ - pas d'invariance par reparamétrisation
+
+--
+
+- A priori de Jeffreys &amp;rarr; lien avec l'information de Fisher
+
+ - si `\(\theta \in \mathbb{R}\)` : `\(\pi(\theta) \propto I^{1/2}(\theta)\)`
+ - si `\(\theta \in \mathbb{R}^d, d&gt; 1\)` : `\(\pi(\theta) \propto \det(I(\theta))^{1/2}\)`
+
+ - **invariant par reparamétrisation**
+
+--
+
+&gt; **Proposition** : Soit `\(\pi\)` la mesure a priori de Jeffreys pour `\(\theta\)`, et soit `\(\eta = g(\theta)\)`, avec `\(g\)` un `\(\mathcal{C}^1\)`-difféomorphisme. Alors la mesure image de `\(\pi\)` par `\(g\)` est la mesure a priori de Jeffreys pour `\(\eta\)`.
+
+
+&lt;span style="color:#16A085"&gt;**fin du cours 18**&lt;/span&gt;
+
+
+---
+name: c19
+class: inverse, middle, center
+
+# Identification de la loi a posteriori
+
+---
+# Loi a posteriori
+
+**Cas 1 : expression exacte disponible** (famille de lois conjuguées, calcul explicite possible)
+
+A partir de cette expression, on peut chercher à calculer :
+ - moyenne, médiane, maximum a posteriori
+ - quantiles pour régions de crédibilité
+ - HDI
+ - facteurs de Bayes
+
+&amp;rarr; pas toujours facile à calculer même à partir de l'expression analytique
+
+--
+
+**Cas 2 : expression connue à une constante près**
+
+- Impossible de calculer moyenne ou médiane a posteriori ni intervalles de crédibilité, facteurs de Bayes, ...
+
+- Toujours possible de calculer le mode a posteriori
+
+--
+
+&amp;rarr; **on recourt à des approximations de type Monte-Carlo**
+
+---
+name: simu_post
+# Simulations selon la loi a posteriori
+
+Quelles méthodes utiliser ? [petit retour en arrière ...](#simu_f)
+
+---
+# Simulations selon la loi a posteriori
+
+**Exemple** : exercice 3 de la fiche de TD 4, pour `\(\small X | \theta \sim \mathcal{B}(n,\theta)\)` et `\(\small \theta \sim \mathcal{U}([1/2,1])\)`.
+On a :
+
+--
+
+`\(\small p(\theta | x) = \frac{1}{1-F_{B(x+1,n-x+1)}} \frac{\Gamma(n+2)}{\Gamma(x+1)\Gamma(n-x+1)}\theta^x(1-\theta)^{n-x} \mathbb{1}_{[1/2,1]}(\theta)\)`
+
+- méthode de la fonction inverse
+
+--
+
+
+``` r
+n &lt;- 10; X &lt;- 3; c &lt;- 1-pbeta(1/2,X+1,n-X+1)
+p3 &lt;- function(x){ifelse(x&lt;1/2|x&gt;1, 0, dbeta(x,X+1,n-X+1)/c)}
+U &lt;- runif(10000) ; ech_finv &lt;- qbeta(c*U+pbeta(1/2,X+1,n-X+1), X+1, n-X+1)
+```
+
+&lt;img src="slides_25_files/figure-html/unnamed-chunk-189-1.png" width="432" style="display: block; margin: auto;" /&gt;
+
+
+---
+# Simulations selon la loi a posteriori
+
+**Exemple** : `\(\small p(\theta | x) = \frac{1}{1-F_{B(x+1,n-x+1)}} \frac{\Gamma(n+2)}{\Gamma(x+1)\Gamma(n-x+1)}\theta^x(1-\theta)^{n-x} \mathbb{1}_{[1/2,1]}(\theta)\)`
+
+- acceptation-rejet
+
+---
+# Simulations selon la loi a posteriori
+
+**Exemple** : `\(\small p(\theta | x) = \frac{1}{1-F_{B(x+1,n-x+1)}} \frac{\Gamma(n+2)}{\Gamma(x+1)\Gamma(n-x+1)}\theta^x(1-\theta)^{n-x} \mathbb{1}_{[1/2,1]}(\theta)\)`
+
+- acceptation-rejet &amp;rarr;  `\(\small p(\theta|x) \leq M (2 \cdot \mathbb{1}_{[1/2,1]}(\theta))\)`
+
+--
+
+
+``` r
+n &lt;- 10; X &lt;- 3; c &lt;- 1-pbeta(1/2,X+1,n-X+1)
+M &lt;- dbeta(1/2,X+1,n-X+1)/c
+
+Y &lt;- runif(10000,1/2,1)
+U &lt;- runif(10000,0,M)
+ech_ar &lt;- Y[U&lt;p3(Y)]
+```
+
+
+&lt;img src="slides_25_files/figure-html/unnamed-chunk-191-1.png" width="576" style="display: block; margin: auto;" /&gt;
+
+---
+# Simulations selon la loi a posteriori
+
+**Exemple** : `\(\small p(\theta | x) \propto \tilde{p}(\theta | x)\)` avec `\(\tilde{p}(\theta|x) =  \theta^x(1-\theta)^{n-x} \mathbb{1}_{[1/2,1]}(\theta)\)`
+
+- acceptation-rejet : fonctionne aussi si on connaît la loi a posteriori à une constante près
+
+---
+# Simulations selon la loi a posteriori
+
+**Exemple** : `\(\small p(\theta | x) \propto \tilde{p}(\theta | x)\)` avec `\(\tilde{p}(\theta|x) =  \theta^x(1-\theta)^{n-x} \mathbb{1}_{[1/2,1]}(\theta)\)`
+
+- acceptation-rejet : fonctionne aussi si on connaît la loi a posteriori à une constante près &amp;rarr;  `\(\small \tilde{p}(\theta|x) \leq M (2 \cdot \mathbb{1}_{[1/2,1]}(\theta))\)` avec `\(M=1/2^{n+1}\)`.
+
+--
+
+
+``` r
+Mtilde &lt;- 1/2^(n+1)
+ptilde3 &lt;- function(x){ifelse(x&lt;1/2|x&gt;1,0,x^(X)*(1-x)^(n-X))}
+Y &lt;- runif(10000,1/2,1)
+U &lt;- runif(10000,0,1)
+ech_ar_tilde &lt;- Y[U&lt;(ptilde3(Y)/Mtilde/dunif(Y,1/2,1))]
+```
+
+&lt;img src="slides_25_files/figure-html/unnamed-chunk-193-1.png" width="288" style="display: block; margin: auto;" /&gt;
+
+---
+class: my-one-page-font
+# Simulations selon la loi a posteriori
+
+&lt;!-- **Exemple** : `\(\small p(\theta | x) = \frac{1}{1-F_{B(x+1,n-x+1)}} \frac{\Gamma(n+2)}{\Gamma(x+1)\Gamma(n-x+1)}\theta^x(1-\theta)^{n-x} \mathbb{1}_{[1/2,1]}(\theta)\)` --&gt;
+
+- échantillonnage préférentiel
+
+--
+
+
+``` r
+Z1 &lt;- runif(20000,1/2,1)
+w &lt;- p3(Z1)/dunif(Z1,1/2,1)
+ech_is &lt;- sample(Z1,prob = w/sum(w),10000)
+Z2 &lt;- runif(100000,1/2,1)
+w &lt;- p3(Z2)/dunif(Z2,1/2,1)
+ech_is_2 &lt;- sample(Z2,prob = w/sum(w),10000)
+```
+
+&lt;img src="slides_25_files/figure-html/unnamed-chunk-195-1.png" width="576" style="display: block; margin: auto;" /&gt;
+
+
+---
+# Simulations selon la loi a posteriori
+
+**Exemple** : `\(\small p(\theta | x) = \frac{1}{1-F_{B(x+1,n-x+1)}} \frac{\Gamma(n+2)}{\Gamma(x+1)\Gamma(n-x+1)}\theta^x(1-\theta)^{n-x} \mathbb{1}_{[1/2,1]}(\theta)\)`
+
+- Metropolis-Hastings à loi instrumentale indépendante
+
+--
+
+
+``` r
+chaine1 &lt;- rep(0,10000); chaine1[1] &lt;- runif(1,1/2,1)
+chaine2 &lt;- rep(0,10000); chaine2[1] &lt;- runif(1,1/2,1)
+for (i in 2:10000){
+# loi instrumentale U([1/2,1])
+cand1 &lt;- runif(1,1/2,1)
+alpha1 &lt;- min(1,p3(cand1)/p3(chaine1[i-1])*dunif(chaine1[i-1])/dunif(cand1))
+chaine1[i] &lt;- ifelse(runif(1)&lt;alpha1,cand1,chaine1[i-1])
+
+# loi instrumentale Beta(X+1,n-X+1)
+cand2 &lt;- rbeta(1,X+1,n-X+1)
+alpha2 &lt;- min(1,p3(cand2)/p3(chaine2[i-1])*dbeta(chaine2[i-1],X+1,n-X+1)/dbeta(cand2,X+1,n-X+1))
+chaine2[i] &lt;- ifelse(runif(1)&lt;alpha2,cand2,chaine2[i-1])
+}
+```
+
+
+```
+## [1] "Taux d'acceptation avec loi instrumentale U([1/2,1]) : 0.2775"
+## [1] "Taux d'acceptation avec loi instrumentale Beta(X+1,n-X+1) : 0.1147"
+```
+
+---
+# Simulations selon la loi a posteriori
+
+**Exemple** : `\(\small p(\theta | x) = \frac{1}{1-F_{B(x+1,n-x+1)}} \frac{\Gamma(n+2)}{\Gamma(x+1)\Gamma(n-x+1)}\theta^x(1-\theta)^{n-x} \mathbb{1}_{[1/2,1]}(\theta)\)`
+
+- Metropolis-Hastings à loi instrumentale indépendante
+
+&lt;img src="slides_25_files/figure-html/unnamed-chunk-198-1.png" width="864" style="display: block; margin: auto;" /&gt;
+
+
+---
+# Simulations selon la loi a posteriori
+
+**Exemple** : `\(\small p(\theta | x) = \frac{1}{1-F_{B(x+1,n-x+1)}} \frac{\Gamma(n+2)}{\Gamma(x+1)\Gamma(n-x+1)}\theta^x(1-\theta)^{n-x} \mathbb{1}_{[1/2,1]}(\theta)\)`
+
+- Metropolis-Hastings à marche aléatoire
+
+--
+
+
+``` r
+chaine &lt;- rep(0,10000); chaine[1] &lt;- runif(1,1/2,1)
+for (i in 2:10000){
+cand &lt;- chaine[i-1] + rnorm(1,0,0.1)
+alpha &lt;- min(1,p3(cand)/p3(chaine[i-1]))
+chaine[i] &lt;- ifelse(runif(1)&lt;alpha,cand,chaine[i-1])}
+```
+
+
+```
+## [1] "Taux d'acceptation : 0.4552"
+```
+&lt;img src="slides_25_files/figure-html/unnamed-chunk-201-1.png" width="720" style="display: block; margin: auto;" /&gt;
+
+---
+class: my-one-page-font
+# Simulations selon la loi a posteriori
+
+Que faire de ces échantillons (i.i.d. ou issus de chaînes de Markov) ?
+- calcul de la moyenne, médiane, maximum a posteriori
+- calcul d'intervalles de crédibilité, de facteurs de Bayes
+
+**Exemple (suite) :** estimation de la moyenne a posteriori (vraie valeur : 0.5704).
+
+
+|Méthode                               | Moyenne a posteriori | Ecart-type |                    Taille (eff) éch                     |
+|:-------------------------------------|:--------------------:|:----------:|:-------------------------------------------------------:|
+|Fonction inverse                      |        0.5707        |  0.000592  |                          10000                          |
+|Acceptation-rejet (AR)                |        0.5708        |  0.001413  |                          1778                           |
+|AR sans la constante                  |        0.5722        |  0.001436  |                          1735                           |
+|EP de taille 20000                    |        0.6289        |  0.000800  | &lt;span style="     color: red !important;" &gt;10000&lt;/span&gt; |
+|EP de taille 100000                   |        0.5760        |  0.000612  | &lt;span style="     color: red !important;" &gt;10000&lt;/span&gt; |
+|MH à proposition indépendante         |        0.5701        |  0.001689  |                          1256                           |
+|MH à marche aléatoire U([1/2,1])      |        0.5673        |  0.002239  |                           651                           |
+|MH à marche aléatoire Beta(X+1,n-X+1) |        0.5727        |  0.001865  |                          1059                           |
+
+---
+# Simulations selon la loi a posteriori
+
+Comparaison des résultats de la diapo précédente :
+ - la **meilleure méthode** au sens de l'écart-type de l'estimateur est celle de la **fonction inverse**
+ - pour cette approche, on a généré 10000 simulations iid de loi uniforme pour un obtenir échantillon iid de taille 10000 selon la loi cible
+ - pour l'acceptation-rejet, on a obtenu un échantillon iid de taille env. 1750 selon la loi cible, soit env. 10 fois plus petit que pour la fonction inverse &amp;rarr; l'écart-type est donc env. `\(\sqrt{10}\)` fois plus grand
+ - les **deux échantillons obtenus par EP** ont en fait été générés à partir d'échantillons de taille beaucoup plus grande &amp;rarr; ils peuvent atteindre une variance similaire à la méthode de la fonction inverse mais sont bien **plus coûteux**
+ - les **méthodes MCMC**, à cause de la corrélation entre les simulations, conduisent à des **écart-types plus élevés** que dans le cas iid
+
+
+---
+# Simulations selon la loi a posteriori
+
+Pour calculer l'écart-type associé aux méthodes MCMC :
+ - soit on "élague" la chaine en ne gardant qu'une valeur toutes les `\(m\)` itérations, où `\(m\)` est choisi de telle sorte que l'autocorrélation entre `\(X_n\)` et `\(X_{n-m}\)` soit négligeable, et on calcule l'écart-type sur le vecteur obtenu (qui sera donc de taille plus petite)
+ - soit on utilise le package `ccoda` et la fonction `summary()` qui renvoie l'écart-type estimé par des méthodes de séries temporelles
+
+
+``` r
+# méthode 1
+chaine_elaguee &lt;- chaine[seq(1,length(chaine),by=20)] # d'après le graphe d'autocorrélation
+sd(chaine_elaguee)/sqrt(length(chaine_elaguee))
+```
+
+```
+## [1] 0.002912311
+```
+
+``` r
+# méthode 2
+library(coda)
+summary(mcmc(chaine))
+```
+
+```
+## 
+## Iterations = 1:10000
+## Thinning interval = 1 
+## Number of chains = 1 
+## Sample size per chain = 10000 
+## 
+## 1. Empirical mean and standard deviation for each variable,
+##    plus standard error of the mean:
+## 
+##           Mean             SD       Naive SE Time-series SE 
+##       0.572733       0.060705       0.000607       0.001865 
+## 
+## 2. Quantiles for each variable:
+## 
+##   2.5%    25%    50%    75%  97.5% 
+## 0.5020 0.5247 0.5573 0.6050 0.7233
+```
 
 
     </textarea>
